@@ -12,7 +12,7 @@ class Level(object):
         self.keep_prob = tf.placeholder(tf.float32)
         self.batch_size = tf.placeholder(tf.int32, [])
 
-        self.targets = tf.placeholder(tf.float32, shape=[None, 8])
+        self.targets = tf.placeholder(tf.float32, shape=[None, 6])
         self.phase = tf.placeholder(tf.bool, name='phase')
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
@@ -27,15 +27,15 @@ class Level(object):
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [1, 40, 60, 80, 100]
+    channels = [1, 40, 60, 80]
     layer_num = len(channels) - 1
-    fc_size = [512, 8]
+    fc_size = [512, 6]
 
 
 class DataConfig(object):
     shape_box=[128,128,128]
     shape_crop=[64,64,64]
-    world_to_cubic=128/20.
+    world_to_cubic=128/12.
     batch_size_train = 2
     batch_size_test = 1
     need_Save = False
@@ -73,16 +73,16 @@ if __name__ == '__main__':
 
         winner_loss = 10 ** 8
         step_from_last_mininum = 0
-        test_step = 300
+        test_step = 1
 
         for iter in range(10**8):
-            box_batch, pos_batch, y_batch=dataManager.getTrainBatch()
+            box_batch, y_batch=dataManager.getTrainBatch()
             feed_dict={level.box:box_batch, level.targets:y_batch,
                        level.phase:True,level.keep_prob:0.5}
             _,loss_train=sess.run([level.optimizer,level.loss],feed_dict=feed_dict)
             if iter % test_step==0:
                 step_from_last_mininum += 1
-                box_batch, pos_batch, y_batch = dataManager.getTestBatch()
+                box_batch, y_batch = dataManager.getTestBatch()
                 feed_dict = {level.box: box_batch, level.targets: y_batch,
                              level.phase: False,level.keep_prob:1}
                 loss_test = sess.run(level.loss, feed_dict=feed_dict)

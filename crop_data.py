@@ -153,27 +153,6 @@ if __name__ == '__main__':
 
     for feature_point,feature_id in zip(point_batch_list,range(len(point_batch_list))):
         augment_crop(feature_id,feature_point, box_batch, DataConfig.shape_box, DataConfig.shape_crop)
-        # x, y, z = np.where(croped_batch == 255)
-        # ex, ey, ez = edges()
-        #
-        # mlab.points3d(x, y, z,
-        #               mode="cube",
-        #               color=(0, 1, 0),
-        #               scale_factor=1)
-        # mlab.points3d(ex, ey, ez,
-        #               mode="cube",
-        #               color=(0, 0, 1),
-        #               scale_factor=1)
-        #
-        # fx = np.array([15])
-        # fy = np.array([15])
-        # fz = np.array([15])
-        #
-        # mlab.points3d(fx, fy, fz,
-        #               mode="cube",
-        #               color=(1, 0, 0),
-        #               scale_factor=1)
-        # mlab.show()
 
 
 

@@ -66,10 +66,10 @@ def loadpickle( path):
 
 def load_y(info_file, world_to_cubic):
     info = np.loadtxt(info_file)
-    origin=np.reshape(info[:3],[-1,3])
-    target = np.reshape(info[3:],[-1,3])
-    target=(target-origin)*world_to_cubic
-    target =target.astype(np.int32)
+    origin=np.reshape(info[:,:3],[-1,3])
+    origin=np.reshape(np.tile(origin,np.array([2])),[-1,3])
+    target = np.reshape(info[:,3:],[-1,3])
+    target=np.reshape((target-origin)*world_to_cubic,[-1,6]).astype(np.int32)
     return target
 
 
@@ -86,39 +86,91 @@ def load_itk(filename):
     # Read the spacing along each dimension
     spacing = np.array(list(reversed(itkimage.GetSpacing())))
 
-    return ct_scan, origin, spacing
+    return ct_scan
+
+def loadmhd(collection_path):
+    '''
+    :param collection_path: train或test路径，路径下包含多个病例
+    :return: [b,32,32,32]
+    '''
+
+    box_list = []
+    for fileName in os.listdir(collection_path):
+        if os.path.splitext(fileName)[1] == '.mhd':
+            toothPath = os.path.join(collection_path, fileName)
+            box_list.append(load_itk(toothPath))
+
+    box = np.stack(box_list)
+    box.shape=[-1,GRID_SIZE,GRID_SIZE,GRID_SIZE]
+    return box
+
 
 def show_single(dir):
-    ct, ori, sp = load_itk(os.path.join(dir,'toothlabel4.mhd'))
+    ct = load_itk(os.path.join(dir,'toothlabel41.mhd'))
     info_file=os.path.join(dir,'info.txt')
     
-    feature = load_y(info_file, 128 / 20.0)
+    feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
 
     ct[feature[0,0],feature[0,1],feature[0,2]]=2
-    ct[feature[1,0],feature[1,1],feature[1,2]]=2
+    ct[feature[0,3],feature[0,4],feature[0,5]]=2
+
     fz, fy, fx = np.where(ct == 2)
+    ex,ey,ez=edges(GRID_SIZE)
     x, y, z = np.where(ct ==1)
-    ex,ey,ez=edges(128)
+
+    mlab.points3d(ex, ey, ez,
+                         mode="cube",
+                         color=(0, 0, 1),
+                         scale_factor=1)
 
     mlab.points3d(x, y, z,
                          mode="cube",
                          color=(0, 1, 0),
                          scale_factor=1,)
                   # transparent=True)
-    mlab.points3d(ex, ey, ez,
-                         mode="cube",
-                         color=(0, 0, 1),
-                         scale_factor=1)
+
     mlab.points3d(fx, fy, fz,
                          mode="cube",
                          color=(1, 0, 0),
                          scale_factor=1)
-    
+
     mlab.show()
 
 
+def traverse_origin(dir):
+    #读取世界坐标
+    box=loadmhd(dir)
+    info_file = os.path.join(dir, 'info.txt')
+    feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
+    num=feature.shape[0]
 
-def traverse(dir):
+    for i in range(num):
+        ct=box[i]
+
+        ct[feature[i,0], feature[i, 1], feature[i, 2]] = 2
+        ct[feature[i,3], feature[i,4], feature[i,5]] = 2
+
+        fz, fy, fx = np.where(ct == 2)
+        ex, ey, ez = edges(GRID_SIZE)
+        x, y, z = np.where(ct == 1)
+
+        mlab.points3d(x, y, z,
+                      mode="cube",
+                      color=(0, 1, 0),
+                      scale_factor=1)
+        mlab.points3d(ex, ey, ez,
+                      mode="cube",
+                      color=(0, 0, 1),
+                      scale_factor=1)
+        mlab.points3d(fx, fy, fz,
+                             mode="cube",
+                             color=(1, 0, 0),
+                             scale_factor=1)
+        mlab.show()
+
+
+def traverse_croped(dir):
+    #读取网格坐标
     box=loadpickles(dir)
     center_points=loadtxts(dir)
     i=0
@@ -128,7 +180,7 @@ def traverse(dir):
         fy = np.array([center_points[i,1]])
         fz = np.array([center_points[i,2]])
         ct=box[i]
-        ex, ey, ez = edges()
+        ex, ey, ez = edges(GRID_SIZE)
         x, y, z = np.where(ct == 255)
 
         mlab.points3d(x, y, z,
@@ -146,9 +198,13 @@ def traverse(dir):
         mlab.show()
         i+=1
 
+
+WORLD_SIZE=12.0
+GRID_SIZE=128
 if __name__ == '__main__':
     # traverse('F:\\ProjectData\\Feature\\croped\\')
-    show_single('F:\\ProjectData\\Feature\\new3\\')
+    # show_single('F:\\ProjectData\\Feature\\group\\')
+    traverse_origin('F:\\ProjectData\\Feature\\group\\')
 
 
 

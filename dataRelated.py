@@ -8,6 +8,7 @@ import pickle
 class BatchGenerator(object):
     def __init__(self,batch_size,box,y):
         self.index=0
+        box.shape=list(box.shape)+[1]
         self.box=box
         self.y=y
 
@@ -31,6 +32,7 @@ class BatchGenerator(object):
         box_batch= self.box[self.index:   self.index + self.batch_size]
         y_batch= self.y[self.index:   self.index + self.batch_size]
         self.index+=self.batch_size
+
         return box_batch,y_batch
 
 BOX_LEN=32
@@ -63,22 +65,28 @@ class DataManager(object):
             self.__trainGenerator = BatchGenerator(batch_size=data_config.batch_size_train,box=self.box_train,y= self.y_train)
         self.__testGenerator = BatchGenerator(batch_size=data_config.batch_size_test,box=self.box_test, y=self.y_test )
 
+    def load_y(self,info_file, world_to_cubic):
+        info = np.reshape(np.loadtxt(info_file),[-1,9])
 
-
-
-    def load_y(self, info_file, world_to_cubic):
-        info=np.loadtxt(info_file)
-        info.shape=[-1,9]
-        origin=info[:,:3]
-        target=info[:,3:]
-        x_index=[0,3]
-        y_index=[1,4]
-        z_index=[2,5]
-        target[:, x_index]=(target[:,x_index]-origin[:,0][:,np.newaxis])*world_to_cubic
-        target[:, y_index]=(target[:,y_index]-origin[:,1][:,np.newaxis])*world_to_cubic
-        target[:, z_index]=(target[:,z_index]-origin[:,2][:,np.newaxis])*world_to_cubic
-        target=target.astype(np.int32)
+        origin = np.reshape(info[:, :3], [-1, 3])
+        origin = np.reshape(np.tile(origin, np.array([2])), [-1, 3])
+        target = np.reshape(info[:, 3:], [-1, 3])
+        target = np.reshape((target - origin) * world_to_cubic, [-1, 6]).astype(np.int32)
         return target
+
+    # def load_y(self, info_file, world_to_cubic):
+    #     info=np.loadtxt(info_file)
+    #     info.shape=[-1,9]
+    #     origin=info[:,:3]
+    #     target=info[:,3:]
+    #     x_index=[0,3]
+    #     y_index=[1,4]
+    #     z_index=[2,5]
+    #     target[:, x_index]=(target[:,x_index]-origin[:,0][:,np.newaxis])*world_to_cubic
+    #     target[:, y_index]=(target[:,y_index]-origin[:,1][:,np.newaxis])*world_to_cubic
+    #     target[:, z_index]=(target[:,z_index]-origin[:,2][:,np.newaxis])*world_to_cubic
+    #     target=target.astype(np.int32)
+    #     return target
 
 
     def load_itk(self,filename):
