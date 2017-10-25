@@ -35,11 +35,12 @@ class NetConfig(object):
 class DataConfig(object):
     shape_box=[128,128,128]
     shape_crop=[64,64,64]
+    world_to_cubic=128/20.
     batch_size_train = 2
     batch_size_test = 1
     need_Save = False
     need_Restore = False
-
+    format = 'mhd'
 
 
 if __name__ == '__main__':
