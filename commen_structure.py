@@ -13,9 +13,9 @@ def _bias_variable( shape, name):
         initializer = tf.constant_initializer(0.0)
         return tf.get_variable(name=name, shape=shape, initializer=initializer)
 
-def conv3d(input, output_channels, phase,pooling, name="conv3d"):
+def conv3d(input, output_channels, ft_size,phase,pooling, name="conv3d"):
     with tf.variable_scope(name):
-        filter =_weight_variable(shape=[3]*3+[input.shape[-1]]+[output_channels],name='w')
+        filter =_weight_variable(shape=[ft_size]*3+[input.shape[-1]]+[output_channels],name='w')
         conv = tf.nn.conv3d(input, filter, strides=[1, 1, 1, 1, 1], padding='VALID')
         biases = _bias_variable(output_channels,name='b')
         activation = tf.nn.relu(conv + biases)
@@ -64,7 +64,6 @@ def dense_relu_batch_dropout(x, output_size, phase,keep_prob, scope):
 
 def flatten(layer):
     layer_shape = layer.get_shape()
-    # num_features = tf.reduce_prod(tf.shape(layer)[1:])
     num_features = layer_shape[1:].num_elements()
     layer_flat = tf.reshape(layer, [-1, num_features])
 

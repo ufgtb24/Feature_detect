@@ -14,14 +14,15 @@ class BatchGenerator(object):
         self.case_dir_list=os.listdir(self.total_case_dir)
         self.total_case_num=len(self.case_dir_list)
         self.load_case_once=data_config.load_case_once
-        self.switch_data_internal=data_config.switch_data_internal
+        self.switch_after_shuffles=data_config.switch_after_shuffles
         self.world_to_cubic=data_config.world_to_cubic
         self.batch_size=data_config.batch_size
         self.index=0
-        self.data_used_curcle=0
+        self.shuffle_times=0
         self.load_case()
 
     def load_case(self):
+        print('reload data')
         sample_dir_list = random.sample(self.case_dir_list, self.load_case_once)
         box_list=[]
         y_list=[]
@@ -33,9 +34,7 @@ class BatchGenerator(object):
         self.box=np.expand_dims(np.concatenate(box_list,axis=0),axis=4)
         self.y=np.concatenate(y_list,axis=0)
         self.sample_num=self.y.shape[0]
-
-
-
+        assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
     def load_y(self, info_file):
         info = np.reshape(np.loadtxt(info_file), [-1, 9])
@@ -91,11 +90,11 @@ class BatchGenerator(object):
 
     def get_batch(self):
         if self.index+ self.batch_size>self.sample_num:
-            if self.data_used_curcle > self.switch_data_internal:
+            if self.shuffle_times > self.switch_after_shuffles:
                 self.load_case()
-                self.data_used_curcle = 0
+                self.shuffle_times = 0
             self.index=0
-            self.data_used_curcle+=1
+            self.shuffle_times+=1
             perm = np.arange(self.sample_num)
             np.random.shuffle(perm)  # 打乱
             self.box = self.box[perm]
@@ -110,7 +109,6 @@ class BatchGenerator(object):
 
         return box_batch,y_batch
 
-BOX_LEN=32
 
 
 

@@ -25,7 +25,7 @@ class CNN(object):
             # [B,H,W,D,1]
             conv = self.box
             for c in range(self.param.layer_num):
-                conv = commen.conv3d(conv, self.param.channels[c + 1], phase=self.phase,
+                conv = commen.conv3d(conv, self.param.channels[c + 1], ft_size=self.param.ft_size[c+1],phase=self.phase,
                                       pooling=True,name="conv_"+ str(c))
 
         return conv
@@ -33,9 +33,11 @@ class CNN(object):
     def build_FC(self,conv):
         with tf.variable_scope('FC_for_CNN'):
             fc_input = commen.flatten(conv)
-            fc1 = commen.dense_relu_batch_dropout(fc_input, output_size=self.param.fc_size[0],
+            fc = commen.dense_relu_batch_dropout(fc_input, output_size=self.param.fc_size[0],
                                                   phase=self.phase, keep_prob=self.keep_prob,scope='fc_1')
-            fc_output = commen.dense(fc1, output_size=self.param.fc_size[1],scope='fc_output')
+            fc = commen.dense_relu_batch_dropout(fc, output_size=self.param.fc_size[1],
+                                                  phase=self.phase, keep_prob=self.keep_prob,scope='fc_2')
+            fc_output = commen.dense(fc, output_size=self.param.fc_size[2],scope='fc_output')
         return fc_output
 
 

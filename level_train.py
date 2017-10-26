@@ -16,30 +16,31 @@ class Level(object):
         self.phase = tf.placeholder(tf.bool, name='phase')
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
-        self.loss = tf.reduce_mean(tf.square(self.pred - self.targets))
+        self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets),axis=1)/2.)
 
         if is_training==True:
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(update_ops):
                 # Ensures that we execute the update_ops before performing the train_step
-                self.optimizer = commen.Optimizer(self.loss, initial_learning_rate=0.1,
+                self.optimizer = commen.Optimizer(self.loss, initial_learning_rate=0.01,
                                              max_global_norm=1.0).optimize_op
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [1, 40, 60, 80,100]
+    channels = [1, 40,60,80,100]
+    ft_size=[0,7,3,3,3,3]
     layer_num = len(channels) - 1
-    fc_size = [512, 6]
+    fc_size = [512, 512,6]
 
 
 class TrainDataConfig(object):
     shape_box=[128,128,128]
     shape_crop=[64,64,64]
     world_to_cubic=128/12.
-    batch_size=4
+    batch_size=1
     total_case_dir='F:/ProjectData/Feature/Tooth'
-    load_case_once=10  #每次读的病例数
-    switch_data_internal=10 #当前数据洗牌n次读取新数据
+    load_case_once=1  #每次读的病例数
+    switch_after_shuffles=10000 #当前数据洗牌n次读取新数据
     format = 'mhd'
 
 class TestDataConfig(object):
@@ -49,7 +50,7 @@ class TestDataConfig(object):
     batch_size=1
     total_case_dir='F:/ProjectData/Feature/Tooth'
     load_case_once=1  #每次读的病例数
-    switch_data_internal=1000 #当前数据洗牌n次读取新数据
+    switch_after_shuffles=10000 #当前数据洗牌n次读取新数据
     format = 'mhd'
 
 
@@ -66,10 +67,10 @@ if __name__ == '__main__':
     saver = tf.train.Saver()
 
     train_batch_gen=BatchGenerator(TrainDataConfig)
-    test_batch_gen=BatchGenerator(TestDataConfig)
+    # test_batch_gen=BatchGenerator(TestDataConfig)
 
     with tf.Session() as sess:
-        writer = tf.summary.FileWriter('log/', sess.graph)
+        # writer = tf.summary.FileWriter('log/', sess.graph)
 
         if NEED_RESTORE:
             assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
@@ -88,19 +89,22 @@ if __name__ == '__main__':
                        level.phase:True,level.keep_prob:0.5}
             _,loss_train=sess.run([level.optimizer,level.loss],feed_dict=feed_dict)
             if iter % test_step==0:
-                step_from_last_mininum += 1
-                box_batch, y_batch = test_batch_gen.get_batch()
-                feed_dict = {level.box: box_batch, level.targets: y_batch,
-                             level.phase: False,level.keep_prob:1}
-                loss_test = sess.run(level.loss, feed_dict=feed_dict)
-                if loss_test<winner_loss:
-                    winner_loss=loss_test
-                    step_from_last_mininum=0
-                    if NEED_SAVE:
-                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
+                # step_from_last_mininum += 1
+                # box_batch, y_batch = test_batch_gen.get_batch()
+                # feed_dict = {level.box: box_batch, level.targets: y_batch,
+                #              level.phase: False,level.keep_prob:1}
+                # loss_test = sess.run(level.loss, feed_dict=feed_dict)
+                # if loss_test<winner_loss:
+                #     winner_loss=loss_test
+                #     step_from_last_mininum=0
+                #     if NEED_SAVE:
+                #         save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
+                #
+                # print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
+                #       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
 
-                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                print("%d  trainCost=%f  \n"
+                      % (iter, loss_train))
 
 
 
