@@ -65,11 +65,11 @@ def loadpickle( path):
 
 
 def load_y(info_file, world_to_cubic):
-    info = np.loadtxt(info_file)
-    origin=np.reshape(info[:,:3],[-1,3])
-    origin=np.reshape(np.tile(origin,np.array([2])),[-1,3])
-    target = np.reshape(info[:,3:],[-1,3])
-    target=np.reshape((target-origin)*world_to_cubic,[-1,6]).astype(np.int32)
+    info = np.reshape(np.loadtxt(info_file), [-1, 9])
+    origin = np.reshape(info[:, :3], [-1, 3])
+    origin = np.reshape(np.tile(origin, np.array([2])), [-1, 3])
+    target = np.reshape(info[:, 3:], [-1, 3])
+    target = np.reshape((target - origin) * world_to_cubic, [-1, 6]).astype(np.int32)
     return target
 
 
@@ -106,7 +106,7 @@ def loadmhd(collection_path):
 
 
 def show_single(dir):
-    ct = load_itk(os.path.join(dir,'toothlabel41.mhd'))
+    ct = load_itk(os.path.join(dir,'toothlabel40.mhd'))
     info_file=os.path.join(dir,'info.txt')
     
     feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
@@ -203,8 +203,8 @@ WORLD_SIZE=12.0
 GRID_SIZE=128
 if __name__ == '__main__':
     # traverse('F:\\ProjectData\\Feature\\croped\\')
-    # show_single('F:\\ProjectData\\Feature\\group\\')
-    traverse_origin('F:\\ProjectData\\Feature\\group\\')
+    show_single('F:\\ProjectData\\Feature\\test\\0816$MC364Initial\\')
+    # traverse_origin('F:\\ProjectData\\Feature\\group\\')
 
 
 

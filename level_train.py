@@ -32,7 +32,7 @@ class NetConfig(object):
     filter_size=[5,3,3,3,3] #决定左侧的参数多少
     stride=[2,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
-    fc_size = [512, 512, 6]
+    fc_size = [512, 128, 6]
 
 
 
@@ -53,7 +53,7 @@ class TestDataConfig(object):
     batch_size=1
     total_case_dir='F:/ProjectData/Feature/test'
     load_case_once=1  #每次读的病例数
-    switch_after_shuffles=10000 #当前数据洗牌n次读取新数据
+    switch_after_shuffles=1000000 #当前数据洗牌n次读取新数据
     format = 'mhd'
 
 
