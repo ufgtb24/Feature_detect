@@ -25,15 +25,16 @@ class CNN(object):
             # [B,H,W,D,1]
             conv = self.box
             for c in range(self.param.layer_num):
-                conv = commen.conv3d(conv, self.param.channels[c + 1], ft_size=self.param.ft_size[c+1],phase=self.phase,
-                                      pooling=True,name="conv_"+ str(c))
+                conv = commen.conv3d(conv, self.param.channels[c ], filter_size=self.param.filter_size[c],
+                                     stride=self.param.stride[c ],phase=self.phase,
+                                      pooling=self.param.pooling[c ],name="conv_"+ str(c))
 
         return conv
 
     def build_FC(self,conv):
         with tf.variable_scope('FC_for_CNN'):
-            fc_input = commen.flatten(conv)
-            fc = commen.dense_relu_batch_dropout(fc_input, output_size=self.param.fc_size[0],
+            fc = commen.flatten(conv)
+            fc = commen.dense_relu_batch_dropout(fc, output_size=self.param.fc_size[0],
                                                   phase=self.phase, keep_prob=self.keep_prob,scope='fc_1')
             fc = commen.dense_relu_batch_dropout(fc, output_size=self.param.fc_size[1],
                                                   phase=self.phase, keep_prob=self.keep_prob,scope='fc_2')

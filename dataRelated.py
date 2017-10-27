@@ -35,6 +35,7 @@ class BatchGenerator(object):
         self.y=np.concatenate(y_list,axis=0)
         self.sample_num=self.y.shape[0]
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
+        self.suffle()
 
     def load_y(self, info_file):
         info = np.reshape(np.loadtxt(info_file), [-1, 9])
@@ -88,6 +89,12 @@ class BatchGenerator(object):
         box.shape = [-1] + self.shape_box
         return box
 
+    def suffle(self):
+        perm = np.arange(self.sample_num)
+        np.random.shuffle(perm)  # 打乱
+        self.box = self.box[perm]
+        self.y = self.y[perm]
+
     def get_batch(self):
         if self.index+ self.batch_size>self.sample_num:
             if self.shuffle_times > self.switch_after_shuffles:
@@ -95,10 +102,7 @@ class BatchGenerator(object):
                 self.shuffle_times = 0
             self.index=0
             self.shuffle_times+=1
-            perm = np.arange(self.sample_num)
-            np.random.shuffle(perm)  # 打乱
-            self.box = self.box[perm]
-            self.y = self.y[perm]
+            self.suffle()
             # Start next epoch
             assert self.batch_size <= self.sample_num,'batch_size should be smaller than sample_num'
 

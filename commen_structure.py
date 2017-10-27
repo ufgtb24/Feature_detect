@@ -13,19 +13,33 @@ def _bias_variable( shape, name):
         initializer = tf.constant_initializer(0.0)
         return tf.get_variable(name=name, shape=shape, initializer=initializer)
 
-def conv3d(input, output_channels, ft_size,phase,pooling, name="conv3d"):
+# def conv3d(input, output_channels, ft_size,phase,pooling, name="conv3d"):
+#     with tf.variable_scope(name):
+#         filter =_weight_variable(shape=[ft_size]*3+[input.shape[-1]]+[output_channels],name='w')
+#         conv = tf.nn.conv3d(input, filter, strides=[1, 1, 1, 1, 1], padding='VALID')
+#         biases = _bias_variable(output_channels,name='b')
+#         activation = tf.nn.relu(conv + biases)
+#         if pooling:
+#             activation=pooling3d(activation)
+#         #先激活，后bn效果更好
+#         bn = tf.contrib.layers.batch_norm(activation, center=True, scale=True,
+#                                           decay=0.999, is_training=phase,
+#                                           updates_collections=None)
+#     return bn
+
+def conv3d(input, output_channels, phase,pooling,filter_size=3,stride=1, name="conv3d"):
     with tf.variable_scope(name):
-        filter =_weight_variable(shape=[ft_size]*3+[input.shape[-1]]+[output_channels],name='w')
-        conv = tf.nn.conv3d(input, filter, strides=[1, 1, 1, 1, 1], padding='VALID')
-        biases = _bias_variable(output_channels,name='b')
-        activation = tf.nn.relu(conv + biases)
-        if pooling:
-            activation=pooling3d(activation)
-        #先激活，后bn效果更好
-        bn = tf.contrib.layers.batch_norm(activation, center=True, scale=True,
-                                          decay=0.9, is_training=phase,
+        filter =_weight_variable(shape=[filter_size]*3+[input.shape[-1]]+[output_channels],name='w')
+        conv = tf.nn.conv3d(input, filter, strides=[1]+[stride]*3+[1], padding='VALID')
+        #标准模式，先bn，再激活
+        h = tf.contrib.layers.batch_norm(conv, center=True, scale=True,
+                                          decay=0.999, is_training=phase,
                                           updates_collections=None)
-    return bn
+        h = tf.nn.relu(h)
+        if pooling:
+            h=pooling3d(h)
+    return h
+
 
 #要计算位置，不能要，否则就不准确了
 def pooling3d(input_tensor):
@@ -45,22 +59,22 @@ def dense(x, output_size, scope):
 
 def dense_relu_batch(x, output_size, phase, scope):
     with tf.variable_scope(scope):
-        h1 = tf.contrib.layers.fully_connected(x, output_size,
+        h = tf.contrib.layers.fully_connected(x, output_size,
                                                activation_fn=None,
                                                scope='dense')
-        h2 = tf.nn.relu(h1, 'relu')
-        h3 = tf.contrib.layers.batch_norm(h2,
+        h = tf.contrib.layers.batch_norm(h,
                                           center=True, scale=True,
+                                          decay=0.999,
                                           is_training=phase,
                                           scope='bn')
-
-        return h3
+        h = tf.nn.relu(h, 'relu')
+        return h
 
 def dense_relu_batch_dropout(x, output_size, phase,keep_prob, scope):
     with tf.variable_scope(scope):
-        h1=dense_relu_batch(x, output_size, phase, scope)
-        h2=tf.nn.dropout(h1, keep_prob)
-        return h2
+        h=dense_relu_batch(x, output_size, phase, scope)
+        h=tf.nn.dropout(h, keep_prob)
+        return h
 
 def flatten(layer):
     layer_shape = layer.get_shape()

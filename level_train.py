@@ -27,20 +27,23 @@ class Level(object):
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [1, 40,60,80,100]
-    ft_size=[0,7,3,3,3,3]
+    channels = [64,  128,   128,  256,]#决定左侧的参数多少和左侧的memory
+    pooling=[False,True,True,True]
+    filter_size=[5,3,3,3,3] #决定左侧的参数多少
+    stride=[2,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
-    fc_size = [512, 512,6]
+    fc_size = [512, 512, 6]
+
 
 
 class TrainDataConfig(object):
     shape_box=[128,128,128]
     shape_crop=[64,64,64]
     world_to_cubic=128/12.
-    batch_size=1
+    batch_size=4
     total_case_dir='F:/ProjectData/Feature/Tooth'
-    load_case_once=1  #每次读的病例数
-    switch_after_shuffles=10000 #当前数据洗牌n次读取新数据
+    load_case_once=10  #每次读的病例数
+    switch_after_shuffles=1 #当前数据洗牌n次读取新数据
     format = 'mhd'
 
 class TestDataConfig(object):
@@ -48,7 +51,7 @@ class TestDataConfig(object):
     shape_crop=[64,64,64]
     world_to_cubic=128/12.
     batch_size=1
-    total_case_dir='F:/ProjectData/Feature/Tooth'
+    total_case_dir='F:/ProjectData/Feature/test'
     load_case_once=1  #每次读的病例数
     switch_after_shuffles=10000 #当前数据洗牌n次读取新数据
     format = 'mhd'
@@ -67,7 +70,7 @@ if __name__ == '__main__':
     saver = tf.train.Saver()
 
     train_batch_gen=BatchGenerator(TrainDataConfig)
-    # test_batch_gen=BatchGenerator(TestDataConfig)
+    test_batch_gen=BatchGenerator(TestDataConfig)
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
@@ -82,6 +85,10 @@ if __name__ == '__main__':
         winner_loss = 10 ** 8
         step_from_last_mininum = 0
         test_step = 10
+        average=0
+        remember=0.9
+        less_100_case=0
+        longest_term=0
 
         for iter in range(10**8):
             box_batch, y_batch=train_batch_gen.get_batch()
@@ -89,22 +96,34 @@ if __name__ == '__main__':
                        level.phase:True,level.keep_prob:0.5}
             _,loss_train=sess.run([level.optimizer,level.loss],feed_dict=feed_dict)
             if iter % test_step==0:
-                # step_from_last_mininum += 1
-                # box_batch, y_batch = test_batch_gen.get_batch()
-                # feed_dict = {level.box: box_batch, level.targets: y_batch,
-                #              level.phase: False,level.keep_prob:1}
-                # loss_test = sess.run(level.loss, feed_dict=feed_dict)
-                # if loss_test<winner_loss:
-                #     winner_loss=loss_test
-                #     step_from_last_mininum=0
-                #     if NEED_SAVE:
-                #         save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
-                #
-                # print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                #       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                step_from_last_mininum += 1
+                box_batch, y_batch = test_batch_gen.get_batch()
+                feed_dict = {level.box: box_batch, level.targets: y_batch,
+                             level.phase: False,level.keep_prob:1}
+                loss_test = sess.run(level.loss, feed_dict=feed_dict)
+                if loss_test<winner_loss:
+                    winner_loss=loss_test
+                    step_from_last_mininum=0
+                    if NEED_SAVE:
+                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
 
-                print("%d  trainCost=%f  \n"
-                      % (iter, loss_train))
+                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
+                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+
+                # if loss_train<100:
+                #     less_100_case+=1
+                #     if less_100_case>longest_term:
+                #         longest_term=less_100_case
+                # else:
+                #     less_100_case=0
+                #
+                # average=average*remember+loss_train*(1-remember)
+                #
+                #
+                #
+                #
+                # print("%d  trainCost=%f   averageCost=%f   less_100=%d  longest_term=%d\n"
+                #       % (iter, loss_train, average,less_100_case,longest_term))
 
 
 
