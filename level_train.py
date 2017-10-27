@@ -60,15 +60,22 @@ class TestDataConfig(object):
 if __name__ == '__main__':
     MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
     NEED_RESTORE=False
-    NEED_SAVE=False
+    NEED_SAVE=True
 
 
 
     with tf.variable_scope('Level_1'):
         level=Level(Param=NetConfig,is_training=True,scope='level_1')
 
-    saver = tf.train.Saver()
-
+    # saver = tf.train.Saver(max_to_keep=1)
+################
+    var_list = tf.trainable_variables()
+    g_list = tf.global_variables()
+    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name]
+    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name]
+    var_list += bn_moving_vars
+    saver = tf.train.Saver(var_list=var_list, max_to_keep=1)
+################
     train_batch_gen=BatchGenerator(TrainDataConfig)
     test_batch_gen=BatchGenerator(TestDataConfig)
 
@@ -82,7 +89,7 @@ if __name__ == '__main__':
             #会初始化所有已经声明的变量
             sess.run(tf.global_variables_initializer())
 
-        winner_loss = 10 ** 8
+        winner_loss = 50
         step_from_last_mininum = 0
         test_step = 10
         average=0
@@ -105,7 +112,7 @@ if __name__ == '__main__':
                     winner_loss=loss_test
                     step_from_last_mininum=0
                     if NEED_SAVE:
-                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
+                        save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
                       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
