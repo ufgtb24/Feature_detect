@@ -4,7 +4,6 @@ import os
 import pickle
 import random
 
-
 class BatchGenerator(object):
     def __init__(self,data_config):
 
@@ -39,7 +38,6 @@ class BatchGenerator(object):
 
     def load_y(self, info_file):
         info = np.reshape(np.loadtxt(info_file), [-1, 9])
-
         origin = np.reshape(info[:, :3], [-1, 3])
         origin = np.reshape(np.tile(origin, np.array([2])), [-1, 3])
         target = np.reshape(info[:, 3:], [-1, 3])

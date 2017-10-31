@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from dataRelated import DataManager
+from dataRelated import BatchGenerator
 import pickle
 from mayavi import mlab
 
@@ -86,7 +86,8 @@ def crop_case(crop_center, box, shape_box,shape_crop):
 
     return box_crop
 
-def augment_crop(feature_id, crop_center, box_batch, shape_box, shape_crop):
+def augment_crop(feature_id,case_name, crop_center, box_batch, shape_box, shape_crop):
+
     sampling_grid=np.random.uniform(-5,5,(30,3)).astype(np.int32)
     feature_aug_list=[]
     feature_txt_list=[]
@@ -102,7 +103,10 @@ def augment_crop(feature_id, crop_center, box_batch, shape_box, shape_crop):
 
     feature_aug=np.concatenate(feature_aug_list)
     feature_txt=np.stack(feature_txt_list)
-    save_croped_batch(feature_aug, path=os.path.join(ROOT_PATH, 'croped', 'crop_{0}.pkl'.format(feature_id)))
+    os.makedirs(os.path.join(ROOT_PATH, 'croped',case_name))
+    save_croped_batch(feature_aug,
+                      path=os.path.join(ROOT_PATH, 'croped', 'feature_{0}'.format(feature_id),
+                                        case_name,'.pkl'))
 
     with open(os.path.join(ROOT_PATH,'croped', 'aug_target{0}.txt'.format(feature_id)), 'wb') as file:
         np.savetxt(file, feature_txt, fmt='%d')
@@ -127,32 +131,45 @@ def load_croped_batch(path):
         data = pickle.load(file)
     return data
 
+class CropBatchGenerator(BatchGenerator):
+    def __init__(self,data_config):
+        super(CropBatchGenerator,self).__init__(data_config)
+        self.current_case=0
+
+
+
+    def get_batch(self):
+        print('reload data')
+        full_case_dir=super(CropBatchGenerator,self).total_case_dir+'\\'+\
+            super(CropBatchGenerator,self).case_dir_list[self.current_case]
+        box =np.expand_dims(super(CropBatchGenerator,self).loadmhds(full_case_dir),axis=4)
+        y=super(CropBatchGenerator, self).load_y(full_case_dir + '\\info.txt')
+        return box,y
+
+
+
 if __name__ == '__main__':
     ROOT_PATH = 'F:/ProjectData/Feature'
     MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
 
 
-    class DataConfig(object):
+    class CropDataConfig(object):
         shape_box = [128, 128, 128]
         shape_crop = [32, 32, 32]
-        world_to_cubic = 128 / 20.
-        batch_size_train = 1
-        batch_size_test = 1
-        need_Save = False
-        need_Restore = False
+        world_to_cubic = 128 / 12.
+        batch_size = 28
+        total_case_dir = 'F:/ProjectData/Feature/test_mul'
         format = 'mhd'
 
-    dataManager =DataManager(DataConfig(),
-                test_box_path=os.path.join(ROOT_PATH,'origin'),
-                test_info_file=os.path.join(ROOT_PATH,'origin','info.txt')
-                )
 
-    box_batch, point_batch = dataManager.getTestBatch()
+    test_batch_gen=BatchGenerator(CropDataConfig)
+
+    box_batch, point_batch = test_batch_gen.get_batch()
     point_batch_list=np.split(point_batch,2,axis=1)
 
 
     for feature_point,feature_id in zip(point_batch_list,range(len(point_batch_list))):
-        augment_crop(feature_id,feature_point, box_batch, DataConfig.shape_box, DataConfig.shape_crop)
+        augment_crop(feature_id,case_name,feature_point, box_batch, CropDataConfig.shape_box, CropDataConfig.shape_crop)
 
 
 

@@ -27,12 +27,12 @@ class Level(object):
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [64,  128,   128,  256,]#决定左侧的参数多少和左侧的memory
-    pooling=[False,True,True,True]
+    channels = [32,  32,   64,  128]#决定左侧的参数多少和左侧的memory
+    fc_size = [512,128,6]
+    pooling=[True,True,True,True,True]
     filter_size=[5,3,3,3,3] #决定左侧的参数多少
     stride=[2,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
-    fc_size = [512, 128, 6]
 
 
 
@@ -63,7 +63,6 @@ if __name__ == '__main__':
     NEED_SAVE=True
 
 
-
     with tf.variable_scope('Level_1'):
         level=Level(Param=NetConfig,is_training=True,scope='level_1')
 
@@ -89,7 +88,7 @@ if __name__ == '__main__':
             #会初始化所有已经声明的变量
             sess.run(tf.global_variables_initializer())
 
-        winner_loss = 50
+        winner_loss = 10**10
         step_from_last_mininum = 0
         test_step = 10
         average=0
@@ -111,7 +110,7 @@ if __name__ == '__main__':
                 if loss_test<winner_loss:
                     winner_loss=loss_test
                     step_from_last_mininum=0
-                    if NEED_SAVE:
+                    if NEED_SAVE and loss_test<50:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
