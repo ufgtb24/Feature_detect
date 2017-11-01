@@ -15,18 +15,18 @@ def recover_coord(fp_1,fp_2,shape_crop):
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [32,  32,   64,  128]#决定左侧的参数多少和左侧的memory
-    fc_size = [512,128,6]
-    pooling=[True,True,True,True,True]
-    filter_size=[5,3,3,3,3] #决定左侧的参数多少
-    stride=[2,1,1,1,1] #决定右侧的memory
+    channels = [32,  32,   32,  32, 64,128,256]#决定左侧的参数多少和左侧的memory
+    fc_size = [128,6]
+    pooling=[True,False,False,True,True,True,True]
+    filter_size=[5,3,3,3,3,3,3] #决定左侧的参数多少
+    stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
 
 class TestDataConfig(object):
     shape_box=[128,128,128]
     shape_crop=[64,64,64]
     world_to_cubic=128/12.
-    batch_size=28
+    batch_size=27
     total_case_dir='F:/ProjectData/Feature/test_mul'
     load_case_once=1  #每次读的病例数
     switch_after_shuffles=1000000 #当前数据洗牌n次读取新数据

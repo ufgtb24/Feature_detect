@@ -106,7 +106,7 @@ def loadmhd(collection_path):
 
 
 def show_single(dir):
-    ct = load_itk(os.path.join(dir,'toothlabel40.mhd'))
+    ct = load_itk(os.path.join(dir,'toothlabel5_1_1_1.mhd'))
     info_file=os.path.join(dir,'info.txt')
     
     feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
@@ -181,7 +181,7 @@ def traverse_croped(dir):
         fz = np.array([center_points[i,2]])
         ct=box[i]
         ex, ey, ez = edges(GRID_SIZE)
-        x, y, z = np.where(ct == 255)
+        x, y, z = np.where(ct == 1)
 
         mlab.points3d(x, y, z,
                       mode="cube",
@@ -200,8 +200,9 @@ def traverse_croped(dir):
 
 
 WORLD_SIZE=12.0
-GRID_SIZE=128
+GRID_SIZE=32
 if __name__ == '__main__':
-    # show_single('F:\\ProjectData\\Feature\\test\\0816$MC364Initial\\')
-    traverse_origin('F:\\ProjectData\\Feature\\delete_test\\0816$WI167initial\\')
+    # show_single('F:\\ProjectData\\Feature\\test\\0823$ED25initial\\')
+    # traverse_origin('F:\\ProjectData\\Feature\\test\\0823$ED25initial\\')
+    traverse_croped('F:\\ProjectData\\Feature\\croped\\feature_0\\')
 

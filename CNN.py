@@ -36,9 +36,7 @@ class CNN(object):
             fc = commen.flatten(conv)
             fc = commen.dense_relu_batch_dropout(fc, output_size=self.param.fc_size[0],
                                                   phase=self.phase, keep_prob=self.keep_prob,scope='fc_1')
-            fc = commen.dense_relu_batch_dropout(fc, output_size=self.param.fc_size[1],
-                                                  phase=self.phase, keep_prob=self.keep_prob,scope='fc_2')
-            fc_output = commen.dense(fc, output_size=self.param.fc_size[2],scope='fc_output')
+            fc_output = commen.dense(fc, output_size=self.param.fc_size[1],scope='fc_output')
         return fc_output
 
 

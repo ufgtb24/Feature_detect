@@ -2,7 +2,6 @@ import numpy as np
 import SimpleITK as sitk
 import os
 import pickle
-import random
 
 class BatchGenerator(object):
     def __init__(self,data_config):
@@ -30,10 +29,10 @@ class BatchGenerator(object):
             self.index_dir = 0
             perm = np.arange(self.total_case_num)
             np.random.shuffle(perm)  # 打乱
-            self.total_case_list = self.box[perm]
+            self.total_case_list = self.total_case_list[perm]
 
         case_load = self.total_case_list[self.index_dir:self.index_dir + self.load_case_once]
-        self.index_dir += self.batch_size
+        self.index_dir += self.load_case_once
         return case_load
 
     def load_case_list(self,case_load):

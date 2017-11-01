@@ -16,7 +16,7 @@ class Level(object):
         self.phase = tf.placeholder(tf.bool, name='phase')
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
-        self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets),axis=1)/2.)
+        self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets),axis=1)/2.,axis=0)
 
         if is_training==True:
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -27,11 +27,11 @@ class Level(object):
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [32,  32,   64,  128]#决定左侧的参数多少和左侧的memory
-    fc_size = [512,128,6]
-    pooling=[True,True,True,True,True]
-    filter_size=[5,3,3,3,3] #决定左侧的参数多少
-    stride=[2,1,1,1,1] #决定右侧的memory
+    channels = [32,  32,   32,  32, 64,128,256]#决定左侧的参数多少和左侧的memory
+    fc_size = [128,6]
+    pooling=[True,False,False,True,True,True,True]
+    filter_size=[5,3,3,3,3,3,3] #决定左侧的参数多少
+    stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
 
 
@@ -42,18 +42,18 @@ class TrainDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
     total_case_dir='F:/ProjectData/Feature/Tooth'
-    load_case_once=10  #每次读的病例数
-    switch_after_shuffles=1 #当前数据洗牌n次读取新数据
+    load_case_once=0  #每次读的病例数
+    switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 class TestDataConfig(object):
     shape_box=[128,128,128]
     shape_crop=[64,64,64]
     world_to_cubic=128/12.
-    batch_size=1
-    total_case_dir='F:/ProjectData/Feature/test'
-    load_case_once=1  #每次读的病例数
-    switch_after_shuffles=1000000 #当前数据洗牌n次读取新数据
+    batch_size=4
+    total_case_dir='F:/ProjectData/Feature/test_mul'
+    load_case_once=0  #每次读的病例数
+    switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 
@@ -95,6 +95,7 @@ if __name__ == '__main__':
         remember=0.9
         less_100_case=0
         longest_term=0
+        start=False
 
         for iter in range(10**8):
             box_batch, y_batch=train_batch_gen.get_batch()
@@ -102,6 +103,9 @@ if __name__ == '__main__':
                        level.phase:True,level.keep_prob:0.5}
             _,loss_train=sess.run([level.optimizer,level.loss],feed_dict=feed_dict)
             if iter % test_step==0:
+                if start==False:
+                    save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
+                    start=True
                 step_from_last_mininum += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
                 feed_dict = {level.box: box_batch, level.targets: y_batch,
