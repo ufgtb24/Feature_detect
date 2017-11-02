@@ -113,18 +113,18 @@ def save_croped_batch(obj,path):
 
 
 if __name__ == '__main__':
-    CROP_PATH = 'F:/ProjectData/Feature/test_crop'
+    CROP_PATH = 'F:/ProjectData/Feature/Tooth'
     MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
-
+    shape_box=[128,128,128]
+    shape_crop=[32,32,32]
     # crop
     class CropDataConfig(object):
-        shape_box = [128, 128, 128]
-        shape_crop = [32, 32, 32]
         world_to_cubic = 128 / 12.
         batch_size = 27
         total_case_dir = 'F:/ProjectData/Feature/test_mul'
         load_case_once = 1  # 每次读的病例数
         switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
+
 
     test_batch_gen=BatchGenerator(CropDataConfig)
     total_case_list = os.listdir(CropDataConfig.total_case_dir)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         for feature_point,feature_id in zip(point_batch_list,range(len(point_batch_list))):
             augment_crop(
                 feature_id,case_dir,feature_point, box_batch,
-                CropDataConfig.shape_box, CropDataConfig.shape_crop,
+                shape_box, shape_crop,
             bias_range=5,aug_num=27)
 
 

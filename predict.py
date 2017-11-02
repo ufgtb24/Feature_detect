@@ -4,6 +4,7 @@ import numpy as np
 from mayavi import mlab
 
 # from crop_data import crop_batch
+from crop_data import crop_batch
 from dataRelated import BatchGenerator
 from display import edges
 from level_train import Level
@@ -13,7 +14,7 @@ def recover_coord(fp_1,fp_2,shape_crop):
     cubic_pos=fp_1-(shape_crop / 2).astype(np.int32)+fp_2
     return cubic_pos
 
-class NetConfig(object):
+class NetConfig_1(object):
     shape_box=[128,128,128]
     channels = [32,  32,   32,  32, 64,128,256]#决定左侧的参数多少和左侧的memory
     fc_size = [128,6]
@@ -22,65 +23,98 @@ class NetConfig(object):
     stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
 
-class TestDataConfig(object):
-    shape_box=[128,128,128]
-    shape_crop=[64,64,64]
+class NetConfig_2(object):
+    shape_box=[32,32,32]
+    channels = [32,  32,   64,  64, 128]#决定左侧的参数多少和左侧的memory
+    fc_size = [64,3]
+    pooling=[True,False,False,True,True,True,True]
+    filter_size=[3,3,3,3,3,3,3] #决定左侧的参数多少
+    stride=[1,1,1,1,1,1,1] #决定右侧的memory
+    layer_num = len(channels) - 1
+
+class DataConfig(object):
     world_to_cubic=128/12.
-    batch_size=27
+    batch_size=2
     total_case_dir='F:/ProjectData/Feature/test_mul'
     load_case_once=1  #每次读的病例数
     switch_after_shuffles=1000000 #当前数据洗牌n次读取新数据
-    format = 'mhd'
 
 
 if __name__ == '__main__':
     MODEL_PATH= 'F:/ProjectData/Feature/model/level_1/'
     NEED_RESTORE=False
     NEED_SAVE=True
+    shape_box=[128,128,128]
+    shape_crop=[32,32,32]
 
 
-    with tf.variable_scope('Level_1'):
-        level=Level(Param=NetConfig,is_training=True,scope='level_1')
+    level_1=Level(Param=NetConfig_1, is_training=False, scope='level_1')
 
-    # saver = tf.train.Saver(max_to_keep=1)
-################
     var_list = tf.trainable_variables()
     g_list = tf.global_variables()
-    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name]
-    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name]
+    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name ]
+    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name ]
     var_list += bn_moving_vars
-    saver = tf.train.Saver(var_list=var_list, max_to_keep=1)
+    saver_1 = tf.train.Saver(var_list=var_list)
+
+
+
+
+    temp_var_t = set(tf.trainable_variables())
+    temp_var_g = set(tf.global_variables())
+
+    level_21=Level(Param=NetConfig_2, is_training=False, scope='level_21')
+
+    var_list = list(set(tf.trainable_variables()) - temp_var_t)
+    g_list = list(set(tf.global_variables()) - temp_var_g)
+    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name ]
+    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name ]
+    var_list += bn_moving_vars
+    saver_21 = tf.train.Saver(var_list=var_list)
+
+
 ################
-    test_batch_gen=BatchGenerator(TestDataConfig)
+    test_batch_gen=BatchGenerator(DataConfig)
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
-        assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
-        saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
+        # assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
+        saver_1.restore(sess, 'F:/ProjectData/Feature/model/level_1/model.ckpt')  # 存在就从模型中恢复变量
+        saver_21.restore(sess, 'F:/ProjectData/Feature/model/level_21/model.ckpt')  # 存在就从模型中恢复变量
+
+
 
         box_batch, target = test_batch_gen.get_batch()
+        target_1=target[:,:3]
 
-        num = target.shape[0]
-        for i in range(num):
+        feed_dict = {level_1.box: box_batch,
+                     level_1.phase: False, level_1.keep_prob: 1}
 
+        pred = sess.run(level_1.pred, feed_dict=feed_dict)
 
-            feed_dict={level.box:box_batch[i][np.newaxis,:], level.targets:target[i][np.newaxis,:],
-                           level.phase:False,level.keep_prob:1}
+        box_batch=np.squeeze(box_batch,axis=4)
 
-            pred, loss_test=sess.run([level.pred, level.loss], feed_dict=feed_dict)
+        croped_batch = crop_batch(pred[:,:3].astype(np.int32), box_batch, shape_box, shape_crop)
+        croped_batch=np.expand_dims(croped_batch,axis=4)
+        feed_dict = {level_21.box: croped_batch,level_21.targets:target_1,
+                     level_21.phase: False, level_21.keep_prob: 1}
+        pred_21,loss = sess.run([level_21.pred, level_21.loss], feed_dict=feed_dict)
 
-            pred=np.squeeze(pred, axis=0).astype(np.int32)
-            box=np.squeeze(box_batch[i],axis=3)
-            box[target[i,0], target[i,1], target[i,2]] = 2
-            box[target[i,3], target[i,4], target[i,5]] = 2
+        pred_end = recover_coord(pred[:,:3], pred_21, shape_crop).astype(np.int32)
+        for i in range(DataConfig.batch_size):
+
+            pred=pred_end[i]
+            box=box_batch[i]
+            # box=np.squeeze(box_batch[i],axis=3)
+
+            box[target_1[i,0], target[i,1], target[i,2]] = 2
             box[pred[0], pred[1], pred[2]] = 3
-            box[pred[3], pred[4], pred[5]] = 3
 
             x, y, z = np.where(box == 1)
             ex, ey, ez = edges(128)
-            fz, fy, fx = np.where(box == 2)
-            fzp, fyp, fxp = np.where(box == 3)
+            fx, fy, fz = np.where(box == 2)
+            fxp, fyp, fzp = np.where(box == 3)
 
             mlab.points3d(ex, ey, ez,
                           mode="cube",
@@ -90,8 +124,8 @@ if __name__ == '__main__':
             mlab.points3d(x, y, z,
                           mode="cube",
                           color=(0, 1, 0),
-                          scale_factor=1,
-                          transparent=True)
+                          scale_factor=1,)
+                          # transparent=True)
 
             mlab.points3d(fx, fy, fz,
                         mode="cube",
@@ -110,7 +144,9 @@ if __name__ == '__main__':
 
 
 
-            #级联双精度版本
+
+    #
+    #         #级联双精度版本
     # with tf.Session() as sess:
     #     writer = tf.summary.FileWriter('log/', sess.graph)
     #
@@ -151,9 +187,9 @@ if __name__ == '__main__':
     #                       color=(1, 0, 0),
     #                       scale_factor=1)
     #         mlab.show()
-
-
-
-
-
-
+    #
+    #
+    #
+    #
+    #
+    #

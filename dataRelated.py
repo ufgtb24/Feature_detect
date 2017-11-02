@@ -1,12 +1,10 @@
 import numpy as np
 import SimpleITK as sitk
 import os
-import pickle
 
 class BatchGenerator(object):
     def __init__(self,data_config):
 
-        self.shape_box = data_config.shape_box
         self.box_train=None
         self.total_case_dir=data_config.total_case_dir
         self.total_case_list=self.get_total_case_list()
@@ -85,7 +83,7 @@ class BatchGenerator(object):
                 box_list.append(self.load_itk(toothPath))
 
         box = np.stack(box_list)
-        box.shape = [-1] + self.shape_box
+        box.shape = [-1] + list(box.shape[-3:])
         return box
 
     def suffle(self):

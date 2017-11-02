@@ -12,7 +12,7 @@ class Level(object):
         self.keep_prob = tf.placeholder(tf.float32)
         self.batch_size = tf.placeholder(tf.int32, [])
 
-        self.targets = tf.placeholder(tf.float32, shape=[None, 6])
+        self.targets = tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]])
         self.phase = tf.placeholder(tf.bool, name='phase')
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
@@ -37,18 +37,14 @@ class NetConfig(object):
 
 
 class TrainDataConfig(object):
-    shape_box=[128,128,128]
-    shape_crop=[64,64,64]
     world_to_cubic=128/12.
     batch_size=4
     total_case_dir='F:/ProjectData/Feature/Tooth'
-    load_case_once=0  #每次读的病例数
+    load_case_once=0  #每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 class TestDataConfig(object):
-    shape_box=[128,128,128]
-    shape_crop=[64,64,64]
     world_to_cubic=128/12.
     batch_size=4
     total_case_dir='F:/ProjectData/Feature/test_mul'
@@ -63,8 +59,7 @@ if __name__ == '__main__':
     NEED_SAVE=True
 
 
-    with tf.variable_scope('Level_1'):
-        level=Level(Param=NetConfig,is_training=True,scope='level_1')
+    level=Level(Param=NetConfig,is_training=True,scope='level_1')
 
     # saver = tf.train.Saver(max_to_keep=1)
 ################
@@ -90,7 +85,7 @@ if __name__ == '__main__':
 
         winner_loss = 10**10
         step_from_last_mininum = 0
-        test_step = 10
+        test_step = 5
         average=0
         remember=0.9
         less_100_case=0
@@ -120,20 +115,6 @@ if __name__ == '__main__':
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
                       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
 
-                # if loss_train<100:
-                #     less_100_case+=1
-                #     if less_100_case>longest_term:
-                #         longest_term=less_100_case
-                # else:
-                #     less_100_case=0
-                #
-                # average=average*remember+loss_train*(1-remember)
-                #
-                #
-                #
-                #
-                # print("%d  trainCost=%f   averageCost=%f   less_100=%d  longest_term=%d\n"
-                #       % (iter, loss_train, average,less_100_case,longest_term))
 
 
 

@@ -5,26 +5,8 @@ import os
 from CNN import CNN
 from crop_data import CropedBatchGenerator
 from dataRelated import  BatchGenerator
+from level_train import Level
 
-
-class Level(object):
-    def __init__(self,Param,is_training,scope):
-        self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box+[1])
-        self.keep_prob = tf.placeholder(tf.float32)
-        self.batch_size = tf.placeholder(tf.int32, [])
-
-        self.targets = tf.placeholder(tf.float32, shape=[None, 3])
-        self.phase = tf.placeholder(tf.bool, name='phase')
-        with tf.variable_scope(scope):
-            self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
-        self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets),axis=1),axis=0)
-
-        if is_training==True:
-            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-            with tf.control_dependencies(update_ops):
-                # Ensures that we execute the update_ops before performing the train_step
-                self.optimizer = commen.Optimizer(self.loss, initial_learning_rate=0.01,
-                                             max_global_norm=1.0).optimize_op
 
 class NetConfig(object):
     shape_box=[32,32,32]
@@ -38,32 +20,27 @@ class NetConfig(object):
 
 
 class TrainDataConfig(object):
-    shape_box=[128,128,128]
-    shape_crop=[64,64,64]
     world_to_cubic=128/12.
     batch_size=4
-    total_case_dir='F:/ProjectData/Feature/croped/feature_0/'
+    total_case_dir='F:/ProjectData/Feature/croped/feature_1/'
     load_case_once=10  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 class TestDataConfig(object):
-    shape_box=[128,128,128]
-    shape_crop=[64,64,64]
     world_to_cubic=128/12.
     batch_size=1
-    total_case_dir='F:/ProjectData/Feature/test_crop/feature_0/'
+    total_case_dir='F:/ProjectData/Feature/test_crop/feature_1/'
     load_case_once=0  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_2'
+    MODEL_PATH= 'F:/ProjectData/Feature/model/level_22'
     NEED_RESTORE=False
     NEED_SAVE=True
 
 
-    with tf.variable_scope('Level_1'):
-        level=Level(Param=NetConfig,is_training=True,scope='level_2')
+    level=Level(Param=NetConfig,is_training=True,scope='level_22')
 
     # saver = tf.train.Saver(max_to_keep=1)
 ################
@@ -89,7 +66,7 @@ if __name__ == '__main__':
 
         winner_loss = 10**10
         step_from_last_mininum = 0
-        test_step = 100
+        test_step = 50
         average=0
         remember=0.9
         less_100_case=0
@@ -113,7 +90,7 @@ if __name__ == '__main__':
                 if loss_test<winner_loss:
                     winner_loss=loss_test
                     step_from_last_mininum=0
-                    if NEED_SAVE and loss_test<10:
+                    if NEED_SAVE and loss_test<1:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
