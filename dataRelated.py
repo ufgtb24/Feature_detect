@@ -9,9 +9,12 @@ class BatchGenerator(object):
         self.shape_box = data_config.shape_box
         self.box_train=None
         self.total_case_dir=data_config.total_case_dir
-        self.total_case_list=os.listdir(self.total_case_dir)
+        self.total_case_list=self.get_total_case_list()
         self.total_case_num=len(self.total_case_list)
         self.load_case_once=data_config.load_case_once
+        assert self.load_case_once <= self.total_case_num,\
+            'load_case_once should be smaller than total_case_num'
+
         self.switch_after_shuffles=data_config.switch_after_shuffles
         self.world_to_cubic=data_config.world_to_cubic
         self.batch_size=data_config.batch_size
@@ -24,12 +27,16 @@ class BatchGenerator(object):
             self.load_case_list(self.total_case_list)
         self.suffle()
 
+    def get_total_case_list(self):
+        return os.listdir(self.total_case_dir)
     def get_case_list(self):
         if self.index_dir + self.load_case_once > self.total_case_num:
             self.index_dir = 0
             perm = np.arange(self.total_case_num)
             np.random.shuffle(perm)  # 打乱
-            self.total_case_list = self.total_case_list[perm]
+            array=np.array(self.total_case_list)
+            array = array[perm]
+            self.total_case_list = list(array)
 
         case_load = self.total_case_list[self.index_dir:self.index_dir + self.load_case_once]
         self.index_dir += self.load_case_once
@@ -64,25 +71,6 @@ class BatchGenerator(object):
         ct_scan = sitk.GetArrayFromImage(itkimage)
 
         return ct_scan
-
-    def loadpickles(self, collection_path):
-        box_list = []
-        for fileName in os.listdir(collection_path):
-            if os.path.splitext(fileName)[1] == '.pickle':
-                toothPath = os.path.join(collection_path, fileName)
-                box_list.append(self.loadpickle(toothPath))
-        box = np.stack(box_list)
-        box.shape = [-1] + self.shape_box
-        return box
-
-    def loadpickle(self, path):
-        with open(path, 'rb') as file:
-            data = pickle.load(file)
-        return data
-
-    def savePickle(self, data, path):
-        with open(path, 'wb') as file:
-            pickle.dump(data, file)
 
     def loadmhds(self, collection_path):
         '''

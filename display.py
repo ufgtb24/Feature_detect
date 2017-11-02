@@ -80,11 +80,11 @@ def load_itk(filename):
     # Convert the image to a  numpy array first and then shuffle the dimensions to get axis in the order z,y,x
     ct_scan = sitk.GetArrayFromImage(itkimage)
 
-    # Read the origin of the ct_scan, will be used to convert the coordinates from world to voxel and vice versa.
-    origin = np.array(list(reversed(itkimage.GetOrigin())))
-
-    # Read the spacing along each dimension
-    spacing = np.array(list(reversed(itkimage.GetSpacing())))
+    # # Read the origin of the ct_scan, will be used to convert the coordinates from world to voxel and vice versa.
+    # origin = np.array(list(reversed(itkimage.GetOrigin())))
+    #
+    # # Read the spacing along each dimension
+    # spacing = np.array(list(reversed(itkimage.GetSpacing())))
 
     return ct_scan
 
@@ -204,5 +204,5 @@ GRID_SIZE=32
 if __name__ == '__main__':
     # show_single('F:\\ProjectData\\Feature\\test\\0823$ED25initial\\')
     # traverse_origin('F:\\ProjectData\\Feature\\test\\0823$ED25initial\\')
-    traverse_croped('F:\\ProjectData\\Feature\\croped\\feature_0\\')
+    traverse_croped('F:\\ProjectData\\Feature\\\delete_test\\')
 

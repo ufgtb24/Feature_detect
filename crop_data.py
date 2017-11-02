@@ -4,18 +4,16 @@ from dataRelated import BatchGenerator
 import pickle
 
 
-class CropBatchGenerator(BatchGenerator):
+class CropedBatchGenerator(BatchGenerator):
     def __init__(self,data_config):
-        super(CropBatchGenerator,self).__init__(data_config)
-        self.total_case_list=self.get_case_name_list()
-        self.load_case_list(self.get_case_list())
+        super(CropedBatchGenerator,self).__init__(data_config)
 
 
-    def get_case_name_list(self):
+    def get_total_case_list(self):
         case_name_list = []
         for fileName in os.listdir(self.total_case_dir):
             if os.path.splitext(fileName)[1] == '.pkl':
-                case_name_list.append(fileName[0])
+                case_name_list.append(os.path.splitext(fileName)[0])
         return case_name_list
 
     def loadpickle(self,path):
@@ -27,9 +25,9 @@ class CropBatchGenerator(BatchGenerator):
         print('load crop data')
         box_list=[]
         y_list=[]
-        for case_dir in case_load:
-            full_pkl_path=self.total_case_dir+'\\'+case_dir+'.pkl'
-            full_txt_path=self.total_case_dir+'\\'+case_dir+'.txt'
+        for case_name in case_load:
+            full_pkl_path=self.total_case_dir+'\\'+case_name+'.pkl'
+            full_txt_path=self.total_case_dir+'\\'+case_name+'.txt'
             box_list.append(self.loadpickle(full_pkl_path))
             y_list.append(np.loadtxt(full_txt_path))
 
@@ -83,9 +81,9 @@ def augment_crop(feature_id,case_dir, crop_center, box_batch, shape_box, shape_c
         new_target=np.tile((shape_crop / 2).astype(np.int32),(batch_size,1))-bias
         feature_txt_list.append(new_target)
 
-    #[b*30,shape_crop] b=27
+    #[aug_num*b,shape_crop] b=27
     feature_aug=np.concatenate(feature_aug_list)
-    #[b*30,3] b=27
+    #[aug_num*b,3] b=27
     feature_txt=np.concatenate(feature_txt_list)
 
     feature_path=os.path.join(CROP_PATH, 'feature_{0}'.format(feature_id))
@@ -115,19 +113,18 @@ def save_croped_batch(obj,path):
 
 
 if __name__ == '__main__':
-    CROP_PATH = 'F:/ProjectData/Feature/croped'
+    CROP_PATH = 'F:/ProjectData/Feature/test_crop'
     MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
 
-
+    # crop
     class CropDataConfig(object):
         shape_box = [128, 128, 128]
         shape_crop = [32, 32, 32]
         world_to_cubic = 128 / 12.
         batch_size = 27
-        total_case_dir = 'F:/ProjectData/Feature/Tooth'
+        total_case_dir = 'F:/ProjectData/Feature/test_mul'
         load_case_once = 1  # 每次读的病例数
         switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
-        format = 'mhd'
 
     test_batch_gen=BatchGenerator(CropDataConfig)
     total_case_list = os.listdir(CropDataConfig.total_case_dir)
@@ -135,8 +132,8 @@ if __name__ == '__main__':
     for case_dir in total_case_list:
         box_batch, point_batch = test_batch_gen.get_batch()
         box_batch=np.squeeze(box_batch,axis=4)
-        # if test_batch_gen.index_dir>test_batch_gen.total_case_num:
-        if test_batch_gen.index_dir>2:
+        if test_batch_gen.index_dir>test_batch_gen.total_case_num:
+        # if test_batch_gen.index_dir>2:
             break
         point_batch_list=np.split(point_batch,2,axis=1)
 
@@ -145,7 +142,23 @@ if __name__ == '__main__':
             augment_crop(
                 feature_id,case_dir,feature_point, box_batch,
                 CropDataConfig.shape_box, CropDataConfig.shape_crop,
-            bias_range=5,aug_num=5)
+            bias_range=5,aug_num=27)
+
+
+#test for CropedBatchGenerator
+    # class DataConfig(object):
+    #     shape_box = [128, 128, 128]
+    #     shape_crop = [32, 32, 32]
+    #     world_to_cubic = 128 / 12.
+    #     batch_size = 4
+    #     total_case_dir = 'F:\\ProjectData\\Feature\\croped\\feature_0'
+    #     load_case_once = 3  # 每次读的病例数
+    #     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    #
+    # cbg=CropedBatchGenerator(DataConfig)
+    #
+    # x=cbg.get_batch()
+    # pass
 
 
 
