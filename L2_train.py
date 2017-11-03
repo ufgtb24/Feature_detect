@@ -1,10 +1,6 @@
 import tensorflow as tf
-import commen_structure as commen
 import os
-
-from CNN import CNN
 from crop_data import CropedBatchGenerator
-from dataRelated import  BatchGenerator
 from level_train import Level
 
 
@@ -22,14 +18,14 @@ class NetConfig(object):
 class TrainDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
-    total_case_dir='F:/ProjectData/Feature/croped/feature_1/'
+    total_case_dir='F:/ProjectData/Feature/croped/feature_2/'
     load_case_once=10  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 class TestDataConfig(object):
     world_to_cubic=128/12.
-    batch_size=1
-    total_case_dir='F:/ProjectData/Feature/test_crop/feature_1/'
+    batch_size=8
+    total_case_dir='F:/ProjectData/Feature/test_crop/feature_2/'
     load_case_once=0  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 

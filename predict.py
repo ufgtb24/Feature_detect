@@ -32,6 +32,8 @@ class NetConfig_2(object):
     stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
 
+
+
 class DataConfig(object):
     world_to_cubic=128/12.
     batch_size=2
@@ -41,7 +43,7 @@ class DataConfig(object):
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_1/'
+    MODEL_PATH= 'F:/ProjectData/Feature/model/'
     NEED_RESTORE=False
     NEED_SAVE=True
     shape_box=[128,128,128]
@@ -72,6 +74,18 @@ if __name__ == '__main__':
     var_list += bn_moving_vars
     saver_21 = tf.train.Saver(var_list=var_list)
 
+    temp_var_t = set(tf.trainable_variables())
+    temp_var_g = set(tf.global_variables())
+
+    level_22=Level(Param=NetConfig_2, is_training=False, scope='level_22')
+
+    var_list = list(set(tf.trainable_variables()) - temp_var_t)
+    g_list = list(set(tf.global_variables()) - temp_var_g)
+    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name ]
+    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name ]
+    var_list += bn_moving_vars
+    saver_22 = tf.train.Saver(var_list=var_list)
+
 
 ################
     test_batch_gen=BatchGenerator(DataConfig)
@@ -80,66 +94,80 @@ if __name__ == '__main__':
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
         # assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
-        saver_1.restore(sess, 'F:/ProjectData/Feature/model/level_1/model.ckpt')  # 存在就从模型中恢复变量
-        saver_21.restore(sess, 'F:/ProjectData/Feature/model/level_21/model.ckpt')  # 存在就从模型中恢复变量
+        saver_1.restore(sess, os.path.join(MODEL_PATH,'level_1/model.ckpt'))  # 存在就从模型中恢复变量
+        saver_21.restore(sess, os.path.join(MODEL_PATH,'level_21/model.ckpt'))  # 存在就从模型中恢复变量
+        saver_22.restore(sess, os.path.join(MODEL_PATH,'level_22/model.ckpt'))  # 存在就从模型中恢复变量
+
+        while True:
+
+            box_batch, target = test_batch_gen.get_batch()
+            target_1=target[:,:3]
+            target_2=target[:,3:]
+
+            feed_dict = {level_1.box: box_batch,
+                         level_1.phase: False, level_1.keep_prob: 1}
+
+            pred = sess.run(level_1.pred, feed_dict=feed_dict)
+
+            box_batch=np.squeeze(box_batch,axis=4)
+
+            croped_batch = crop_batch(pred[:,:3].astype(np.int32), box_batch, shape_box, shape_crop)
+            croped_batch=np.expand_dims(croped_batch,axis=4)
+            feed_dict = {level_21.box: croped_batch,level_21.targets:target_1,
+                         level_21.phase: False, level_21.keep_prob: 1}
+            pred_21,loss = sess.run([level_21.pred, level_21.loss], feed_dict=feed_dict)
+
+            pred_end_1 = recover_coord(pred[:, :3], pred_21, shape_crop).astype(np.int32)
 
 
+            croped_batch = crop_batch(pred[:,3:].astype(np.int32), box_batch, shape_box, shape_crop)
+            croped_batch=np.expand_dims(croped_batch,axis=4)
+            feed_dict = {level_22.box: croped_batch,level_22.targets:target_2,
+                         level_22.phase: False, level_22.keep_prob: 1}
+            pred_22,loss = sess.run([level_22.pred, level_22.loss], feed_dict=feed_dict)
 
-        box_batch, target = test_batch_gen.get_batch()
-        target_1=target[:,:3]
+            pred_end_2 = recover_coord(pred[:, 3:], pred_22, shape_crop).astype(np.int32)
+            for i in range(DataConfig.batch_size):
 
-        feed_dict = {level_1.box: box_batch,
-                     level_1.phase: False, level_1.keep_prob: 1}
+                pred_1=pred_end_1[i]
+                pred_2=pred_end_2[i]
+                box=box_batch[i]
+                # box=np.squeeze(box_batch[i],axis=3)
 
-        pred = sess.run(level_1.pred, feed_dict=feed_dict)
+                box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2
+                box[target_2[i,0], target_2[i,1], target_2[i,2]] = 2
+                box[pred_1[0], pred_1[1], pred_1[2]] = 3
+                box[pred_2[0], pred_2[1], pred_2[2]] = 3
 
-        box_batch=np.squeeze(box_batch,axis=4)
+                x, y, z = np.where(box == 1)
+                ex, ey, ez = edges(128)
+                fx, fy, fz = np.where(box == 2)
+                fxp, fyp, fzp = np.where(box == 3)
 
-        croped_batch = crop_batch(pred[:,:3].astype(np.int32), box_batch, shape_box, shape_crop)
-        croped_batch=np.expand_dims(croped_batch,axis=4)
-        feed_dict = {level_21.box: croped_batch,level_21.targets:target_1,
-                     level_21.phase: False, level_21.keep_prob: 1}
-        pred_21,loss = sess.run([level_21.pred, level_21.loss], feed_dict=feed_dict)
+                mlab.points3d(ex, ey, ez,
+                              mode="cube",
+                              color=(0, 0, 1),
+                              scale_factor=1)
 
-        pred_end = recover_coord(pred[:,:3], pred_21, shape_crop).astype(np.int32)
-        for i in range(DataConfig.batch_size):
+                mlab.points3d(x, y, z,
+                              mode="cube",
+                              color=(0, 1, 0),
+                              scale_factor=1,
+                              transparent=True)
 
-            pred=pred_end[i]
-            box=box_batch[i]
-            # box=np.squeeze(box_batch[i],axis=3)
+                mlab.points3d(fx, fy, fz,
+                            mode="cube",
+                            color=(1, 0, 0),
+                            scale_factor=1,
+                              transparent=True)
 
-            box[target_1[i,0], target[i,1], target[i,2]] = 2
-            box[pred[0], pred[1], pred[2]] = 3
+                mlab.points3d(fxp, fyp, fzp,
+                            mode="cube",
+                            color=(0, 0, 1),
+                            scale_factor=1,
+                              transparent=True)
 
-            x, y, z = np.where(box == 1)
-            ex, ey, ez = edges(128)
-            fx, fy, fz = np.where(box == 2)
-            fxp, fyp, fzp = np.where(box == 3)
-
-            mlab.points3d(ex, ey, ez,
-                          mode="cube",
-                          color=(0, 0, 1),
-                          scale_factor=1)
-
-            mlab.points3d(x, y, z,
-                          mode="cube",
-                          color=(0, 1, 0),
-                          scale_factor=1,)
-                          # transparent=True)
-
-            mlab.points3d(fx, fy, fz,
-                        mode="cube",
-                        color=(1, 0, 0),
-                        scale_factor=1,
-                          transparent=True)
-
-            mlab.points3d(fxp, fyp, fzp,
-                        mode="cube",
-                        color=(0, 0, 1),
-                        scale_factor=1,
-                          transparent=True)
-
-            mlab.show()
+                mlab.show()
 
 
 

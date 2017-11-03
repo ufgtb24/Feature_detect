@@ -140,7 +140,7 @@ if __name__ == '__main__':
         #每个case对应一个pkl
         for feature_point,feature_id in zip(point_batch_list,range(len(point_batch_list))):
             augment_crop(
-                feature_id,case_dir,feature_point, box_batch,
+                feature_id+1,case_dir,feature_point, box_batch,
                 shape_box, shape_crop,
             bias_range=5,aug_num=27)
 
