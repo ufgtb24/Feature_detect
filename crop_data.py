@@ -86,7 +86,7 @@ def augment_crop(feature_id,case_dir, crop_center, box_batch, shape_box, shape_c
     #[aug_num*b,3] b=27
     feature_txt=np.concatenate(feature_txt_list)
 
-    feature_path=os.path.join(CROP_PATH, 'feature_{0}'.format(feature_id))
+    feature_path=os.path.join(CROP_AUG_SAVE_PATH, 'feature_{0}'.format(feature_id))
     if os.path.exists(feature_path)==False:
         os.makedirs(feature_path)
     save_croped_batch(feature_aug,
@@ -113,7 +113,7 @@ def save_croped_batch(obj,path):
 
 
 if __name__ == '__main__':
-    CROP_PATH = 'F:/ProjectData/Feature/Tooth'
+    CROP_AUG_SAVE_PATH = 'F:/ProjectData/Feature/croped'
     MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
     shape_box=[128,128,128]
     shape_crop=[32,32,32]
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     class CropDataConfig(object):
         world_to_cubic = 128 / 12.
         batch_size = 27
-        total_case_dir = 'F:/ProjectData/Feature/test_mul'
+        total_case_dir = 'F:/ProjectData/Feature/Tooth'
         load_case_once = 1  # 每次读的病例数
         switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
@@ -143,22 +143,6 @@ if __name__ == '__main__':
                 feature_id+1,case_dir,feature_point, box_batch,
                 shape_box, shape_crop,
             bias_range=5,aug_num=27)
-
-
-#test for CropedBatchGenerator
-    # class DataConfig(object):
-    #     shape_box = [128, 128, 128]
-    #     shape_crop = [32, 32, 32]
-    #     world_to_cubic = 128 / 12.
-    #     batch_size = 4
-    #     total_case_dir = 'F:\\ProjectData\\Feature\\croped\\feature_0'
-    #     load_case_once = 3  # 每次读的病例数
-    #     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
-    #
-    # cbg=CropedBatchGenerator(DataConfig)
-    #
-    # x=cbg.get_batch()
-    # pass
 
 
 

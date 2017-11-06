@@ -7,7 +7,7 @@ from dataRelated import  BatchGenerator
 
 
 class Level(object):
-    def __init__(self,Param,is_training,scope):
+    def __init__(self,Param,is_training,scope,need_target=True):
         self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box+[1])
         self.keep_prob = tf.placeholder(tf.float32)
         self.batch_size = tf.placeholder(tf.int32, [])
@@ -16,8 +16,8 @@ class Level(object):
         self.phase = tf.placeholder(tf.bool, name='phase')
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
-        self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets),axis=1)/2.,axis=0)
-
+        if need_target:
+            self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets), axis=1) / 2., axis=0)
         if is_training==True:
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(update_ops):

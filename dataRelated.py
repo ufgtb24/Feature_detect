@@ -3,9 +3,10 @@ import SimpleITK as sitk
 import os
 
 class BatchGenerator(object):
-    def __init__(self,data_config):
+    def __init__(self,data_config,need_target=True):
 
         self.box_train=None
+        self.need_target=need_target
         self.total_case_dir=data_config.total_case_dir
         self.total_case_list=self.get_total_case_list()
         self.total_case_num=len(self.total_case_list)
@@ -47,11 +48,13 @@ class BatchGenerator(object):
         for case_dir in case_load:
             full_case_dir=self.total_case_dir+'\\'+case_dir
             box_list.append(self.loadmhds(full_case_dir))
-            y_list.append(self.load_y(full_case_dir+'\\info.txt'))
+            if self.need_target:
+                y_list.append(self.load_y(full_case_dir+'\\info.txt'))
 
         self.box=np.expand_dims(np.concatenate(box_list,axis=0),axis=4)
-        self.y=np.concatenate(y_list,axis=0)
-        self.sample_num=self.y.shape[0]
+        if self.need_target:
+            self.y=np.concatenate(y_list,axis=0)
+        self.sample_num=self.box.shape[0]
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
     def load_y(self, info_file):
@@ -90,7 +93,8 @@ class BatchGenerator(object):
         perm = np.arange(self.sample_num)
         np.random.shuffle(perm)  # 打乱
         self.box = self.box[perm]
-        self.y = self.y[perm]
+        if self.need_target:
+            self.y = self.y[perm]
 
     def get_batch(self):
         if self.index+ self.batch_size>self.sample_num:
@@ -102,11 +106,16 @@ class BatchGenerator(object):
             self.suffle()
 
 
-        box_batch= self.box[self.index:   self.index + self.batch_size]
-        y_batch= self.y[self.index:   self.index + self.batch_size]
+        box_batch= self.box[self.index:   self.index + self.batch_size].copy()
+        if self.need_target:
+            global y_batch
+            y_batch= self.y[self.index:   self.index + self.batch_size]
         self.index+=self.batch_size
 
-        return box_batch,y_batch
+        if self.need_target:
+            return box_batch,y_batch
+        else:
+            return box_batch
 
 
 
