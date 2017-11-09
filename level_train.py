@@ -7,13 +7,15 @@ from dataRelated import  BatchGenerator
 
 
 class Level(object):
-    def __init__(self,Param,is_training,scope,need_target=True):
-        self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box+[1])
-        self.keep_prob = tf.placeholder(tf.float32)
-        self.batch_size = tf.placeholder(tf.int32, [])
+    def __init__(self,Param,is_training,scope,keep_prob,phase,need_target=True,input_box=None):
+        if input_box is not None:
+            self.box = input_box
+        else:
+            self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box)
 
+        self.keep_prob = keep_prob
+        self.phase = phase
         self.targets = tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]])
-        self.phase = tf.placeholder(tf.bool, name='phase')
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
         if need_target:

@@ -13,7 +13,7 @@ class CNN(object):
         self.param=param
         self.phase=phase
         self.keep_prob=keep_prob
-        self.box=box
+        self.box=tf.expand_dims(box,axis=4)
         conv=self.build_CNN()
         self.output=self.build_FC(conv)
 
@@ -27,7 +27,7 @@ class CNN(object):
             for c in range(self.param.layer_num):
                 conv = commen.conv3d(conv, self.param.channels[c ], filter_size=self.param.filter_size[c],
                                      stride=self.param.stride[c ],phase=self.phase,
-                                      pooling=self.param.pooling[c ],name="conv_"+ str(c))
+                                      pooling=self.param.pooling[c ],scope="conv_"+ str(c))
 
         return conv
 

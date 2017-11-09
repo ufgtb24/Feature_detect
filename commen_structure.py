@@ -27,8 +27,8 @@ def _bias_variable( shape, name):
 #                                           updates_collections=None)
 #     return bn
 
-def conv3d(input, output_channels, phase,pooling,filter_size=3,stride=1, name="conv3d"):
-    with tf.variable_scope(name):
+def conv3d(input, output_channels, phase,pooling,filter_size=3,stride=1, scope="conv3d"):
+    with tf.variable_scope(scope):
         filter =_weight_variable(shape=[filter_size]*3+[input.shape[-1]]+[output_channels],name='w')
         conv = tf.nn.conv3d(input, filter, strides=[1]+[stride]*3+[1], padding='VALID')
         #标准模式，先bn，再激活

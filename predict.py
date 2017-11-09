@@ -4,18 +4,24 @@ import numpy as np
 from mayavi import mlab
 
 # from crop_data import crop_batch
-from crop_data import crop_batch
+from crop_data_tf import crop_batch
 from dataRelated import BatchGenerator
 from display import edges
 from level_train import Level
 
+SHAPE_BOX = [128, 128, 128]
+SHAPE_CROP = [32, 32, 32]
+
+
 def recover_coord(fp_1,fp_2,shape_crop):
-    shape_crop=np.array(shape_crop)
-    cubic_pos=fp_1-(shape_crop / 2).astype(np.int32)+fp_2
-    return cubic_pos
+    with tf.name_scope('recover_coord'):
+        shape_crop=np.array(shape_crop)
+        cubic_pos=fp_1-(shape_crop / 2).astype(np.int32)+fp_2
+        cubic_pos=tf.to_int32(cubic_pos)
+        return cubic_pos
 
 class NetConfig_1(object):
-    shape_box=[128,128,128]
+    shape_box=SHAPE_BOX
     channels = [32,  32,   32,  32, 64,128,256]#决定左侧的参数多少和左侧的memory
     fc_size = [128,6]
     pooling=[True,False,False,True,True,True,True]
@@ -24,7 +30,7 @@ class NetConfig_1(object):
     layer_num = len(channels) - 1
 
 class NetConfig_2(object):
-    shape_box=[32,32,32]
+    shape_box=SHAPE_CROP
     channels = [32,  32,   64,  64, 128]#决定左侧的参数多少和左侧的memory
     fc_size = [64,3]
     pooling=[True,False,False,True,True,True,True]
@@ -46,57 +52,49 @@ if __name__ == '__main__':
     MODEL_PATH= 'F:/ProjectData/Feature/model/'
     NEED_RESTORE=False
     NEED_SAVE=True
-    shape_box=[128,128,128]
-    shape_crop=[32,32,32]
+    keep_prob = tf.placeholder(tf.float32)
+    phase = tf.placeholder(tf.bool)
 
+    level_1=Level(Param=NetConfig_1, is_training=False, scope='level_1',
+                  keep_prob=keep_prob,phase=phase)
 
-    level_1=Level(Param=NetConfig_1, is_training=False, scope='level_1')
+    saver_1 = tf.train.Saver(var_list=tf.global_variables())
 
-    var_list = tf.trainable_variables()
-    g_list = tf.global_variables()
-    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name ]
-    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name ]
-    var_list += bn_moving_vars
-    saver_1 = tf.train.Saver(var_list=var_list)
+    box_21 = crop_batch(level_1.pred[:, :3], level_1.box, SHAPE_BOX, SHAPE_CROP)
+    box_22 = crop_batch(level_1.pred[:, 3:], level_1.box, SHAPE_BOX, SHAPE_CROP)
 
-
-
-
-    temp_var_t = set(tf.trainable_variables())
     temp_var_g = set(tf.global_variables())
+    level_21=Level(Param=NetConfig_2, is_training=False,need_target=False,
+                   scope='level_21',input_box=box_21,keep_prob=keep_prob,phase=phase)
 
-    level_21=Level(Param=NetConfig_2, is_training=False,need_target=False, scope='level_21')
-
-    var_list = list(set(tf.trainable_variables()) - temp_var_t)
     g_list = list(set(tf.global_variables()) - temp_var_g)
-    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name ]
-    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name ]
-    var_list += bn_moving_vars
-    saver_21 = tf.train.Saver(var_list=var_list)
+    saver_21 = tf.train.Saver(var_list=g_list)
 
-    temp_var_t = set(tf.trainable_variables())
     temp_var_g = set(tf.global_variables())
+    level_22=Level(Param=NetConfig_2, is_training=False, need_target=False,
+                   scope='level_22',input_box=box_22,keep_prob=keep_prob,phase=phase)
 
-    level_22=Level(Param=NetConfig_2, is_training=False, need_target=False,scope='level_22')
-
-    var_list = list(set(tf.trainable_variables()) - temp_var_t)
     g_list = list(set(tf.global_variables()) - temp_var_g)
-    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name ]
-    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name ]
-    var_list += bn_moving_vars
-    saver_22 = tf.train.Saver(var_list=var_list)
+    saver_22 = tf.train.Saver(var_list=g_list)
 
+    pred_end_1 = recover_coord(level_1.pred[:, :3], level_21.pred, SHAPE_CROP)
+    pred_end_2 = recover_coord(level_1.pred[:, 3:], level_22.pred, SHAPE_CROP)
+    pred_end_1 = tf.identity(pred_end_1, name="output_1")
+    pred_end_2 = tf.identity(pred_end_2, name="output_2")
 
-################
+    saver = tf.train.Saver()
+
     test_batch_gen=BatchGenerator(DataConfig,need_target=False)
-
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
-
+        sess.run(tf.global_variables_initializer())
         # assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
         saver_1.restore(sess, os.path.join(MODEL_PATH,'level_1/model.ckpt'))  # 存在就从模型中恢复变量
         saver_21.restore(sess, os.path.join(MODEL_PATH,'level_21/model.ckpt'))  # 存在就从模型中恢复变量
         saver_22.restore(sess, os.path.join(MODEL_PATH,'level_22/model.ckpt'))  # 存在就从模型中恢复变量
+        saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
+        tf.train.write_graph(sess.graph_def, MODEL_PATH, 'graph.pb')
+        writer = tf.summary.FileWriter(os.path.join(MODEL_PATH,'../logs/'), sess.graph)
 
         while True:
 
@@ -106,32 +104,14 @@ if __name__ == '__main__':
             # target_2=target[:,3:]
 
             feed_dict = {level_1.box: box_batch,
-                         level_1.phase: False, level_1.keep_prob: 1}
+                         phase: False, keep_prob: 1}
 
-            pred = sess.run(level_1.pred, feed_dict=feed_dict)
+            f_1, f_2 = sess.run([pred_end_1,pred_end_2], feed_dict=feed_dict)
 
-            box_batch=np.squeeze(box_batch,axis=4)
-
-            croped_batch = crop_batch(pred[:,:3].astype(np.int32), box_batch, shape_box, shape_crop)
-            croped_batch=np.expand_dims(croped_batch,axis=4)
-            feed_dict = {level_21.box: croped_batch,
-                         level_21.phase: False, level_21.keep_prob: 1}
-            pred_21 = sess.run(level_21.pred, feed_dict=feed_dict)
-
-            pred_end_1 = recover_coord(pred[:, :3], pred_21, shape_crop).astype(np.int32)
-
-
-            croped_batch = crop_batch(pred[:,3:].astype(np.int32), box_batch, shape_box, shape_crop)
-            croped_batch=np.expand_dims(croped_batch,axis=4)
-            feed_dict = {level_22.box: croped_batch,
-                         level_22.phase: False, level_22.keep_prob: 1}
-            pred_22 = sess.run(level_22.pred, feed_dict=feed_dict)
-
-            pred_end_2 = recover_coord(pred[:, 3:], pred_22, shape_crop).astype(np.int32)
             for i in range(DataConfig.batch_size):
 
-                pred_1=pred_end_1[i]
-                pred_2=pred_end_2[i]
+                pred_1=f_1[i]
+                pred_2=f_2[i]
                 box=box_batch[i]
 
                 # box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2

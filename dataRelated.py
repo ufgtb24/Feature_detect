@@ -51,7 +51,7 @@ class BatchGenerator(object):
             if self.need_target:
                 y_list.append(self.load_y(full_case_dir+'\\info.txt'))
 
-        self.box=np.expand_dims(np.concatenate(box_list,axis=0),axis=4)
+        self.box=np.concatenate(box_list,axis=0)
         if self.need_target:
             self.y=np.concatenate(y_list,axis=0)
         self.sample_num=self.box.shape[0]
