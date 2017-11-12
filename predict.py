@@ -42,7 +42,7 @@ class NetConfig_2(object):
 
 class DataConfig(object):
     world_to_cubic=128/12.
-    batch_size=1
+    batch_size=4
     total_case_dir='F:/ProjectData/Feature/predict/Tooth/'
     load_case_once=20  #每次读的病例数
     switch_after_shuffles=1000 #当前数据洗牌n次读取新数据
@@ -60,8 +60,8 @@ if __name__ == '__main__':
 
     saver_1 = tf.train.Saver(var_list=tf.global_variables())
 
-    box_21 = crop_batch(level_1.pred[:, :3], level_1.box, SHAPE_BOX, SHAPE_CROP)
-    box_22 = crop_batch(level_1.pred[:, 3:], level_1.box, SHAPE_BOX, SHAPE_CROP)
+    box_21 = crop_batch(level_1.pred[:, :3], level_1.box, SHAPE_BOX, SHAPE_CROP,'crop_batch_1')
+    box_22 = crop_batch(level_1.pred[:, 3:], level_1.box, SHAPE_BOX, SHAPE_CROP,'crop_batch_2')
 
     temp_var_g = set(tf.global_variables())
     level_21=Level(Param=NetConfig_2, is_training=False,need_target=False,
