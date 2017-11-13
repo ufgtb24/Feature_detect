@@ -38,42 +38,41 @@ class CropedBatchGenerator(BatchGenerator):
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
 
-def crop_case(crop_center, box, shape_box, shape_crop,box_crop):
-    with tf.variable_scope('crop_case'):
+def crop_case(crop_center, box, box_crop):
 
-        # with tf.control_dependencies(
-        #         [box_crop.assign(
-        #                tf.zeros(shape_crop))]):
-        #     box_crop = tf.identity(box_crop)
+    # 不能序列操作，因为涉及索引
+    shape_box = tf.shape(box)
+    shape_crop = tf.shape(box_crop)
 
-        with tf.control_dependencies([box_crop.assign(tf.zeros(box_crop))]):
+    # [3]
+    crop_center=tf.to_int32(crop_center)
+    c0 = crop_center - tf.to_int32(shape_crop / 2)
+    c1 = crop_center + tf.to_int32(shape_crop / 2)
 
-            # 不能序列操作，因为涉及索引
-            shape_box = tf.convert_to_tensor(shape_box, dtype=tf.int32)
-            shape_crop = tf.convert_to_tensor(shape_crop, dtype=tf.int32)
+    a0 = tf.maximum(-c0, tf.zeros((3), dtype=tf.int32))
+    a1 = tf.minimum(shape_box - c0, shape_crop)
 
-        # [3]
-        c0 = crop_center - tf.to_int32(shape_crop / 2)
-        c1 = crop_center + tf.to_int32(shape_crop / 2)
+    s0 = tf.maximum(c0, tf.zeros((3), dtype=tf.int32))
+    s1 = tf.minimum(c1, shape_box)
 
-        a0 = tf.maximum(-c0, tf.zeros((3), dtype=tf.int32))
-        a1 = tf.minimum(shape_box - c0, shape_crop)
 
-        s0 = tf.maximum(c0, tf.zeros((3), dtype=tf.int32))
-        s1 = tf.minimum(c1, shape_box)
+    reset=tf.assign(box_crop,tf.zeros(box_crop.shape))
 
-        with tf.control_dependencies(
-                [
-                    box_crop[a0[0]:a1[0],
-                    a0[1]: a1[1],
-                    a0[2]: a1[2]
-                    ].assign(
-                        box[s0[0]: s1[0],
-                        s0[1]: s1[1],
-                        s0[2]: s1[2]])
-                ]):
-            box_crop = tf.identity(box_crop)
-        return box_crop
+    update=tf.assign( box_crop[a0[0]:a1[0],
+                a0[1]: a1[1],
+                a0[2]: a1[2]
+                ],
+                      box[s0[0]: s1[0],
+                    s0[1]: s1[1],
+                    s0[2]: s1[2]])
+
+
+    with tf.control_dependencies([update]):
+        op1 = tf.identity(box_crop)
+
+    with tf.control_dependencies([reset]):
+        op2 = tf.identity(op1)
+    return op2
 
 
 

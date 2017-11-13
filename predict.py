@@ -4,7 +4,7 @@ import numpy as np
 from mayavi import mlab
 
 # from crop_data import crop_batch
-from crop_data_tf import crop_batch
+from crop_data_tf import  crop_case
 from dataRelated import BatchGenerator
 from display import edges
 from level_train import Level
@@ -42,7 +42,7 @@ class NetConfig_2(object):
 
 class DataConfig(object):
     world_to_cubic=128/12.
-    batch_size=4
+    batch_size=1
     total_case_dir='F:/ProjectData/Feature/predict/Tooth/'
     load_case_once=20  #每次读的病例数
     switch_after_shuffles=1000 #当前数据洗牌n次读取新数据
@@ -60,8 +60,17 @@ if __name__ == '__main__':
 
     saver_1 = tf.train.Saver(var_list=tf.global_variables())
 
-    box_21 = crop_batch(level_1.pred[:, :3], level_1.box, SHAPE_BOX, SHAPE_CROP,'crop_batch_1')
-    box_22 = crop_batch(level_1.pred[:, 3:], level_1.box, SHAPE_BOX, SHAPE_CROP,'crop_batch_2')
+    # only support batch_size=1
+    box_whole=tf.squeeze(level_1.box,axis=0)
+
+    box_crop = tf.get_variable('box_crop_var', shape=SHAPE_CROP, dtype=tf.float32,
+                               initializer=tf.zeros_initializer)
+
+    box_21 = crop_case(level_1.pred[0,:3], box_whole, box_crop)
+    box_22 = crop_case(level_1.pred[0,3:], box_whole, box_crop)
+
+    box_21 = tf.expand_dims(box_21, axis=0)
+    box_22 = tf.expand_dims(box_22, axis=0)
 
     temp_var_g = set(tf.global_variables())
     level_21=Level(Param=NetConfig_2, is_training=False,need_target=False,
@@ -77,8 +86,11 @@ if __name__ == '__main__':
     g_list = list(set(tf.global_variables()) - temp_var_g)
     saver_22 = tf.train.Saver(var_list=g_list)
 
-    pred_end_1 = recover_coord(level_1.pred[:, :3], level_21.pred, SHAPE_CROP)
-    pred_end_2 = recover_coord(level_1.pred[:, 3:], level_22.pred, SHAPE_CROP)
+
+    box_whole=tf.squeeze(level_1.box,axis=0)
+
+    pred_end_1 = recover_coord(level_1.pred[0, :3], level_21.pred[0], SHAPE_CROP)
+    pred_end_2 = recover_coord(level_1.pred[0, 3:], level_22.pred[0], SHAPE_CROP)
     pred_end_1 = tf.identity(pred_end_1, name="output_1")
     pred_end_2 = tf.identity(pred_end_2, name="output_2")
 
@@ -108,44 +120,41 @@ if __name__ == '__main__':
 
             f_1, f_2 = sess.run([pred_end_1,pred_end_2], feed_dict=feed_dict)
 
-            for i in range(DataConfig.batch_size):
 
-                pred_1=f_1[i]
-                pred_2=f_2[i]
-                box=box_batch[i]
+            box=box_batch[0]
 
-                # box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2
-                # box[target_2[i,0], target_2[i,1], target_2[i,2]] = 2
-                box[pred_1[0], pred_1[1], pred_1[2]] = 3
-                box[pred_2[0], pred_2[1], pred_2[2]] = 3
+            # box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2
+            # box[target_2[i,0], target_2[i,1], target_2[i,2]] = 2
+            box[f_1[0], f_1[1], f_1[2]] = 3
+            box[f_2[0], f_2[1], f_2[2]] = 3
 
-                x, y, z = np.where(box == 1)
-                ex, ey, ez = edges(128)
-                # fx, fy, fz = np.where(box == 2)
-                fxp, fyp, fzp = np.where(box == 3)
+            x, y, z = np.where(box == 1)
+            ex, ey, ez = edges(128)
+            # fx, fy, fz = np.where(box == 2)
+            fxp, fyp, fzp = np.where(box == 3)
 
-                mlab.points3d(ex, ey, ez,
-                              mode="cube",
-                              color=(0, 0, 1),
-                              scale_factor=1)
+            mlab.points3d(ex, ey, ez,
+                          mode="cube",
+                          color=(0, 0, 1),
+                          scale_factor=1)
 
-                mlab.points3d(x, y, z,
-                              mode="cube",
-                              color=(0, 1, 0),
-                              scale_factor=1,)
-                              # transparent=True)
+            mlab.points3d(x, y, z,
+                          mode="cube",
+                          color=(0, 1, 0),
+                          scale_factor=1,)
+                          # transparent=True)
 
-                # mlab.points3d(fx, fy, fz,
-                #             mode="cube",
-                #             color=(1, 0, 0),
-                #             scale_factor=1,
-                #               transparent=True)
+            # mlab.points3d(fx, fy, fz,
+            #             mode="cube",
+            #             color=(1, 0, 0),
+            #             scale_factor=1,
+            #               transparent=True)
 
-                mlab.points3d(fxp, fyp, fzp,
-                            mode="cube",
-                            color=(0, 0, 1),
-                            scale_factor=1,
-                              transparent=True)
+            mlab.points3d(fxp, fyp, fzp,
+                        mode="cube",
+                        color=(0, 0, 1),
+                        scale_factor=1,
+                          transparent=True)
 
-                mlab.show()
+            mlab.show()
 
