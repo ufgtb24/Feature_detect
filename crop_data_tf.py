@@ -56,23 +56,23 @@ def crop_case(crop_center, box, box_crop):
     s1 = tf.minimum(c1, shape_box)
 
 
-    reset=tf.assign(box_crop,tf.zeros(box_crop.shape))
+    reset=tf.assign(box_crop,tf.zeros(tf.shape(box_crop)))
+    reset = tf.Print(reset, [box_crop.name], 'reset')
 
-    update=tf.assign( box_crop[a0[0]:a1[0],
-                a0[1]: a1[1],
-                a0[2]: a1[2]
-                ],
-                      box[s0[0]: s1[0],
-                    s0[1]: s1[1],
-                    s0[2]: s1[2]])
+    with tf.control_dependencies([reset]):
+        update = tf.assign(box_crop[a0[0]:a1[0],
+                           a0[1]: a1[1],
+                           a0[2]: a1[2]
+                           ],
+                           box[s0[0]: s1[0],
+                           s0[1]: s1[1],
+                           s0[2]: s1[2]])
+        update = tf.Print(update, [box_crop.name], 'update')
 
 
     with tf.control_dependencies([update]):
-        op1 = tf.identity(box_crop)
-
-    with tf.control_dependencies([reset]):
-        op2 = tf.identity(op1)
-    return op2
+        new_box_crop = box_crop.read_value()
+    return new_box_crop
 
 
 

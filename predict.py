@@ -63,11 +63,13 @@ if __name__ == '__main__':
     # only support batch_size=1
     box_whole=tf.squeeze(level_1.box,axis=0)
 
-    box_crop = tf.get_variable('box_crop_var', shape=SHAPE_CROP, dtype=tf.float32,
+    box_crop_1 = tf.get_variable('box_crop_var1', shape=SHAPE_CROP, dtype=tf.float32,
+                               initializer=tf.zeros_initializer)
+    box_crop_2 = tf.get_variable('box_crop_var2', shape=SHAPE_CROP, dtype=tf.float32,
                                initializer=tf.zeros_initializer)
 
-    box_21 = crop_case(level_1.pred[0,:3], box_whole, box_crop)
-    box_22 = crop_case(level_1.pred[0,3:], box_whole, box_crop)
+    box_21 = crop_case(level_1.pred[0,:3], box_whole, box_crop_1)
+    box_22 = crop_case(level_1.pred[0,3:], box_whole, box_crop_2)
 
     box_21 = tf.expand_dims(box_21, axis=0)
     box_22 = tf.expand_dims(box_22, axis=0)
@@ -91,8 +93,7 @@ if __name__ == '__main__':
 
     pred_end_1 = recover_coord(level_1.pred[0, :3], level_21.pred[0], SHAPE_CROP)
     pred_end_2 = recover_coord(level_1.pred[0, 3:], level_22.pred[0], SHAPE_CROP)
-    pred_end_1 = tf.identity(pred_end_1, name="output_1")
-    pred_end_2 = tf.identity(pred_end_2, name="output_2")
+    pred_end = tf.concat([pred_end_1,pred_end_2], axis=0,name="output")
 
     saver = tf.train.Saver()
 
@@ -105,7 +106,8 @@ if __name__ == '__main__':
         saver_21.restore(sess, os.path.join(MODEL_PATH,'level_21/model.ckpt'))  # 存在就从模型中恢复变量
         saver_22.restore(sess, os.path.join(MODEL_PATH,'level_22/model.ckpt'))  # 存在就从模型中恢复变量
         saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
-        tf.train.write_graph(sess.graph_def, MODEL_PATH, 'graph.pb')
+        tf.train.write_graph(sess.graph_def, MODEL_PATH, 'whole/input_graph.pb')
+
         writer = tf.summary.FileWriter(os.path.join(MODEL_PATH,'../logs/'), sess.graph)
 
         while True:
@@ -118,7 +120,9 @@ if __name__ == '__main__':
             feed_dict = {level_1.box: box_batch,
                          phase: False, keep_prob: 1}
 
-            f_1, f_2 = sess.run([pred_end_1,pred_end_2], feed_dict=feed_dict)
+            f = sess.run(pred_end, feed_dict=feed_dict)
+            f_1=f[:3]
+            f_2=f[3:]
 
 
             box=box_batch[0]

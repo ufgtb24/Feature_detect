@@ -19,8 +19,8 @@ import tensorflow as tf
 w = tf.get_variable("w", shape=(), dtype=tf.int32,
                     initializer=tf.constant_initializer(0))
 
-#在construct过程会根据关系展开成图，而不是运行时的循环
-#因此如果没有首尾连接关系，则会展开成并行计算的图
+#在construct过程会根据关系展开成图，如果有首尾连接就会展开成串行图
+#没有首尾连接关系，则展开成并行计算的图
 def body(i,x):
 
     # reset = tf.assign(w, 0)
