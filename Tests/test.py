@@ -29,7 +29,7 @@ def body(i,x):
     #因为tf.shape(x)是确定的，因此会在构造阶段赋值成常数，运行是并没有首尾连接
     update_0 = tf.assign(w, x-x)
     update_0 = tf.Print(update_0, [update_0], 'ud_0')
-
+    # 这是一条依赖链
     with tf.control_dependencies([update_0]):
         update_1 = tf.assign(w, w + 1)
         update_1 = tf.Print(update_1, [update_1], 'ud_1')

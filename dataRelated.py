@@ -65,7 +65,7 @@ class BatchGenerator(object):
         target = np.reshape((target - origin) * self.world_to_cubic, [-1, 6]).astype(np.int32)
         return target
 
-    def load_itk(self, filename):
+    def load_mhd(self, filename):
         # Reads the image using SimpleITK
         itkimage = sitk.ReadImage(filename)
         # Convert the image to a  numpy array first and then shuffle the dimensions to get axis in the order z,y,x
@@ -83,7 +83,7 @@ class BatchGenerator(object):
         for fileName in os.listdir(collection_path):
             if os.path.splitext(fileName)[1] == '.mhd':
                 toothPath = os.path.join(collection_path, fileName)
-                box_list.append(self.load_itk(toothPath))
+                box_list.append(self.load_mhd(toothPath))
 
         box = np.stack(box_list)
         box.shape = [-1] + list(box.shape[-3:])

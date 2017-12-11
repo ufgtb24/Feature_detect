@@ -10,14 +10,16 @@ class Level(object):
     def __init__(self,Param,is_training,scope,keep_prob,phase,need_target=True,input_box=None):
         if input_box is not None:
             self.box = input_box
+            box_name_detector=self.box
         else:
-            self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box)
+            self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box,name='input_box')
+            box_name_detector = tf.Print(self.box, [self.box.name], 'box_name: ')
 
         self.keep_prob = keep_prob
         self.phase = phase
         self.targets = tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]])
         with tf.variable_scope(scope):
-            self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
+            self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=box_name_detector).output
         if need_target:
             self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets), axis=1) / 2., axis=0)
         if is_training==True:

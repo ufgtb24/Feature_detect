@@ -52,8 +52,8 @@ if __name__ == '__main__':
     MODEL_PATH= 'F:/ProjectData/Feature/model/'
     NEED_RESTORE=False
     NEED_SAVE=True
-    keep_prob = tf.placeholder(tf.float32)
-    phase = tf.placeholder(tf.bool)
+    keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
+    phase = tf.placeholder(tf.bool,name='phase_input')
 
     level_1=Level(Param=NetConfig_1, is_training=False, scope='level_1',
                   keep_prob=keep_prob,phase=phase)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     pred_end_1 = recover_coord(level_1.pred[0, :3], level_21.pred[0], SHAPE_CROP)
     pred_end_2 = recover_coord(level_1.pred[0, 3:], level_22.pred[0], SHAPE_CROP)
-    pred_end = tf.concat([pred_end_1,pred_end_2], axis=0,name="output")
+    pred_end = tf.concat([pred_end_1,pred_end_2], axis=0,name="output_node")
 
     saver = tf.train.Saver()
 
@@ -106,12 +106,27 @@ if __name__ == '__main__':
         saver_21.restore(sess, os.path.join(MODEL_PATH,'level_21/model.ckpt'))  # 存在就从模型中恢复变量
         saver_22.restore(sess, os.path.join(MODEL_PATH,'level_22/model.ckpt'))  # 存在就从模型中恢复变量
         saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
-        tf.train.write_graph(sess.graph_def, MODEL_PATH, 'whole/input_graph.pb')
 
+        gd = sess.graph.as_graph_def()
+        for node in gd.node:
+            if node.op == 'RefSwitch':
+                node.op = 'Switch'
+                for index in range(len(node.input)):
+                    if 'moving_' in node.input[index]:
+                        node.input[index] = node.input[index] + '/read'
+            elif node.op == 'AssignSub':
+                node.op = 'Sub'
+                if 'use_locking' in node.attr: del node.attr['use_locking']
+            elif node.op == 'AssignAdd':
+                node.op = 'Add'
+                if 'use_locking' in node.attr: del node.attr['use_locking']
+
+
+        tf.train.write_graph(gd, MODEL_PATH, 'whole/input_graph.pb')
+        # tf.train.write_graph(sess.graph_def, MODEL_PATH, 'whole/input_graph.pb')
         writer = tf.summary.FileWriter(os.path.join(MODEL_PATH,'../logs/'), sess.graph)
 
         while True:
-
             box_batch = test_batch_gen.get_batch()
             # box_batch, target = test_batch_gen.get_batch()
             # target_1=target[:,:3]
