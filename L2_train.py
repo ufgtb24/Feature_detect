@@ -35,8 +35,11 @@ if __name__ == '__main__':
     NEED_RESTORE=False
     NEED_SAVE=True
 
+    keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
+    phase = tf.placeholder(tf.bool,name='phase_input')
 
-    level=Level(Param=NetConfig,is_training=True,scope='level_22')
+    level=Level(Param=NetConfig,is_training=True,scope='level_22',
+                keep_prob = keep_prob, phase = phase)
 
     # saver = tf.train.Saver(max_to_keep=1)
 ################
@@ -81,7 +84,7 @@ if __name__ == '__main__':
                 step_from_last_mininum += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
                 feed_dict = {level.box: box_batch, level.targets: y_batch,
-                             level.phase: False,level.keep_prob:1}
+                             phase: False,keep_prob:1}
                 loss_test = sess.run(level.loss, feed_dict=feed_dict)
                 if loss_test<winner_loss:
                     winner_loss=loss_test
