@@ -10,16 +10,14 @@ class Level(object):
     def __init__(self,Param,is_training,scope,keep_prob,phase,need_target=True,input_box=None):
         if input_box is not None:
             self.box = input_box
-            box_name_detector=self.box
         else:
             self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box,name='input_box')
-            box_name_detector = tf.Print(self.box, [self.box.name], 'box_name: ')
 
         self.keep_prob = keep_prob
         self.phase = phase
         self.targets = tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]])
         with tf.variable_scope(scope):
-            self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=box_name_detector).output
+            self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
         if need_target:
             self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets), axis=1) / 2., axis=0)
         if is_training==True:
@@ -43,7 +41,8 @@ class NetConfig(object):
 class TrainDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
-    total_case_dir='F:/ProjectData/Feature/Tooth'
+    # total_case_dir='F:/ProjectData/Feature/Tooth'
+    total_case_dir='F:/ProjectData/Feature2/Tooth'
     load_case_once=0  #每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
@@ -51,19 +50,22 @@ class TrainDataConfig(object):
 class TestDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
-    total_case_dir='F:/ProjectData/Feature/test_mul'
+    total_case_dir='F:/ProjectData/Feature2/test'
     load_case_once=0  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
+    MODEL_PATH = 'F:/ProjectData/Feature/model/level_1'
     NEED_RESTORE=False
     NEED_SAVE=True
 
+    keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
+    phase = tf.placeholder(tf.bool,name='phase_input')
 
-    level=Level(Param=NetConfig,is_training=True,scope='level_1')
+    level=Level(Param=NetConfig,is_training=True,scope='level_1',
+                keep_prob=keep_prob, phase=phase)
 
     # saver = tf.train.Saver(max_to_keep=1)
 ################
@@ -108,7 +110,7 @@ if __name__ == '__main__':
                 step_from_last_mininum += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
                 feed_dict = {level.box: box_batch, level.targets: y_batch,
-                             level.phase: False,level.keep_prob:1}
+                             phase: False,keep_prob:1}
                 loss_test = sess.run(level.loss, feed_dict=feed_dict)
                 if loss_test<winner_loss:
                     winner_loss=loss_test

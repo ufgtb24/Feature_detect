@@ -28,6 +28,8 @@ class BatchGenerator(object):
 
     def get_total_case_list(self):
         return os.listdir(self.total_case_dir)
+
+
     def get_case_list(self):
         if self.index_dir + self.load_case_once > self.total_case_num:
             self.index_dir = 0
@@ -41,21 +43,53 @@ class BatchGenerator(object):
         self.index_dir += self.load_case_once
         return case_load
 
+    def load_single_side(self,full_case_dir,tooth_list):
+        box_list=[]
+        y_list=[]
+        y=None
+        for tooth in tooth_list:
+            tooth_dir=full_case_dir+'\\'+tooth
+            box_list.append(self.loadmhds(tooth_dir))
+            if self.need_target:
+                y_list.append(self.load_y(tooth_dir+'\\info.txt'))
+        box=np.concatenate(box_list,axis=0)
+        if self.need_target:
+            y=np.concatenate(y_list,axis=0)
+        return box,y
+
+
     def load_case_list(self,case_load):
         print('load data')
         box_list=[]
         y_list=[]
         for case_dir in case_load:
             full_case_dir=self.total_case_dir+'\\'+case_dir
-            box_list.append(self.loadmhds(full_case_dir))
+            box,y=self.load_single_side(full_case_dir,['tooth2','tooth3','tooth4','tooth5'])
+            box_list.append(box)
             if self.need_target:
-                y_list.append(self.load_y(full_case_dir+'\\info.txt'))
+                y_list.append(y)
 
         self.box=np.concatenate(box_list,axis=0)
         if self.need_target:
             self.y=np.concatenate(y_list,axis=0)
         self.sample_num=self.box.shape[0]
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
+
+    # def load_case_list(self,case_load):
+    #     print('load data')
+    #     box_list=[]
+    #     y_list=[]
+    #     for case_dir in case_load:
+    #         full_case_dir=self.total_case_dir+'\\'+case_dir
+    #         box_list.append(self.loadmhds(full_case_dir))
+    #         if self.need_target:
+    #             y_list.append(self.load_y(full_case_dir+'\\info.txt'))
+    #
+    #     self.box=np.concatenate(box_list,axis=0)
+    #     if self.need_target:
+    #         self.y=np.concatenate(y_list,axis=0)
+    #     self.sample_num=self.box.shape[0]
+    #     assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
     def load_y(self, info_file):
         info = np.reshape(np.loadtxt(info_file), [-1, 9])

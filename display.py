@@ -200,9 +200,9 @@ def traverse_croped(dir):
 
 
 WORLD_SIZE=12.0
-GRID_SIZE=32
+GRID_SIZE=128
 if __name__ == '__main__':
-    # show_single('F:\\ProjectData\\Feature\\test\\0823$ED25initial\\')
-    # traverse_origin('F:\\ProjectData\\Feature\\test\\0823$ED25initial\\')
-    traverse_croped('F:\\ProjectData\\Feature\\\delete_test\\')
+    # show_single('F:\\ProjectData\\Feature2\\right\\tooth12')
+    traverse_origin('F:\\ProjectData\\Feature2\\right\\tooth12\\')
+    # traverse_croped('F:\\ProjectData\\Feature\\\delete_test\\')
 
