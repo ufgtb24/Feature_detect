@@ -6,9 +6,9 @@ from level_train import Level
 
 class NetConfig(object):
     shape_box=[32,32,32]
-    channels = [32,  32,   64,  64, 128]#决定左侧的参数多少和左侧的memory
+    channels = [32,  32,   64,  64, 128,256]#决定左侧的参数多少和左侧的memory
     fc_size = [64,3]
-    pooling=[True,False,False,True,True,True,True]
+    pooling=[True,False,True,False,True,True]
     filter_size=[3,3,3,3,3,3,3] #决定左侧的参数多少
     stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
@@ -18,27 +18,27 @@ class NetConfig(object):
 class TrainDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
-    total_case_dir='F:/ProjectData/Feature/croped/feature_2/'
-    load_case_once=10  #每次读的病例数
+    total_case_dir='F:/ProjectData/Feature2/croped/feature_1/'
+    load_case_once=1  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 class TestDataConfig(object):
     world_to_cubic=128/12.
     batch_size=8
-    total_case_dir='F:/ProjectData/Feature/test_crop/feature_2/'
-    load_case_once=0  #每次读的病例数
+    total_case_dir='F:/ProjectData/Feature2/test_crop/feature_1/'
+    load_case_once=1  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_22'
+    MODEL_PATH= 'F:/ProjectData/Feature2/model/level_21'
     NEED_RESTORE=False
     NEED_SAVE=True
 
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
 
-    level=Level(Param=NetConfig,is_training=True,scope='level_22',
+    level=Level(Param=NetConfig,is_training=True,scope='level_21',
                 keep_prob = keep_prob, phase = phase)
 
     # saver = tf.train.Saver(max_to_keep=1)
@@ -89,7 +89,7 @@ if __name__ == '__main__':
                 if loss_test<winner_loss:
                     winner_loss=loss_test
                     step_from_last_mininum=0
-                    if NEED_SAVE and loss_test<1:
+                    if NEED_SAVE and loss_test<20:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"

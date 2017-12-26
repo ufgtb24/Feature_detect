@@ -2,7 +2,6 @@ import tensorflow as tf
 import os
 import pickle
 
-from math import pi, sin, cos
 import numpy as np
 import SimpleITK as sitk
 import Transformer as tr

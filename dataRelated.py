@@ -44,6 +44,7 @@ class BatchGenerator(object):
         return case_load
 
     def load_single_side(self,full_case_dir,tooth_list):
+        # 读取一个病例中的多颗牙齿
         box_list=[]
         y_list=[]
         y=None
@@ -59,12 +60,13 @@ class BatchGenerator(object):
 
 
     def load_case_list(self,case_load):
+        # 读取多个病例
         print('load data')
         box_list=[]
         y_list=[]
-        for case_dir in case_load:
-            full_case_dir=self.total_case_dir+'\\'+case_dir
-            box,y=self.load_single_side(full_case_dir,['tooth2','tooth3','tooth4','tooth5'])
+        for case_name in case_load:
+            full_case_dir=self.total_case_dir+'\\'+case_name
+            box,y=self.load_single_side(full_case_dir,['tooth2'])
             box_list.append(box)
             if self.need_target:
                 y_list.append(y)
@@ -76,6 +78,7 @@ class BatchGenerator(object):
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
     # def load_case_list(self,case_load):
+    # # 一个病例只包含一颗牙
     #     print('load data')
     #     box_list=[]
     #     y_list=[]

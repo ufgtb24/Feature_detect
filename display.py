@@ -148,24 +148,36 @@ def traverse_origin(dir):
         ct=box[i]
 
         ct[feature[i,0], feature[i, 1], feature[i, 2]] = 2
-        ct[feature[i,3], feature[i,4], feature[i,5]] = 2
+        ct[feature[i,3], feature[i,4], feature[i,5]] = 3
 
-        fz, fy, fx = np.where(ct == 2)
+        fx1, fy1, fz1 = np.where(ct == 2)
+        fx2, fy2, fz2 = np.where(ct == 3)
         ex, ey, ez = edges(GRID_SIZE)
         x, y, z = np.where(ct == 1)
 
         mlab.points3d(x, y, z,
                       mode="cube",
                       color=(0, 1, 0),
-                      scale_factor=1)
+                      scale_factor=1,
+                      transparent=True)
+
         mlab.points3d(ex, ey, ez,
                       mode="cube",
                       color=(0, 0, 1),
                       scale_factor=1)
-        mlab.points3d(fx, fy, fz,
+
+        mlab.points3d(fx1, fy1, fz1,
                              mode="cube",
                              color=(1, 0, 0),
-                             scale_factor=1)
+                             scale_factor=1,
+                      transparent=True)
+
+        mlab.points3d(fx2, fy2, fz2,
+                             mode="cube",
+                             color=(0, 0, 1),
+                             scale_factor=1,
+                      transparent=True)
+
         mlab.show()
 
 
@@ -186,7 +198,9 @@ def traverse_croped(dir):
         mlab.points3d(x, y, z,
                       mode="cube",
                       color=(0, 1, 0),
-                      scale_factor=1)
+                      scale_factor=1,
+                      transparent=True)
+
         mlab.points3d(ex, ey, ez,
                       mode="cube",
                       color=(0, 0, 1),
@@ -194,7 +208,9 @@ def traverse_croped(dir):
         mlab.points3d(fx, fy, fz,
                              mode="cube",
                              color=(1, 0, 0),
-                             scale_factor=1)
+                             scale_factor=1,
+                      transparent=True)
+
         mlab.show()
         i+=1
 
@@ -202,7 +218,7 @@ def traverse_croped(dir):
 WORLD_SIZE=12.0
 GRID_SIZE=128
 if __name__ == '__main__':
-    # show_single('F:\\ProjectData\\Feature2\\right\\tooth12')
-    traverse_origin('F:\\ProjectData\\Feature2\\right\\tooth12\\')
-    # traverse_croped('F:\\ProjectData\\Feature\\\delete_test\\')
+    # show_single('F:\\ProjectData\\Feature\\croped\\')
+    traverse_origin('F:\\ProjectData\\Feature2\\test_mul\\1$RA57initial$1\\tooth2')
+    # traverse_croped('F:/ProjectData/Feature2/display_crop/feature_1')
 

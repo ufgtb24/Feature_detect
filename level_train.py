@@ -10,16 +10,14 @@ class Level(object):
     def __init__(self,Param,is_training,scope,keep_prob,phase,need_target=True,input_box=None):
         if input_box is not None:
             self.box = input_box
-            box_name_detector=self.box
         else:
             self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box,name='input_box')
-            box_name_detector = tf.Print(self.box, [self.box.name], 'box_name: ')
 
         self.keep_prob = keep_prob
         self.phase = phase
         self.targets = tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]])
         with tf.variable_scope(scope):
-            self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=box_name_detector).output
+            self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
         if need_target:
             self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets), axis=1) / 2., axis=0)
         if is_training==True:
@@ -31,34 +29,32 @@ class Level(object):
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [32,  32,   32,  32, 64,128,256]#决定左侧的参数多少和左侧的memory
-    fc_size = [128,6]
-    pooling=[True,False,False,True,True,True,True]
+    channels = [32, 32, 32, 64, 64, 128, 256]  # 决定左侧的参数多少和左侧的memory
+    fc_size = [128, 6]
+    pooling = [True, True,True, True, True, True, True]
     filter_size=[5,3,3,3,3,3,3] #决定左侧的参数多少
     stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
 
-
-
 class TrainDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
-    total_case_dir='F:/ProjectData/Feature/Tooth'
-    load_case_once=0  #每次读的病例数 若果=0,则只load一次，读入全部
-    switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    # total_case_dir='F:/ProjectData/Feature/Tooth'
+    total_case_dir='F:/ProjectData/Feature2/Tooth'
+    load_case_once=10  #每次读的病例数 若果=0,则只load一次，读入全部
+    switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 class TestDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
-    total_case_dir='F:/ProjectData/Feature/test_mul'
+    total_case_dir='F:/ProjectData/Feature2/test_mul'
     load_case_once=0  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
-
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
+    MODEL_PATH = 'F:/ProjectData/Feature2/model/level_1/'
     NEED_RESTORE=False
     NEED_SAVE=True
 
@@ -66,7 +62,7 @@ if __name__ == '__main__':
     phase = tf.placeholder(tf.bool,name='phase_input')
 
     level=Level(Param=NetConfig,is_training=True,scope='level_1',
-    keep_prob = keep_prob, phase = phase)
+                keep_prob=keep_prob, phase=phase)
 
     # saver = tf.train.Saver(max_to_keep=1)
 ################
@@ -82,13 +78,11 @@ if __name__ == '__main__':
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
+        sess.run(tf.global_variables_initializer())
 
         if NEED_RESTORE:
             assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
             saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
-        else:
-            #会初始化所有已经声明的变量
-            sess.run(tf.global_variables_initializer())
 
         winner_loss = 10**10
         step_from_last_mininum = 0
@@ -116,7 +110,7 @@ if __name__ == '__main__':
                 if loss_test<winner_loss:
                     winner_loss=loss_test
                     step_from_last_mininum=0
-                    if NEED_SAVE and loss_test<50:
+                    if NEED_SAVE and loss_test<200:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"

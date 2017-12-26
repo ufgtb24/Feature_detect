@@ -30,7 +30,7 @@ def _bias_variable( shape, name):
 def conv3d(input, output_channels, phase,pooling,filter_size=3,stride=1, scope="conv3d"):
     with tf.variable_scope(scope):
         filter =_weight_variable(shape=[filter_size]*3+[input.shape[-1]]+[output_channels],name='w')
-        conv = tf.nn.conv3d(input, filter, strides=[1]+[stride]*3+[1], padding='VALID')
+        conv = tf.nn.conv3d(input, filter, strides=[1]+[stride]*3+[1], padding='SAME')
         #标准模式，先bn，再激活
         h = tf.contrib.layers.batch_norm(conv, center=True, scale=True,
                                           decay=0.999, is_training=phase,
@@ -48,7 +48,7 @@ def pooling3d(input_tensor):
 
 	Performs 2D max pool with a default stride of 2.
 	"""
-    pool = tf.nn.max_pool3d(input_tensor, ksize=[1, 2, 2,2, 1], strides=[1, 2, 2,2, 1], padding='VALID')
+    pool = tf.nn.max_pool3d(input_tensor, ksize=[1, 2, 2,2, 1], strides=[1, 2, 2,2, 1], padding='SAME')
     return pool
 
 

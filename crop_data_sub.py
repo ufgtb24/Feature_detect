@@ -8,6 +8,7 @@ class CropedBatchGenerator(BatchGenerator):
     def __init__(self,data_config):
         super(CropedBatchGenerator,self).__init__(data_config)
 
+
     def get_total_case_list(self):
         case_name_list = []
         for fileName in os.listdir(self.total_case_dir):
@@ -29,11 +30,15 @@ class CropedBatchGenerator(BatchGenerator):
             full_txt_path=self.total_case_dir+'\\'+case_name+'.txt'
             box_list.append(self.loadpickle(full_pkl_path))
             y_list.append(np.loadtxt(full_txt_path))
-        self.box=np.concatenate(box_list,axis=0)
-        # self.box=np.expand_dims(np.concatenate(box_list,axis=0),axis=4)
+
+        self.box=np.expand_dims(np.concatenate(box_list,axis=0),axis=4)
         self.y=np.concatenate(y_list,axis=0)
         self.sample_num=self.y.shape[0]
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
+
+
+
+
 
 def crop_case(crop_center, box, shape_box,shape_crop):
     #不能序列操作，因为涉及索引
@@ -60,12 +65,10 @@ def crop_case(crop_center, box, shape_box,shape_crop):
 
     return box_crop
 
-def augment_crop(feature_id,case_dir, crop_center, box_batch, shape_box, shape_crop,
-                 bias_range,aug_num):
+def augment_crop(feature_id, case_name, crop_center, box_batch, shape_box, shape_crop,
+                 bias_range, aug_num):
 
     sampling_grid=np.random.uniform(-bias_range,bias_range,(aug_num,3)).astype(np.int32)
-    # sampling_grid=np.zeros((aug_num,3)).astype(np.int32)
-
     feature_aug_list=[]
     feature_txt_list=[]
     for aug in range(aug_num):
@@ -87,9 +90,9 @@ def augment_crop(feature_id,case_dir, crop_center, box_batch, shape_box, shape_c
     if os.path.exists(feature_path)==False:
         os.makedirs(feature_path)
     save_croped_batch(feature_aug,
-                      path=os.path.join(feature_path,case_dir+'.pkl'))
+                      path=os.path.join(feature_path, case_name + '.pkl'))
 
-    with open(os.path.join(feature_path,case_dir+'.txt'), 'wb') as file:
+    with open(os.path.join(feature_path, case_name+ '.txt'), 'wb') as file:
         np.savetxt(file, feature_txt, fmt='%d')
 
 
@@ -111,34 +114,23 @@ def save_croped_batch(obj,path):
 
 if __name__ == '__main__':
     CROP_AUG_SAVE_PATH = 'F:/ProjectData/Feature2/croped'
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
+    MODEL_PATH= 'F:/ProjectData/Feature2/model/level_1'
     shape_box=[128,128,128]
     shape_crop=[32,32,32]
     # crop
     class CropDataConfig(object):
         world_to_cubic = 128 / 12.
-        batch_size = 27
-        total_case_dir = 'F:\\ProjectData\\Feature2\\Tooth\\'
+        batch_size = 108
+        total_case_dir = 'F:/ProjectData/Feature2/Tooth'
         load_case_once = 1  # 每次读的病例数
         switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 
     test_batch_gen=BatchGenerator(CropDataConfig)
     total_case_list = os.listdir(CropDataConfig.total_case_dir)
-
-    # case_dir = total_case_list[0]
-    # box_batch, point_batch = test_batch_gen.get_batch()
-    # point_batch_list=np.split(point_batch,2,axis=1)
-    #
-    # #每个case对应一个pkl
-    # for feature_point,feature_id in zip(point_batch_list,range(len(point_batch_list))):
-    #     augment_crop(
-    #         feature_id+1,case_dir,feature_point, box_batch,
-    #         shape_box, shape_crop,
-    #     bias_range=16,aug_num=50)
-
-    for case_dir in total_case_list:
+    for case_name in total_case_list:
         box_batch, point_batch = test_batch_gen.get_batch()
+        # box_batch=np.squeeze(box_batch,axis=4)
         if test_batch_gen.index_dir>test_batch_gen.total_case_num:
         # if test_batch_gen.index_dir>2:
             break
@@ -147,10 +139,9 @@ if __name__ == '__main__':
         #每个case对应一个pkl
         for feature_point,feature_id in zip(point_batch_list,range(len(point_batch_list))):
             augment_crop(
-                feature_id+1,case_dir,feature_point, box_batch,
+                feature_id+1,case_name,feature_point, box_batch,
                 shape_box, shape_crop,
-            bias_range=10,aug_num=50)
-
+            bias_range=5,aug_num=9)
 
 
 
