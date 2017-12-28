@@ -2,7 +2,7 @@ import os
 
 from tensorflow.python.tools import freeze_graph
 
-MODEL_PATH = 'F:/ProjectData/Feature/model/'
+MODEL_PATH = 'F:/ProjectData/Feature2/model/'
 
 checkpoint_state_name = "checkpoint_state"
 input_graph_name = "input_graph.pb"
@@ -20,7 +20,6 @@ filename_tensor_name = "save/Const:0"
 output_graph = os.path.join(MODEL_PATH,'whole/output_graph.pb')
 clear_devices = False
 initializer_nodes=[]
-variable_names_whitelist=""
 variable_names_blacklist="box_crop_var1,box_crop_var2"
 freeze_graph.freeze_graph(input_graph,
                  input_saver,
@@ -32,6 +31,5 @@ freeze_graph.freeze_graph(input_graph,
                  output_graph,
                  clear_devices,
                  initializer_nodes,
-                variable_names_whitelist,
                 variable_names_blacklist
                           )

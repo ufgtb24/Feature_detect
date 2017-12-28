@@ -58,7 +58,6 @@ class BatchGenerator(object):
             y=np.concatenate(y_list,axis=0)
         return box,y
 
-
     def load_case_list(self,case_load):
         # 读取多个病例
         print('load data')
@@ -66,7 +65,7 @@ class BatchGenerator(object):
         y_list=[]
         for case_name in case_load:
             full_case_dir=self.total_case_dir+'\\'+case_name
-            box,y=self.load_single_side(full_case_dir,['tooth2'])
+            box,y=self.load_single_side(full_case_dir,['tooth4'])
             box_list.append(box)
             if self.need_target:
                 y_list.append(y)

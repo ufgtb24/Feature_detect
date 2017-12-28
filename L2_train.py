@@ -19,20 +19,20 @@ class TrainDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
     total_case_dir='F:/ProjectData/Feature2/croped/feature_1/'
-    load_case_once=1  #每次读的病例数
+    load_case_once=10  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 class TestDataConfig(object):
     world_to_cubic=128/12.
     batch_size=8
-    total_case_dir='F:/ProjectData/Feature2/test_crop/feature_1/'
+    total_case_dir='F:/ProjectData/Feature2/croped_test/feature_1/'
     load_case_once=1  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature2/model/level_21'
-    NEED_RESTORE=False
+    MODEL_PATH= 'F:/ProjectData/Feature2/model/level_21/'
+    NEED_RESTORE=True
     NEED_SAVE=True
 
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
@@ -55,13 +55,11 @@ if __name__ == '__main__':
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
+        sess.run(tf.global_variables_initializer())
 
         if NEED_RESTORE:
             assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
             saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
-        else:
-            #会初始化所有已经声明的变量
-            sess.run(tf.global_variables_initializer())
 
         winner_loss = 10**10
         step_from_last_mininum = 0

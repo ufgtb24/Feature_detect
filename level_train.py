@@ -29,7 +29,7 @@ class Level(object):
 
 class NetConfig(object):
     shape_box=[128,128,128]
-    channels = [32, 32, 32, 64, 64, 128, 256]  # 决定左侧的参数多少和左侧的memory
+    channels = [32, 32,  64, 64, 128, 128, 256]  # 决定左侧的参数多少和左侧的memory
     fc_size = [128, 6]
     pooling = [True, True,True, True, True, True, True]
     filter_size=[5,3,3,3,3,3,3] #决定左侧的参数多少
@@ -55,7 +55,7 @@ class TestDataConfig(object):
 
 if __name__ == '__main__':
     MODEL_PATH = 'F:/ProjectData/Feature2/model/level_1/'
-    NEED_RESTORE=False
+    NEED_RESTORE=True
     NEED_SAVE=True
 
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')

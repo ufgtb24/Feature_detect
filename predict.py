@@ -21,9 +21,9 @@ def recover_coord(fp_1,fp_2,shape_crop):
 
 class NetConfig_1(object):
     shape_box=SHAPE_BOX
-    channels = [32, 32,64, 64, 128,256,512]  # 决定左侧的参数多少和左侧的memory
+    channels = [32, 32,  64, 64, 128, 128, 256]  # 决定左侧的参数多少和左侧的memory
     fc_size = [128, 6]
-    pooling = [True, True, True, True, True, True,True]
+    pooling = [True, True,True, True, True, True, True]
     filter_size=[5,3,3,3,3,3,3] #决定左侧的参数多少
     stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
@@ -47,7 +47,7 @@ class DataConfig(object):
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature2/model/'
+    MODEL_PATH= 'F:/ProjectData/Feature2/model_tooth4/'
     NEED_RESTORE=False
     NEED_SAVE=True
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
