@@ -111,7 +111,6 @@ def save_croped_batch(obj,path):
 
 if __name__ == '__main__':
     CROP_AUG_SAVE_PATH = 'F:/ProjectData/Feature2/croped'
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
     shape_box=[128,128,128]
     shape_crop=[32,32,32]
     # crop

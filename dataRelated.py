@@ -2,6 +2,9 @@ import numpy as np
 import SimpleITK as sitk
 import os
 
+from config import DATA_LIST
+
+
 class BatchGenerator(object):
     def __init__(self,data_config,need_target=True):
 
@@ -65,7 +68,7 @@ class BatchGenerator(object):
         y_list=[]
         for case_name in case_load:
             full_case_dir=self.total_case_dir+'\\'+case_name
-            box,y=self.load_single_side(full_case_dir,['tooth4'])
+            box,y=self.load_single_side(full_case_dir,DATA_LIST)
             box_list.append(box)
             if self.need_target:
                 y_list.append(y)

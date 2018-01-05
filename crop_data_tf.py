@@ -57,7 +57,7 @@ def crop_case(crop_center, box, box_crop):
 
 
     reset=tf.assign(box_crop,tf.zeros(tf.shape(box_crop)))
-    reset = tf.Print(reset, [box_crop.name], 'reset')
+    # reset = tf.Print(reset, [box_crop.name], 'reset')
 
     with tf.control_dependencies([reset]):
         update = tf.assign(box_crop[a0[0]:a1[0],
@@ -67,7 +67,7 @@ def crop_case(crop_center, box, box_crop):
                            box[s0[0]: s1[0],
                            s0[1]: s1[1],
                            s0[2]: s1[2]])
-        update = tf.Print(update, [box_crop.name], 'update')
+        # update = tf.Print(update, [box_crop.name], 'update')
 
 
     with tf.control_dependencies([update]):
@@ -119,7 +119,6 @@ def crop_batch(crop_center, box_batch, shape_box,shape_crop,scope):
 
 if __name__ == '__main__':
     CROP_AUG_SAVE_PATH = 'F:/ProjectData/Feature/croped'
-    MODEL_PATH= 'F:/ProjectData/Feature/model/level_1'
     shape_box=[128,128,128]
     shape_crop=[32,32,32]
     # crop

@@ -3,6 +3,7 @@ import commen_structure as commen
 import os
 
 from CNN import CNN
+from config import MODEL_PATH
 from dataRelated import  BatchGenerator
 
 
@@ -54,7 +55,6 @@ class TestDataConfig(object):
     format = 'mhd'
 
 if __name__ == '__main__':
-    MODEL_PATH = 'F:/ProjectData/Feature2/model/level_1/'
     NEED_RESTORE=True
     NEED_SAVE=True
 
@@ -94,6 +94,8 @@ if __name__ == '__main__':
         start=False
 
         for iter in range(10**8):
+            if iter>10000:
+                break
             box_batch, y_batch=train_batch_gen.get_batch()
             feed_dict={level.box:box_batch, level.targets:y_batch,
                        phase:True,keep_prob:0.5}

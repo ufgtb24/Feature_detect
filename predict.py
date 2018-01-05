@@ -3,6 +3,8 @@ import os
 import numpy as np
 from mayavi import mlab
 # from crop_data import crop_batch
+from combine import generate_pb
+from config import MODEL_PATH
 from crop_data_tf import  crop_case
 from dataRelated import BatchGenerator
 from display import edges
@@ -47,9 +49,8 @@ class DataConfig(object):
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature2/model_tooth4/'
-    NEED_RESTORE=False
-    NEED_SAVE=True
+    NEED_WRITE_GRAPH=False
+    NEED_DISPLAY=True
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
 
@@ -95,7 +96,6 @@ if __name__ == '__main__':
 
     saver = tf.train.Saver()
 
-    test_batch_gen=BatchGenerator(DataConfig,need_target=False)
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         sess.run(tf.global_variables_initializer())
@@ -105,73 +105,77 @@ if __name__ == '__main__':
         saver_21.restore(sess, os.path.join(MODEL_PATH,'level_21/model.ckpt'))  # 存在就从模型中恢复变量
         saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
 
-        gd = sess.graph.as_graph_def()
-        for node in gd.node:
-            if node.op == 'RefSwitch':
-                node.op = 'Switch'
-                for index in range(len(node.input)):
-                    if 'moving_' in node.input[index]:
-                        node.input[index] = node.input[index] + '/read'
-            elif node.op == 'AssignSub':
-                node.op = 'Sub'
-                if 'use_locking' in node.attr: del node.attr['use_locking']
-            elif node.op == 'AssignAdd':
-                node.op = 'Add'
-                if 'use_locking' in node.attr: del node.attr['use_locking']
+        if NEED_WRITE_GRAPH:
+            gd = sess.graph.as_graph_def()
+            for node in gd.node:
+                if node.op == 'RefSwitch':
+                    node.op = 'Switch'
+                    for index in range(len(node.input)):
+                        if 'moving_' in node.input[index]:
+                            node.input[index] = node.input[index] + '/read'
+                elif node.op == 'AssignSub':
+                    node.op = 'Sub'
+                    if 'use_locking' in node.attr: del node.attr['use_locking']
+                elif node.op == 'AssignAdd':
+                    node.op = 'Add'
+                    if 'use_locking' in node.attr: del node.attr['use_locking']
 
 
-        tf.train.write_graph(gd, MODEL_PATH, 'whole/input_graph.pb')
-        # tf.train.write_graph(sess.graph_def, MODEL_PATH, 'whole/input_graph.pb')
-        writer = tf.summary.FileWriter(os.path.join(MODEL_PATH,'../logs/'), sess.graph)
+            tf.train.write_graph(gd, MODEL_PATH, 'whole/input_graph.pb')
+            # tf.train.write_graph(sess.graph_def, MODEL_PATH, 'whole/input_graph.pb')
+            # writer = tf.summary.FileWriter(os.path.join(MODEL_PATH,'../logs/'), sess.graph)
+            generate_pb()
 
-        while True:
-            box_batch = test_batch_gen.get_batch()
-            # box_batch, target = test_batch_gen.get_batch()
-            # target_1=target[:,:3]
-            # target_2=target[:,3:]
+        if NEED_DISPLAY:
+            test_batch_gen = BatchGenerator(DataConfig, need_target=False)
+            while True:
+                box_batch = test_batch_gen.get_batch()
+                # box_batch, target = test_batch_gen.get_batch()
+                # target_1=target[:,:3]
+                # target_2=target[:,3:]
 
-            feed_dict = {level_1.box: box_batch,
-                         phase: False, keep_prob: 1}
+                feed_dict = {level_1.box: box_batch,
+                             phase: False, keep_prob: 1}
 
-            f = sess.run(pred_end, feed_dict=feed_dict)
-            f_1=f[:3]
-            f_2=f[3:]
+                f = sess.run(pred_end, feed_dict=feed_dict)
+                f_1=f[:3]
+                f_2=f[3:]
+                print(f)
 
+                box=box_batch[0]
 
-            box=box_batch[0]
+                # box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2
+                # box[target_2[i,0], target_2[i,1], target_2[i,2]] = 2
+                box[f_1[0], f_1[1], f_1[2]] = 3
+                box[f_2[0], f_2[1], f_2[2]] = 3
 
-            # box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2
-            # box[target_2[i,0], target_2[i,1], target_2[i,2]] = 2
-            box[f_1[0], f_1[1], f_1[2]] = 3
-            box[f_2[0], f_2[1], f_2[2]] = 3
+                x, y, z = np.where(box == 1)
+                ex, ey, ez = edges(128)
+                # fx, fy, fz = np.where(box == 2)
+                fxp, fyp, fzp = np.where(box == 3)
 
-            x, y, z = np.where(box == 1)
-            ex, ey, ez = edges(128)
-            # fx, fy, fz = np.where(box == 2)
-            fxp, fyp, fzp = np.where(box == 3)
+                mlab.points3d(ex, ey, ez,
+                              mode="cube",
+                              color=(0, 0, 1),
+                              scale_factor=1)
 
-            mlab.points3d(ex, ey, ez,
-                          mode="cube",
-                          color=(0, 0, 1),
-                          scale_factor=1)
+                mlab.points3d(x, y, z,
+                              mode="cube",
+                              color=(0, 1, 0),
+                              scale_factor=1,
+                              transparent=True)
 
-            mlab.points3d(x, y, z,
-                          mode="cube",
-                          color=(0, 1, 0),
-                          scale_factor=1,
-                          transparent=True)
+                # mlab.points3d(fx, fy, fz,
+                #             mode="cube",
+                #             color=(1, 0, 0),
+                #             scale_factor=1,
+                #               transparent=True)
 
-            # mlab.points3d(fx, fy, fz,
-            #             mode="cube",
-            #             color=(1, 0, 0),
-            #             scale_factor=1,
-            #               transparent=True)
+                mlab.points3d(fxp, fyp, fzp,
+                            mode="cube",
+                            color=(0, 0, 1),
+                            scale_factor=1,
+                              transparent=True)
 
-            mlab.points3d(fxp, fyp, fzp,
-                        mode="cube",
-                        color=(0, 0, 1),
-                        scale_factor=1,
-                          transparent=True)
-
-            mlab.show()
+                mlab.show()
 
