@@ -49,7 +49,7 @@ class DataConfig(object):
 
 
 if __name__ == '__main__':
-    NEED_WRITE_GRAPH=True
+    NEED_WRITE_GRAPH=False
     NEED_DISPLAY=True
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
@@ -59,51 +59,17 @@ if __name__ == '__main__':
 
     saver_1 = tf.train.Saver(var_list=tf.global_variables())
 
-    # only support batch_size=1
-    box_whole=tf.squeeze(level_1.box,axis=0)
-
-    box_crop_1 = tf.get_variable('box_crop_var1', shape=SHAPE_CROP, dtype=tf.float32,
-                               initializer=tf.zeros_initializer)
-    box_crop_2 = tf.get_variable('box_crop_var2', shape=SHAPE_CROP, dtype=tf.float32,
-                               initializer=tf.zeros_initializer)
-
-    box_21 = crop_case(level_1.pred[0,:3], box_whole, box_crop_1)
-    box_22 = crop_case(level_1.pred[0,3:], box_whole, box_crop_2)
-
-    box_21 = tf.expand_dims(box_21, axis=0)
-    box_22 = tf.expand_dims(box_22, axis=0)
-
-    temp_var_g = set(tf.global_variables())
-    level_21=Level(Param=NetConfig_2, is_training=False,need_target=False,
-                   scope='level_21',input_box=box_21,keep_prob=keep_prob,phase=phase)
-
-    g_list = list(set(tf.global_variables()) - temp_var_g)
-    saver_21 = tf.train.Saver(var_list=g_list)
-
-    temp_var_g = set(tf.global_variables())
-    level_22=Level(Param=NetConfig_2, is_training=False, need_target=False,
-                   scope='level_22',input_box=box_22,keep_prob=keep_prob,phase=phase)
-
-    g_list = list(set(tf.global_variables()) - temp_var_g)
-    saver_22 = tf.train.Saver(var_list=g_list)
-
-
-    box_whole=tf.squeeze(level_1.box,axis=0)
-
-    pred_end_1 = recover_coord(level_1.pred[0, :3], level_21.pred[0], SHAPE_CROP)
-    pred_end_2 = recover_coord(level_1.pred[0, 3:], level_22.pred[0], SHAPE_CROP)
-    pred_end = tf.concat([pred_end_1,pred_end_2], axis=0,name="output_node")
-
-    saver = tf.train.Saver()
+    # pred_end = tf.concat([pred_end_1,pred_end_2], axis=0,name="output_node")
+    pred_end = tf.identity(level_1.pred,name='output_node')
+    pred_end=tf.to_int32(pred_end)[0]
+    # saver = tf.train.Saver()
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         sess.run(tf.global_variables_initializer())
         # assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
         saver_1.restore(sess, os.path.join(MODEL_PATH,'level_1/model.ckpt'))  # 存在就从模型中恢复变量
-        saver_22.restore(sess, os.path.join(MODEL_PATH,'level_22/model.ckpt'))  # 存在就从模型中恢复变量
-        saver_21.restore(sess, os.path.join(MODEL_PATH,'level_21/model.ckpt'))  # 存在就从模型中恢复变量
-        saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
+        # saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
 
         if NEED_WRITE_GRAPH:
             gd = sess.graph.as_graph_def()

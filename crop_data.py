@@ -1,5 +1,7 @@
 import os
 import numpy as np
+
+from config import DATA_LIST
 from dataRelated import BatchGenerator
 import pickle
 
@@ -116,9 +118,9 @@ if __name__ == '__main__':
     # crop
     class CropDataConfig(object):
         world_to_cubic = 128 / 12.
-        batch_size = 27
+        batch_size = len(DATA_LIST)*27
         total_case_dir = 'F:\\ProjectData\\Feature2\\Tooth\\'
-        load_case_once = 1  # 每次读的病例数
+        load_case_once = 1  # 每次读1个例数,并从中取27个，也就该病例的全部旋转扩展，进行平移扩展50倍
         switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 

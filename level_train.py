@@ -93,16 +93,14 @@ if __name__ == '__main__':
         longest_term=0
         start=False
 
-        for iter in range(10**8):
-            if iter>10000:
-                break
+        for iter in range(10000):
             box_batch, y_batch=train_batch_gen.get_batch()
             feed_dict={level.box:box_batch, level.targets:y_batch,
                        phase:True,keep_prob:0.5}
             _,loss_train=sess.run([level.optimizer,level.loss],feed_dict=feed_dict)
             if iter % test_step==0:
                 if start==False:
-                    save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
+                    save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
                     start=True
                 step_from_last_mininum += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
@@ -113,7 +111,7 @@ if __name__ == '__main__':
                     winner_loss=loss_test
                     step_from_last_mininum=0
                     if NEED_SAVE and loss_test<200:
-                        save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
+                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
                       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))

@@ -2,6 +2,7 @@ import tensorflow as tf
 import os
 from crop_data import CropedBatchGenerator
 from level_train import Level
+from config import MODEL_PATH, Feature_Target
 
 
 class NetConfig(object):
@@ -17,28 +18,28 @@ class NetConfig(object):
 
 class TrainDataConfig(object):
     world_to_cubic=128/12.
-    batch_size=4
-    total_case_dir='F:/ProjectData/Feature2/croped/feature_1/'
+    batch_size=8
+    total_case_dir='F:/ProjectData/Feature2/croped/feature_'+str(Feature_Target) + '/'
     load_case_once=10  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 class TestDataConfig(object):
     world_to_cubic=128/12.
-    batch_size=8
-    total_case_dir='F:/ProjectData/Feature2/croped_test/feature_1/'
+    batch_size=4
+    total_case_dir='F:/ProjectData/Feature2/croped_test/feature_'+str(Feature_Target) + '/'
     load_case_once=1  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
 
 
 if __name__ == '__main__':
-    MODEL_PATH= 'F:/ProjectData/Feature2/model/level_21/'
+    MODEL_PATH=MODEL_PATH+ 'level_2'+str(Feature_Target) + '/'
     NEED_RESTORE=True
     NEED_SAVE=True
 
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
 
-    level=Level(Param=NetConfig,is_training=True,scope='level_21',
+    level=Level(Param=NetConfig, is_training=True, scope='level_2'+str(Feature_Target),
                 keep_prob = keep_prob, phase = phase)
 
     # saver = tf.train.Saver(max_to_keep=1)
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         longest_term=0
         start=False
 
-        for iter in range(10**8):
+        for iter in range(500000):
             box_batch, y_batch=train_batch_gen.get_batch()
             feed_dict={level.box:box_batch, level.targets:y_batch,
                        level.phase:True,level.keep_prob:0.5}
