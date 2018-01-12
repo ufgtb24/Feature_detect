@@ -57,6 +57,7 @@ class TestDataConfig(object):
 if __name__ == '__main__':
     NEED_RESTORE=True
     NEED_SAVE=True
+    MODEL_PATH=MODEL_PATH+ 'level_1/'
 
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
@@ -93,7 +94,7 @@ if __name__ == '__main__':
         longest_term=0
         start=False
 
-        for iter in range(10000):
+        for iter in range(40000):
             box_batch, y_batch=train_batch_gen.get_batch()
             feed_dict={level.box:box_batch, level.targets:y_batch,
                        phase:True,keep_prob:0.5}

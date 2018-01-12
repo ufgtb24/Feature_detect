@@ -219,6 +219,6 @@ WORLD_SIZE=12.0
 GRID_SIZE=128
 if __name__ == '__main__':
     # show_single('F:\\ProjectData\\Feature\\croped\\')
-    traverse_origin('F:\\ProjectData\\Feature2\\test_mul\\1$RA57initial$1\\tooth2')
+    traverse_origin('F:\\ProjectData\\Feature2\\test_mul\\1$RA57initial$1\\tooth4')
     # traverse_croped('F:/ProjectData/Feature2/display_crop/feature_1')
 

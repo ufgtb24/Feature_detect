@@ -44,7 +44,7 @@ class DataConfig(object):
     world_to_cubic=128/12.
     batch_size=1
     total_case_dir='F:/ProjectData/Feature2/test_mul/'
-    load_case_once=1  #每次读的病例数
+    load_case_once=4  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据
 
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     saver_22 = tf.train.Saver(var_list=g_list)
 
 
-    box_whole=tf.squeeze(level_1.box,axis=0)
+    # box_whole=tf.squeeze(level_1.box,axis=0)
 
     pred_end_1 = recover_coord(level_1.pred[0, :3], level_21.pred[0], SHAPE_CROP)
     pred_end_2 = recover_coord(level_1.pred[0, 3:], level_22.pred[0], SHAPE_CROP)
@@ -127,9 +127,9 @@ if __name__ == '__main__':
             generate_pb()
 
         if NEED_DISPLAY:
-            test_batch_gen = BatchGenerator(DataConfig, need_target=False)
+            test_batch_gen = BatchGenerator(DataConfig, need_target=True)
             while True:
-                box_batch = test_batch_gen.get_batch()
+                box_batch,y_batch = test_batch_gen.get_batch()
                 # box_batch, target = test_batch_gen.get_batch()
                 # target_1=target[:,:3]
                 # target_2=target[:,3:]
@@ -138,9 +138,11 @@ if __name__ == '__main__':
                              phase: False, keep_prob: 1}
 
                 f = sess.run(pred_end, feed_dict=feed_dict)
+                loss=np.sum( np.square(f-y_batch[0]))/2.
+                print(loss)
                 f_1=f[:3]
                 f_2=f[3:]
-                print(f)
+                # print(f)
 
                 box=box_batch[0]
 

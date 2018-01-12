@@ -93,9 +93,9 @@ if __name__ == '__main__':
             generate_pb()
 
         if NEED_DISPLAY:
-            test_batch_gen = BatchGenerator(DataConfig, need_target=False)
+            test_batch_gen = BatchGenerator(DataConfig, need_target=True)
             while True:
-                box_batch = test_batch_gen.get_batch()
+                box_batch,y_batch = test_batch_gen.get_batch()
                 # box_batch, target = test_batch_gen.get_batch()
                 # target_1=target[:,:3]
                 # target_2=target[:,3:]
@@ -104,9 +104,11 @@ if __name__ == '__main__':
                              phase: False, keep_prob: 1}
 
                 f = sess.run(pred_end, feed_dict=feed_dict)
+                loss=np.sum( np.square(f-y_batch[0]))/2.
+                print(loss)
+
                 f_1=f[:3]
                 f_2=f[3:]
-                print(f)
 
                 box=box_batch[0]
 
