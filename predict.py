@@ -43,8 +43,8 @@ class NetConfig_2(object):
 class DataConfig(object):
     world_to_cubic=128/12.
     batch_size=1
-    total_case_dir='F:/ProjectData/Feature2/test_mul/'
-    load_case_once=4  #每次读的病例数
+    total_case_dir='F:/ProjectData/Feature2/saved_mhd/'
+    load_case_once=0  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据
 
 
@@ -127,19 +127,18 @@ if __name__ == '__main__':
             generate_pb()
 
         if NEED_DISPLAY:
-            test_batch_gen = BatchGenerator(DataConfig, need_target=True)
+            test_batch_gen = BatchGenerator(DataConfig, need_target=False,need_name=True)
             while True:
-                box_batch,y_batch = test_batch_gen.get_batch()
-                # box_batch, target = test_batch_gen.get_batch()
-                # target_1=target[:,:3]
-                # target_2=target[:,3:]
+                # box_batch,y_batch,name_batch = test_batch_gen.get_batch()
+                box_batch,name_batch = test_batch_gen.get_batch()
 
                 feed_dict = {level_1.box: box_batch,
                              phase: False, keep_prob: 1}
 
                 f = sess.run(pred_end, feed_dict=feed_dict)
-                loss=np.sum( np.square(f-y_batch[0]))/2.
-                print(loss)
+                # loss=np.sum( np.square(f-y_batch[0]))/2.
+                # print(loss,"  ",name_batch[0])
+                print(name_batch[0])
                 f_1=f[:3]
                 f_2=f[3:]
                 # print(f)
@@ -165,7 +164,7 @@ if __name__ == '__main__':
                               mode="cube",
                               color=(0, 1, 0),
                               scale_factor=1,
-                              transparent=True)
+                              transparent=False)
 
                 # mlab.points3d(fx, fy, fz,
                 #             mode="cube",

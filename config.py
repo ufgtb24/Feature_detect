@@ -1,5 +1,5 @@
 
-MODEL_PATH = 'F:/ProjectData/Feature2/model_tooth3/'
+MODEL_PATH = 'F:/ProjectData/Feature2/model_tooth4/'
 # MODEL_PATH = 'F:/ProjectData/Feature2/output_pb/'
-DATA_LIST=['tooth3']
+DATA_LIST=['tooth4']
 Feature_Target=1

@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--frozen_model_filename",
-                        default=os.path.join(MODEL_PATH,'output_graph.pb'),
+                        default=os.path.join(MODEL_PATH,'whole//output_graph.pb'),
                         type=str,
                         help="Frozen model file to import")
     args = parser.parse_args()
@@ -57,12 +57,11 @@ if __name__ == '__main__':
     keep_prob = graph.get_tensor_by_name('prefix/keep_prob_input:0')
     pred_end = graph.get_tensor_by_name('prefix/output_node:0')
 
-    test_batch_gen=BatchGenerator(DataConfig,need_target=False)
+    test_batch_gen=BatchGenerator(DataConfig,need_target=False,need_name=False)
 
     with tf.Session(graph=graph) as sess:
-
         while True:
-            box_batch = test_batch_gen.get_batch()
+            box_batch = test_batch_gen.get_batch()[0]
             # box_batch, target = test_batch_gen.get_batch()
             # target_1=target[:,:3]
             # target_2=target[:,3:]

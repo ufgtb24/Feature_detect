@@ -94,7 +94,7 @@ if __name__ == '__main__':
         longest_term=0
         start=False
 
-        for iter in range(40000):
+        for iter in range(20000):
             box_batch, y_batch=train_batch_gen.get_batch()
             feed_dict={level.box:box_batch, level.targets:y_batch,
                        phase:True,keep_prob:0.5}

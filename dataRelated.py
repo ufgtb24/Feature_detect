@@ -6,10 +6,11 @@ from config import DATA_LIST
 
 
 class BatchGenerator(object):
-    def __init__(self,data_config,need_target=True):
+    def __init__(self,data_config,need_target=True,need_name=False):
 
         self.box_train=None
         self.need_target=need_target
+        self.need_name=need_name
         self.total_case_dir=data_config.total_case_dir
         self.total_case_list=self.get_total_case_list()
         self.total_case_num=len(self.total_case_list)
@@ -66,14 +67,22 @@ class BatchGenerator(object):
         print('load data')
         box_list=[]
         y_list=[]
-        for case_name in case_load:
+        name_index_list=[]
+        if self.need_name:
+            self.case_load=np.array(case_load)
+        for case_name,i in zip(case_load,range(len(case_load))):
             full_case_dir=self.total_case_dir+'\\'+case_name
             box,y=self.load_single_side(full_case_dir,DATA_LIST)
             box_list.append(box)
+            if self.need_name:
+                name_index=np.ones((box.shape[0]),dtype=np.int32)*i
+                name_index_list.append(name_index)
             if self.need_target:
                 y_list.append(y)
 
         self.box=np.concatenate(box_list,axis=0)
+        if self.need_name:
+            self.name_index=np.concatenate(name_index_list,axis=0)
         if self.need_target:
             self.y=np.concatenate(y_list,axis=0)
         self.sample_num=self.box.shape[0]
@@ -132,6 +141,8 @@ class BatchGenerator(object):
         perm = np.arange(self.sample_num)
         np.random.shuffle(perm)  # 打乱
         self.box = self.box[perm]
+        if self.need_name:
+            self.name_index=self.name_index[perm]
         if self.need_target:
             self.y = self.y[perm]
 
@@ -146,15 +157,21 @@ class BatchGenerator(object):
 
 
         box_batch= self.box[self.index:   self.index + self.batch_size].copy()
+        if self.need_name:
+            global name_index_batch
+            name_index_batch= self.name_index[self.index:   self.index + self.batch_size]
         if self.need_target:
             global y_batch
             y_batch= self.y[self.index:   self.index + self.batch_size]
         self.index+=self.batch_size
-
+        return_list=[box_batch]
         if self.need_target:
-            return box_batch,y_batch
-        else:
-            return box_batch
+            return_list.append(y_batch)
+        if self.need_name:
+            return_list.append(self.case_load[name_index_batch])
+
+        return return_list
+
 
 
 
