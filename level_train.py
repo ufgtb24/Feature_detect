@@ -3,16 +3,13 @@ import commen_structure as commen
 import os
 
 from CNN import CNN
-from config import MODEL_PATH
+from config import MODEL_PATH, SHAPE_BOX
 from dataRelated import  BatchGenerator
 
 
 class Level(object):
-    def __init__(self,Param,is_training,scope,keep_prob,phase,need_target=True,input_box=None):
-        if input_box is not None:
-            self.box = input_box
-        else:
-            self.box = tf.placeholder(tf.float32, shape=[None]+ Param.shape_box,name='input_box')
+    def __init__(self,Param,is_training,scope,input_box,keep_prob,phase,need_target=True):
+        self.box = input_box
 
         self.keep_prob = keep_prob
         self.phase = phase
@@ -29,7 +26,7 @@ class Level(object):
                                              max_global_norm=1.0).optimize_op
 
 class NetConfig(object):
-    shape_box=[128,128,128]
+    shape_box=SHAPE_BOX
     channels = [32, 32,  64, 64, 128, 128, 256]  # 决定左侧的参数多少和左侧的memory
     fc_size = [128, 6]
     pooling = [True, True,True, True, True, True, True]
@@ -61,8 +58,10 @@ if __name__ == '__main__':
 
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
+    input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
+    box=tf.to_float(input_box)
 
-    level=Level(Param=NetConfig,is_training=True,scope='level_1',
+    level=Level(Param=NetConfig,is_training=True,scope='level_1',input_box=box,
                 keep_prob=keep_prob, phase=phase)
 
     # saver = tf.train.Saver(max_to_keep=1)

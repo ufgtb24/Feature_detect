@@ -53,8 +53,10 @@ if __name__ == '__main__':
     NEED_DISPLAY=True
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
+    input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
+    box=tf.to_float(input_box)
 
-    level_1=Level(Param=NetConfig_1, is_training=False, scope='level_1',
+    level_1=Level(Param=NetConfig_1, is_training=False, scope='level_1',input_box=box,
                   keep_prob=keep_prob,phase=phase)
 
     saver_1 = tf.train.Saver(var_list=tf.global_variables())
@@ -164,7 +166,7 @@ if __name__ == '__main__':
                               mode="cube",
                               color=(0, 1, 0),
                               scale_factor=1,
-                              transparent=False)
+                              transparent=True)
 
                 # mlab.points3d(fx, fy, fz,
                 #             mode="cube",
