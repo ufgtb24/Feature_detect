@@ -3,7 +3,7 @@ import commen_structure as commen
 import os
 
 from CNN import CNN
-from config import MODEL_PATH, SHAPE_BOX
+from config import MODEL_PATH, SHAPE_BOX,DATA_LIST
 from dataRelated import  BatchGenerator
 
 
@@ -39,6 +39,7 @@ class TrainDataConfig(object):
     batch_size=4
     # total_case_dir='F:/ProjectData/Feature/Tooth'
     total_case_dir='F:/ProjectData/Feature2/Tooth'
+    data_list=DATA_LIST
     load_case_once=10  #每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
@@ -47,6 +48,7 @@ class TestDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
     total_case_dir='F:/ProjectData/Feature2/test_mul'
+    data_list=DATA_LIST
     load_case_once=0  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'

@@ -19,5 +19,5 @@ def switch_line_folder(case_dir):
 
 
 if __name__=='__main__':
-    switch_line_folder('F:\\ProjectData\\Feature2\\predict')
-    # switch_line('F:\\ProjectData\\Feature2\\crop_test\\tooth2/info.txt')
+    # switch_line_folder('F:\\ProjectData\\Feature2\\predict')
+    switch_line('F:\\ProjectData\\Feature2\\Tooth_test\\Final$AN10\\tooth3\\info.txt')
