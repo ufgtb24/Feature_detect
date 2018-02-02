@@ -13,33 +13,41 @@ class Level(object):
 
         self.keep_prob = keep_prob
         self.phase = phase
-        self.targets = tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]])
+        self.targets={}
+        for task in Param.tasks:
+            self.targets[task]=tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]],name="Place_holder"+task)
+
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
-        if need_target:
-            self.loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.pred - self.targets), axis=1) / 2., axis=0)
-        if is_training==True:
-            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-            with tf.control_dependencies(update_ops):
-                # Ensures that we execute the update_ops before performing the train_step
-                self.optimizer = commen.Optimizer(self.loss, initial_learning_rate=0.01,
+            if need_target:
+                self.loss=0
+                for task in Param.tasks:
+                    self.loss+=tf.reduce_mean(tf.reduce_sum(tf.square(self.pred[task] - self.targets[task]), axis=1) / 2., axis=0)
+            if is_training==True:
+                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+                with tf.control_dependencies(update_ops):
+                    # Ensures that we execute the update_ops before performing the train_step
+                    self.optimizer = commen.Optimizer(self.loss, initial_learning_rate=0.01,
                                              max_global_norm=1.0).optimize_op
 
 class NetConfig(object):
     shape_box=SHAPE_BOX
     channels = [32, 32,  64, 64, 128, 128, 256]  # 决定左侧的参数多少和左侧的memory
+    tasks=['left','right']
     fc_size = [128, 6]
     pooling = [True, True,True, True, True, True, True]
     filter_size=[5,3,3,3,3,3,3] #决定左侧的参数多少
     stride=[1,1,1,1,1,1,1] #决定右侧的memory
     layer_num = len(channels) - 1
+    task_layer_num=2
 
 class TrainDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
     # total_case_dir='F:/ProjectData/Feature/Tooth'
-    total_case_dir='F:/ProjectData/Feature2/Tooth'
+    total_case_dir='F:/ProjectData/Feature2/Tooth_test/Tooth'
     data_list=DATA_LIST
+    task_list={'left':[],'right':[]}
     load_case_once=10  #每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
@@ -54,7 +62,7 @@ class TestDataConfig(object):
     format = 'mhd'
 
 if __name__ == '__main__':
-    NEED_RESTORE=True
+    NEED_RESTORE=False
     NEED_SAVE=True
     MODEL_PATH=MODEL_PATH+ 'level_1/'
 
