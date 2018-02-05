@@ -3,6 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="6953e4f6-32dc-4230-94f1-cee426f45bbb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CNN.py" afterPath="$PROJECT_DIR$/CNN.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/commen_structure.py" afterPath="$PROJECT_DIR$/commen_structure.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataRelated.py" afterPath="$PROJECT_DIR$/dataRelated.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/display.py" afterPath="$PROJECT_DIR$/display.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/level_train.py" afterPath="$PROJECT_DIR$/level_train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -17,7 +22,7 @@
     <SUITE FILE_PATH="coverage/Feature_Detect$delete_0.coverage" NAME="delete_0 Coverage Results" MODIFIED="1509533083838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$commen_structure.coverage" NAME="commen_structure Coverage Results" MODIFIED="1509069078587" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$crop_data_sub.coverage" NAME="crop_data_sub Coverage Results" MODIFIED="1513502308241" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Feature_Detect$display.coverage" NAME="display Coverage Results" MODIFIED="1517558533854" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Feature_Detect$display.coverage" NAME="display Coverage Results" MODIFIED="1517822868398" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$test.coverage" NAME="test Coverage Results" MODIFIED="1510551910948" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$test__1_.coverage" NAME="test (1) Coverage Results" MODIFIED="1512102532319" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Tests" />
     <SUITE FILE_PATH="coverage/Feature_Detect$dataRelated.coverage" NAME="dataRelated Coverage Results" MODIFIED="1514280761276" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -30,43 +35,33 @@
     <SUITE FILE_PATH="coverage/Feature_Detect$test2.coverage" NAME="test2 Coverage Results" MODIFIED="1513234290427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Tests" />
     <SUITE FILE_PATH="coverage/Feature_Detect$level_2_train.coverage" NAME="level_2_train Coverage Results" MODIFIED="1509598728960" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$commen_process.coverage" NAME="commen_process Coverage Results" MODIFIED="1517301665995" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Feature_Detect$level_train.coverage" NAME="level_train Coverage Results" MODIFIED="1517560381467" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Feature_Detect$level_train.coverage" NAME="level_train Coverage Results" MODIFIED="1517825504850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$crop_data.coverage" NAME="crop_data Coverage Results" MODIFIED="1515553911889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$predict.coverage" NAME="predict Coverage Results" MODIFIED="1516155911148" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$augment_data.coverage" NAME="augment_data Coverage Results" MODIFIED="1508468907489" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5315495">
+    <splitter split-orientation="horizontal" split-proportion="0.5954473">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-          <file leaf-file-name="commen_process.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/commen_process.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="192">
-                  <caret line="9" column="33" lean-forward="false" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file leaf-file-name="control.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/control.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1032">
+                <state relative-caret-position="0">
                   <caret line="57" column="0" lean-forward="false" selection-start-line="57" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="dataRelated.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="dataRelated.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/dataRelated.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="538">
-                  <caret line="55" column="46" lean-forward="true" selection-start-line="55" selection-start-column="46" selection-end-line="55" selection-end-column="46" />
+                <state relative-caret-position="528">
+                  <caret line="22" column="39" lean-forward="false" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1516848230990" expanded="true" signature="86:6345" ph="..." />
+                    <marker date="1517817163036" expanded="true" signature="86:6345" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -75,8 +70,8 @@
           <file leaf-file-name="display.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/display.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="692">
-                  <caret line="229" column="0" lean-forward="true" selection-start-line="229" selection-start-column="0" selection-end-line="229" selection-end-column="0" />
+                <state relative-caret-position="638">
+                  <caret line="226" column="82" lean-forward="false" selection-start-line="226" selection-start-column="82" selection-end-line="226" selection-end-column="82" />
                   <folding>
                     <element signature="e#0#24#0" expanded="true" />
                   </folding>
@@ -94,24 +89,14 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="level_train.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="level_train.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/level_train.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="394">
-                  <caret line="85" column="26" lean-forward="true" selection-start-line="85" selection-start-column="26" selection-end-line="85" selection-end-column="26" />
+                <state relative-caret-position="518">
+                  <caret line="78" column="18" lean-forward="true" selection-start-line="78" selection-start-column="18" selection-end-line="78" selection-end-column="18" />
                   <folding>
                     <element signature="e#0#23#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="array_ops.py" pinned="false" current-in-tab="false">
-            <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/array_ops.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="403">
-                  <caret line="1499" column="38" lean-forward="true" selection-start-line="1499" selection-start-column="38" selection-end-line="1499" selection-end-column="38" />
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -120,21 +105,31 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-          <file leaf-file-name="CNN.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="CNN.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/CNN.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="648">
-                  <caret line="28" column="0" lean-forward="false" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+                <state relative-caret-position="216">
+                  <caret line="22" column="57" lean-forward="false" selection-start-line="22" selection-start-column="57" selection-end-line="22" selection-end-column="57" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="commen_structure.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="variable_scope.py" pinned="false" current-in-tab="false">
+            <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/variable_scope.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="403">
+                  <caret line="1423" column="4" lean-forward="false" selection-start-line="1423" selection-start-column="4" selection-end-line="1423" selection-end-column="4" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="commen_structure.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/commen_structure.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="356">
-                  <caret line="32" column="24" lean-forward="false" selection-start-line="32" selection-start-column="24" selection-end-line="32" selection-end-column="24" />
+                <state relative-caret-position="662">
+                  <caret line="107" column="11" lean-forward="true" selection-start-line="107" selection-start-column="11" selection-end-line="107" selection-end-column="11" />
                   <folding />
                 </state>
               </provider>
@@ -147,28 +142,9 @@
                   <caret line="12" column="13" lean-forward="false" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1516848230990" expanded="true" signature="86:6345" ph="..." />
+                    <marker date="1517817163036" expanded="true" signature="86:6345" ph="..." />
+                    <marker date="1517817163036" expanded="true" signature="155:787" ph="..." />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="nt.py" pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/.PyCharm2017.2/system/python_stubs/-1249248731/nt.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="293">
-                  <caret line="275" column="4" lean-forward="false" selection-start-line="275" selection-start-column="4" selection-end-line="275" selection-end-column="4" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="load_pb.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/load_pb.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="432">
-                  <caret line="27" column="0" lean-forward="false" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -176,12 +152,23 @@
           <file leaf-file-name="level_train.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/level_train.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="768">
-                  <caret line="36" column="14" lean-forward="false" selection-start-line="36" selection-start-column="14" selection-end-line="36" selection-end-column="14" />
+                <state relative-caret-position="339">
+                  <caret line="17" column="25" lean-forward="true" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
                   <folding>
                     <element signature="e#0#23#0" expanded="true" />
-                    <marker date="1517570383717" expanded="true" signature="731:932" ph="..." />
-                    <marker date="1517570383717" expanded="true" signature="1386:1724" ph="..." />
+                    <marker date="1517825499938" expanded="true" signature="1716:2436" ph="..." />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="test2.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Tests/test2.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="264">
+                  <caret line="11" column="28" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="142" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#0#23#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -222,6 +209,7 @@
       <find>need_target</find>
       <find>summary</find>
       <find>total_case_dir</find>
+      <find>task_list</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -239,10 +227,8 @@
         <option value="C:/Program Files/Python35/Lib/site-packages/tensorflow/__init__.py" />
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/Tests/test.py" />
-        <option value="$PROJECT_DIR$/Tests/test2.py" />
         <option value="$PROJECT_DIR$/crop_data_sub.py" />
         <option value="$PROJECT_DIR$/augment_data.py" />
-        <option value="$PROJECT_DIR$/commen_structure.py" />
         <option value="$PROJECT_DIR$/combine.py" />
         <option value="$PROJECT_DIR$/crop_data_tf.py" />
         <option value="$PROJECT_DIR$/L2_train.py" />
@@ -250,12 +236,14 @@
         <option value="$PROJECT_DIR$/predict_1.py" />
         <option value="$PROJECT_DIR$/load_pb.py" />
         <option value="$PROJECT_DIR$/predict.py" />
-        <option value="$PROJECT_DIR$/dataRelated.py" />
         <option value="$PROJECT_DIR$/control.py" />
         <option value="$PROJECT_DIR$/commen_process.py" />
-        <option value="$PROJECT_DIR$/display.py" />
         <option value="$PROJECT_DIR$/config.py" />
+        <option value="$PROJECT_DIR$/Tests/test2.py" />
+        <option value="$PROJECT_DIR$/dataRelated.py" />
         <option value="$PROJECT_DIR$/CNN.py" />
+        <option value="$PROJECT_DIR$/commen_structure.py" />
+        <option value="$PROJECT_DIR$/display.py" />
         <option value="$PROJECT_DIR$/level_train.py" />
       </list>
     </option>
@@ -267,10 +255,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-9" />
-    <option name="y" value="-9" />
-    <option name="width" value="2578" />
-    <option name="height" value="1408" />
+    <option name="x" value="-8" />
+    <option name="y" value="2" />
+    <option name="width" value="2572" />
+    <option name="height" value="1396" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -329,7 +317,6 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -337,10 +324,21 @@
               <item name="Feature_Detect" type="b2602c69:ProjectViewProjectNode" />
               <item name="Feature_Detect" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="Feature_Detect" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Feature_Detect" type="462c0819:PsiDirectoryNode" />
+              <item name="log" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Feature_Detect" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Feature_Detect" type="462c0819:PsiDirectoryNode" />
+              <item name="Tests" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -607,7 +605,21 @@
       <option name="project" value="LOCAL" />
       <updated>1517570472502</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="添加多任务的权值分割，但是仅对不同病例，没有覆盖不同特征">
+      <created>1517570496617</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1517570496617</updated>
+    </task>
+    <task id="LOCAL-00019" summary="multi-task joint train">
+      <created>1517816624339</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1517816624340</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TodoView">
@@ -624,11 +636,11 @@
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32956383" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32956383" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26494345" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26494345" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3279483" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.696885" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25838658" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32956383" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15615016" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16214058" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875606" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -700,7 +712,8 @@
     <MESSAGE value="添加 input 类型转换 uint8 到 float32" />
     <MESSAGE value="1 add control &#10;2 dataRelated isolated from DATALIST" />
     <MESSAGE value="添加多任务的权值分割，但是仅对不同病例，没有覆盖不同特征" />
-    <option name="LAST_COMMIT_MESSAGE" value="添加多任务的权值分割，但是仅对不同病例，没有覆盖不同特征" />
+    <MESSAGE value="multi-task joint train" />
+    <option name="LAST_COMMIT_MESSAGE" value="multi-task joint train" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -724,10 +737,6 @@
           <url>file://$PROJECT_DIR$/crop_data_sub.py</url>
           <line>84</line>
           <option name="timeStamp" value="34" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/display.py</url>
-          <option name="timeStamp" value="36" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/crop_data.py</url>
@@ -794,6 +803,16 @@
           <line>68</line>
           <option name="timeStamp" value="108" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/commen_structure.py</url>
+          <line>135</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/display.py</url>
+          <line>103</line>
+          <option name="timeStamp" value="119" />
+        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -802,18 +821,11 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="115" />
+      <option name="time" value="120" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/control_flow_ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="483">
-          <caret line="2706" column="76" lean-forward="false" selection-start-line="2706" selection-start-column="68" selection-end-line="2706" selection-end-column="76" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/resource_variable_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="228">
@@ -846,13 +858,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="403">
           <caret line="4286" column="33" lean-forward="false" selection-start-line="4286" selection-start-column="33" selection-end-line="4286" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/variable_scope.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="237">
-          <caret line="1183" column="4" lean-forward="false" selection-start-line="1183" selection-start-column="4" selection-end-line="1183" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -943,24 +948,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Tests/test2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="8" column="34" lean-forward="false" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/tools/freeze_graph.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="293">
           <caret line="152" column="4" lean-forward="false" selection-start-line="152" selection-start-column="4" selection-end-line="152" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Tests/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="52" column="0" lean-forward="false" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -1025,20 +1016,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2017.2/system/python_stubs/-1249248731/builtins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-183">
-          <caret line="5682" column="6" lean-forward="false" selection-start-line="5682" selection-start-column="6" selection-end-line="5682" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2017.2/system/python_stubs/-1249248731/numpy/core/multiarray.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="114" column="4" lean-forward="false" selection-start-line="114" selection-start-column="4" selection-end-line="114" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/numpy/core/numeric.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="293">
@@ -1091,31 +1068,20 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19464">
           <caret line="839" column="0" lean-forward="false" selection-start-line="839" selection-start-column="0" selection-end-line="840" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/commen_process.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
+        <state relative-caret-position="0">
           <caret line="9" column="33" lean-forward="false" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/display.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="692">
-          <caret line="229" column="0" lean-forward="true" selection-start-line="229" selection-start-column="0" selection-end-line="229" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#24#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/control.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1032">
+        <state relative-caret-position="0">
           <caret line="57" column="0" lean-forward="false" selection-start-line="57" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
           <folding />
         </state>
@@ -1123,7 +1089,7 @@
     </entry>
     <entry file="file://$USER_HOME$/.PyCharm2017.2/system/python_stubs/-1249248731/nt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="293">
+        <state relative-caret-position="6600">
           <caret line="275" column="4" lean-forward="false" selection-start-line="275" selection-start-column="4" selection-end-line="275" selection-end-column="4" />
           <folding />
         </state>
@@ -1145,34 +1111,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/commen_structure.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="356">
-          <caret line="32" column="24" lean-forward="false" selection-start-line="32" selection-start-column="24" selection-end-line="32" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/array_ops.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="403">
+        <state relative-caret-position="35448">
           <caret line="1499" column="38" lean-forward="true" selection-start-line="1499" selection-start-column="38" selection-end-line="1499" selection-end-column="38" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CNN.py">
+    <entry file="file://$USER_HOME$/.PyCharm2017.2/system/python_stubs/-1249248731/numpy/core/multiarray.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="648">
-          <caret line="28" column="0" lean-forward="false" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+        <state relative-caret-position="355">
+          <caret line="600" column="4" lean-forward="true" selection-start-line="600" selection-start-column="4" selection-end-line="600" selection-end-column="4" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/level_train.py">
+    <entry file="file://$USER_HOME$/.PyCharm2017.2/system/python_stubs/-1249248731/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="394">
-          <caret line="85" column="26" lean-forward="true" selection-start-line="85" selection-start-column="26" selection-end-line="85" selection-end-column="26" />
+        <state relative-caret-position="403">
+          <caret line="2831" column="8" lean-forward="false" selection-start-line="2831" selection-start-column="8" selection-end-line="2831" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Tests/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="672">
+          <caret line="52" column="0" lean-forward="true" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Tests/test2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="264">
+          <caret line="11" column="28" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="142" selection-end-column="0" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
@@ -1181,11 +1155,63 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dataRelated.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="538">
-          <caret line="55" column="46" lean-forward="true" selection-start-line="55" selection-start-column="46" selection-end-line="55" selection-end-column="46" />
+        <state relative-caret-position="528">
+          <caret line="22" column="39" lean-forward="false" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1516848230990" expanded="true" signature="86:6345" ph="..." />
+            <marker date="1517817163036" expanded="true" signature="86:6345" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/variable_scope.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="403">
+          <caret line="1423" column="4" lean-forward="false" selection-start-line="1423" selection-start-column="4" selection-end-line="1423" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CNN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="22" column="57" lean-forward="false" selection-start-line="22" selection-start-column="57" selection-end-line="22" selection-end-column="57" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Program Files/Python35/Lib/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="276">
+          <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/display.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="638">
+          <caret line="226" column="82" lean-forward="false" selection-start-line="226" selection-start-column="82" selection-end-line="226" selection-end-column="82" />
+          <folding>
+            <element signature="e#0#24#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/commen_structure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="662">
+          <caret line="107" column="11" lean-forward="true" selection-start-line="107" selection-start-column="11" selection-end-line="107" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/level_train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="518">
+          <caret line="78" column="18" lean-forward="true" selection-start-line="78" selection-start-column="18" selection-end-line="78" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
           </folding>
         </state>
       </provider>

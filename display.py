@@ -167,10 +167,10 @@ def traverse_origin(dir):
                       scale_factor=1,)
                       # transparent=True)
 
-        mlab.points3d(ex, ey, ez,
-                      mode="cube",
-                      color=(0, 0, 1),
-                      scale_factor=1)
+        # mlab.points3d(ex, ey, ez,
+        #               mode="cube",
+        #               color=(0, 0, 1),
+        #               scale_factor=1)
 
         mlab.points3d(fx1, fy1, fz1,
                       mode="cube",
@@ -224,6 +224,6 @@ WORLD_SIZE = 12.0
 GRID_SIZE = 128
 if __name__ == '__main__':
     # show_single('F:\\ProjectData\\Feature\\croped\\')
-    traverse_origin('F:\\ProjectData\\Feature2\\Tooth_test\\Tooth\\0816$PS4Initial\\tooth15')
+    traverse_origin('F:\\ProjectData\\Feature2\\Tooth_test\\Tooth\\0816$PA112Final\\tooth2')
     # traverse_croped('F:/ProjectData/Feature2/display_crop/feature_1')
 

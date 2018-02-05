@@ -14,16 +14,15 @@ class CNN(object):
         self.phase=phase
         self.keep_prob=keep_prob
         box=tf.expand_dims(box,axis=4)
-        if len(param.tasks)==1:
+        if len(param.task_dict)==1:
             self.param.task_layer_num=0
         commen_layer_index = range(self.param.layer_num - self.param.task_layer_num)
         task_layer_index = range(self.param.layer_num - self.param.task_layer_num, self.param.layer_num)
         commen = self.build_CNN(box, commen_layer_index, 'commen')
         self.output = {}
-
-        for task in param.tasks:
+        for task,task_content in param.task_dict.items():
             conv = self.build_CNN(commen,task_layer_index, task)
-            fc_size=self.param.fc_size[task]
+            fc_size=task_content['fc_size']
             fc_output=self.build_FC(conv,fc_size,task)
             self.output[task]=fc_output
 
