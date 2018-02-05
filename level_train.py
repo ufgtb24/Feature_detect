@@ -14,15 +14,19 @@ class Level(object):
         self.keep_prob = keep_prob
         self.phase = phase
         self.targets={}
-        for task in Param.tasks:
-            self.targets[task]=tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]],name="Place_holder"+task)
+        # for task in Param.tasks:
+        #     self.targets[task]=tf.placeholder(tf.float32, shape=[None, Param.fc_size[-1]],name="Place_holder"+task)
+        target_size=sum([value[1] for value in Param.fc_size.values()])
+        self.target_mul_tasks=tf.placeholder(tf.float32,
+                                             shape=[None, target_size],
+                                             name="Place_holder_task")
 
         with tf.variable_scope(scope):
             self.pred = CNN(param=Param, phase=self.phase,keep_prob=self.keep_prob, box=self.box).output
+
             if need_target:
-                self.loss=0
-                for task in Param.tasks:
-                    self.loss+=tf.reduce_mean(tf.reduce_sum(tf.square(self.pred[task] - self.targets[task]), axis=1) / 2., axis=0)
+                pred_mul_tasks=tf.concat(list(self.pred.values()),axis=1)
+                self.loss=tf.reduce_mean(tf.reduce_sum(tf.square(pred_mul_tasks - self.target_mul_tasks), axis=1) / 2., axis=0)
             if is_training==True:
                 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
                 with tf.control_dependencies(update_ops):
@@ -34,7 +38,8 @@ class NetConfig(object):
     shape_box=SHAPE_BOX
     channels = [32, 32,  64, 64, 128, 128, 256]  # 决定左侧的参数多少和左侧的memory
     tasks=['left','right']
-    fc_size = [128, 6]
+    fc_size = {'left':[128, 6],'right':[128,6]}
+    fc_size.values()
     pooling = [True, True,True, True, True, True, True]
     filter_size=[5,3,3,3,3,3,3] #决定左侧的参数多少
     stride=[1,1,1,1,1,1,1] #决定右侧的memory
@@ -46,8 +51,8 @@ class TrainDataConfig(object):
     batch_size=4
     # total_case_dir='F:/ProjectData/Feature/Tooth'
     total_case_dir='F:/ProjectData/Feature2/Tooth_test/Tooth'
-    data_list=DATA_LIST
-    task_list={'left':[],'right':[]}
+    task_list={'left':['tooth2','tooth3','tooth4','tooth5'],
+               'right':['tooth12','tooth13','tooth14','tooth15']}
     load_case_once=10  #每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
@@ -56,7 +61,7 @@ class TestDataConfig(object):
     world_to_cubic=128/12.
     batch_size=4
     total_case_dir='F:/ProjectData/Feature2/test_mul'
-    data_list=DATA_LIST
+    task_list=TrainDataConfig.task_list
     load_case_once=0  #每次读的病例数
     switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'

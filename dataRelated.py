@@ -20,7 +20,7 @@ class BatchGenerator(object):
         self.switch_after_shuffles=data_config.switch_after_shuffles
         self.world_to_cubic=data_config.world_to_cubic
         self.batch_size=data_config.batch_size
-        self.data_list=data_config.data_list
+        self.task_list=data_config.task_list
         self.index=0
         self.index_dir=0
         self.shuffle_times=0
@@ -47,7 +47,7 @@ class BatchGenerator(object):
         self.index_dir += self.load_case_once
         return case_load
 
-    def load_single_side(self,full_case_dir,tooth_list):
+    def load_single_task(self, full_case_dir, tooth_list):
         # 读取一个病例中的多颗牙齿
         box_list=[]
         y_list=[]
@@ -61,7 +61,6 @@ class BatchGenerator(object):
         if self.need_target:
             y=np.concatenate(y_list,axis=0)
         return box,y
-
     def load_case_list(self,case_load):
         # 读取多个病例
         print('load data')
@@ -72,7 +71,12 @@ class BatchGenerator(object):
             self.case_load=np.array(case_load)
         for case_name,i in zip(case_load,range(len(case_load))):
             full_case_dir=self.total_case_dir+'\\'+case_name
-            box,y=self.load_single_side(full_case_dir,self.data_list)
+
+            task_data_list=list(map(self.load_single_task,
+                [full_case_dir,full_case_dir],
+                list(self.task_list.values())))
+
+            box,y=self.load_single_task(full_case_dir, self.data_list)
             box_list.append(box)
             if self.need_name:
                 name_index=np.ones((box.shape[0]),dtype=np.int32)*i
