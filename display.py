@@ -71,10 +71,10 @@ def loadpickle(path):
 
 def load_y(info_file, world_to_cubic):
     info = np.reshape(np.loadtxt(info_file), [-1, 9])
-    origin = np.reshape(info[:, :3], [-1, 3])
-    origin = np.reshape(np.tile(origin, np.array([2])), [-1, 3])
-    target = np.reshape(info[:, 3:], [-1, 3])
-    target = np.reshape((target - origin) * world_to_cubic, [-1, 6]).astype(np.int32)
+    origin = info[:, :3]
+    origin = np.tile(origin, np.array([2]))
+    target = info[:, 3:]
+    target = ((target - origin) * world_to_cubic).astype(int)
     return target
 
 
@@ -142,6 +142,29 @@ def show_single(dir):
 
     mlab.show()
 
+def check_availability(dir):
+    Tooth_dir=os.listdir(dir)
+    error_num=0
+
+    for case_name in Tooth_dir:
+        full_case_dir = dir + '\\' + case_name
+
+
+        for tooth in os.listdir(full_case_dir):
+            case_tooth_dir = full_case_dir + '\\' + tooth
+            info_file=case_tooth_dir+"\\info.txt"
+
+            feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
+
+            num = feature.shape[0]
+
+            for i in range(num):
+                if feature[i, 0]<feature[i, 3]:
+                    error_num+=1
+                    print('data_error in %s'%(case_tooth_dir))
+    return error_num
+
+
 
 def traverse_origin(dir):
     # 读取世界坐标
@@ -167,10 +190,10 @@ def traverse_origin(dir):
                       scale_factor=1,)
                       # transparent=True)
 
-        # mlab.points3d(ex, ey, ez,
-        #               mode="cube",
-        #               color=(0, 0, 1),
-        #               scale_factor=1)
+        mlab.points3d(ex, ey, ez,
+                      mode="cube",
+                      color=(0, 0, 1),
+                      scale_factor=1)
 
         mlab.points3d(fx1, fy1, fz1,
                       mode="cube",
@@ -224,6 +247,8 @@ WORLD_SIZE = 12.0
 GRID_SIZE = 128
 if __name__ == '__main__':
     # show_single('F:\\ProjectData\\Feature\\croped\\')
-    traverse_origin('F:\\ProjectData\\Feature2\\Tooth_test\\Tooth\\0816$PA112Final\\tooth2')
     # traverse_croped('F:/ProjectData/Feature2/display_crop/feature_1')
 
+    # traverse_origin('F:\\ProjectData\\Feature2\\Tooth_test\\Tooth\\0816$TH67Initial\\tooth2')
+    num=check_availability('F:\\ProjectData\\Feature2\\Tooth_test\\Tooth')
+    print(num)

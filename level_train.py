@@ -3,7 +3,7 @@ import commen_structure as commen
 import os
 import numpy as np
 from CNN import CNN
-from config import MODEL_PATH, SHAPE_BOX, DATA_LIST
+from config import MODEL_PATH, SHAPE_BOX, TASK_DICT
 from dataRelated import BatchGenerator
 
 
@@ -38,24 +38,13 @@ class Level(object):
 
 class NetConfig(object):
     shape_box = SHAPE_BOX
-    channels = [32, 32, 64, 64, 128, 128, 256]  # 决定左侧的参数多少和左侧的memory
-    task_dict = {'left':
-                     {
-                      'input_tooth':['tooth2', 'tooth3', 'tooth4', 'tooth5'],
-                      'fc_size':[128, 6]
-                      },
-                 'right':
-                     {
-                      'input_tooth':['tooth12', 'tooth13', 'tooth14', 'tooth15'],
-                      'fc_size':[128, 6]
-                      }
-                 }
-
+    channels = [32, 32, 64, 64, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
+    task_dict =TASK_DICT
     pooling = [True, True, True, True, True, True, True]
     filter_size = [5, 3, 3, 3, 3, 3, 3]  # 决定左侧的参数多少
     stride = [1, 1, 1, 1, 1, 1, 1]  # 决定右侧的memory
-    layer_num = len(channels) - 1
-    task_layer_num = 2
+    layer_num = len(channels)
+    task_layer_num = 1
 
 
 class TrainDataConfig(object):
@@ -104,15 +93,17 @@ if __name__ == '__main__':
 
     with tf.Session() as sess:
 
-        writer = tf.summary.FileWriter('log/', sess.graph)
+        # writer = tf.summary.FileWriter('log/', sess.graph)
         sess.run(tf.global_variables_initializer())
 
         if NEED_RESTORE:
             assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
             saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
-        winner_loss = {'left':10 ** 10,'right':10 ** 10}
-        step_from_last_mininum = {'left':0,'right':0}
+        winner_loss={task:10**10 for task in TASK_DICT.keys()}
+        step_from_last_mininum = {task:0 for task in TASK_DICT.keys()}
+        iter_task = {task:0 for task in TASK_DICT.keys()}
+
         test_step = 5
         average = 0
         remember = 0.9
@@ -128,12 +119,19 @@ if __name__ == '__main__':
             train_batch_gen[task] = BatchGenerator(TrainDataConfig)
             test_batch_gen[task] = BatchGenerator(TestDataConfig)
 
-        for iter in range(20000):
+        def getRandomTask():
+            task_num=len(TASK_DICT)
+            x=np.random.rand()*task_num
+            key_list=list(TASK_DICT.keys())
+            for i in range(task_num):
+                if x<i+1:
+                    return key_list[i]
 
-            if np.random.rand() < 0.5:
-                task='left'
-            else:
-                task='right'
+
+
+        for iter in range(40000):
+
+            task=getRandomTask()
 
             box_batch, y_batch = train_batch_gen[task].get_batch()
             feed_dict = {level.box: box_batch, level.targets[task]: y_batch,
@@ -154,8 +152,10 @@ if __name__ == '__main__':
                     if NEED_SAVE and loss_test < 200:
                         save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
 
-                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d  task=%s\n "
-                      % (iter, loss_train, loss_test, winner_loss[task], step_from_last_mininum[task],task))
+                print("%s  %d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n "
+                      % (task,iter_task[task], loss_train, loss_test, winner_loss[task], step_from_last_mininum[task]))
+
+                iter_task[task]+=1
 
 
 
