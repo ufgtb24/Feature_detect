@@ -4,7 +4,7 @@ import numpy as np
 from mayavi import mlab
 # from crop_data import crop_batch
 from combine import generate_pb
-from config import MODEL_PATH, SHAPE_BOX, TASK_DICT, NetConfig
+from config import MODEL_PATH, SHAPE_BOX, NetConfig, TestDataConfig
 from dataRelated import BatchGenerator
 from display import edges
 from level_train import Level
@@ -34,16 +34,16 @@ if __name__ == '__main__':
     input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
     box=tf.to_float(input_box)
 
-    level = Level(Param=NetConfig, is_training=True, scope='level_1', input_box=box,
+    level = Level(Param=NetConfig, is_training=False, scope='level_1', input_box=box,
                   keep_prob=keep_prob, phase=phase)
 
     saver = tf.train.Saver(var_list=tf.global_variables())
 
     # pred_end = tf.concat([pred_end_1,pred_end_2], axis=0,name="output_node")
-    output_dict=level.pred
+    # output_dict=level.pred
 
-    pred_end = tf.identity(level.pred,name='output_node')
-    pred_end=tf.to_int32(pred_end)[0]
+    # pred_end = tf.identity(level.pred,name='output_node')
+    # pred_end=tf.to_int32(pred_end)[0]
     # saver = tf.train.Saver()
 
     with tf.Session() as sess:
@@ -75,59 +75,61 @@ if __name__ == '__main__':
             generate_pb()
 
         if NEED_DISPLAY:
-            for task, task_content in NetConfig.task_dict.items():
-                DataConfig.data_list = task_content['input_tooth']
-                test_batch_gen = BatchGenerator(DataConfig, name='_test' )
-                while True:
-                    box_batch,y_batch = test_batch_gen.get_batch()
-                    # box_batch, target = test_batch_gen.get_batch()
-                    # target_1=target[:,:3]
-                    # target_2=target[:,3:]
+            task='RF'
 
-                    feed_dict = {level.box: box_batch,
-                                 phase: False, keep_prob: 1}
+            TestDataConfig.data_list = NetConfig.task_dict[task]['input_tooth']
+            test_batch_gen = BatchGenerator(TestDataConfig, name='_test' )
+            while True:
+                box_batch,y_batch = test_batch_gen.get_batch()
+                # box_batch, target = test_batch_gen.get_batch()
+                # target_1=target[:,:3]
+                # target_2=target[:,3:]
 
-                    f = sess.run(pred_end, feed_dict=feed_dict)
-                    loss=np.sum( np.square(f-y_batch[0]))/2.
-                    print(loss)
+                feed_dict = {level.box: box_batch,
+                             phase: False, keep_prob: 1}
 
-                    f_1=f[:3]
-                    f_2=f[3:]
+                f = sess.run(level.pred[task], feed_dict=feed_dict)
+                loss=np.sum( np.square(f-y_batch[0]))/2.
+                print(loss)
+                f=f.astype(np.int32)
 
-                    box=box_batch[0]
+                f_1=f[:,:3][0]
+                f_2=f[:,3:][0]
 
-                    # box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2
-                    # box[target_2[i,0], target_2[i,1], target_2[i,2]] = 2
-                    box[f_1[0], f_1[1], f_1[2]] = 3
-                    box[f_2[0], f_2[1], f_2[2]] = 3
+                box=box_batch[0]
 
-                    x, y, z = np.where(box == 1)
-                    ex, ey, ez = edges(128)
-                    # fx, fy, fz = np.where(box == 2)
-                    fxp, fyp, fzp = np.where(box == 3)
+                # box[target_1[i,0], target_1[i,1], target_1[i,2]] = 2
+                # box[target_2[i,0], target_2[i,1], target_2[i,2]] = 2
+                box[f_1[0], f_1[1], f_1[2]] = 3
+                box[f_2[0], f_2[1], f_2[2]] = 3
 
-                    mlab.points3d(ex, ey, ez,
-                                  mode="cube",
-                                  color=(0, 0, 1),
-                                  scale_factor=1)
+                x, y, z = np.where(box == 1)
+                ex, ey, ez = edges(128)
+                # fx, fy, fz = np.where(box == 2)
+                fxp, fyp, fzp = np.where(box == 3)
 
-                    mlab.points3d(x, y, z,
-                                  mode="cube",
-                                  color=(0, 1, 0),
-                                  scale_factor=1,
-                                  transparent=True)
+                mlab.points3d(ex, ey, ez,
+                              mode="cube",
+                              color=(0, 0, 1),
+                              scale_factor=1)
 
-                    # mlab.points3d(fx, fy, fz,
-                    #             mode="cube",
-                    #             color=(1, 0, 0),
-                    #             scale_factor=1,
-                    #               transparent=True)
+                mlab.points3d(x, y, z,
+                              mode="cube",
+                              color=(0, 1, 0),
+                              scale_factor=1,
+                              transparent=True)
 
-                    mlab.points3d(fxp, fyp, fzp,
-                                mode="cube",
-                                color=(0, 0, 1),
-                                scale_factor=1,
-                                  transparent=True)
+                # mlab.points3d(fx, fy, fz,
+                #             mode="cube",
+                #             color=(1, 0, 0),
+                #             scale_factor=1,
+                #               transparent=True)
 
-                    mlab.show()
+                mlab.points3d(fxp, fyp, fzp,
+                            mode="cube",
+                            color=(0, 0, 1),
+                            scale_factor=1,
+                              transparent=True)
+
+                mlab.show()
 

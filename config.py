@@ -1,5 +1,5 @@
 
-MODEL_PATH = 'F:/ProjectData/Feature2/models/model_low/'
+MODEL_PATH = 'F:/ProjectData/Feature2/models/model_up/'
 # MODEL_PATH = 'F:/ProjectData/Feature2/output_pb/'
 Feature_Target=1
 SHAPE_BOX=[128,128,128]
@@ -7,28 +7,54 @@ FC_SIZE=[512,512,6]
 TASK_DICT = {
     'LB':
         {
-            'input_tooth': ['tooth30','tooth31'],
+            'input_tooth': ['tooth2','tooth3'],
             'fc_size': FC_SIZE
         },
 
     'LF':
         {
-            'input_tooth': ['tooth28','tooth29'],
+            'input_tooth': ['tooth4','tooth5'],
             'fc_size': FC_SIZE
         },
 
     'RB':
         {
-            'input_tooth': ['tooth18','tooth19'],
+            'input_tooth': ['tooth14','tooth15'],
             'fc_size': FC_SIZE
         },
 
     'RF':
         {
-            'input_tooth': ['tooth20','tooth21'],
+            'input_tooth': ['tooth12','tooth13'],
             'fc_size': FC_SIZE
         }
 }
+
+# TASK_DICT = {
+#     'LB':
+#         {
+#             'input_tooth': ['tooth30','tooth31'],
+#             'fc_size': FC_SIZE
+#         },
+#
+#     'LF':
+#         {
+#             'input_tooth': ['tooth28','tooth29'],
+#             'fc_size': FC_SIZE
+#         },
+#
+#     'RB':
+#         {
+#             'input_tooth': ['tooth18','tooth19'],
+#             'fc_size': FC_SIZE
+#         },
+#
+#     'RF':
+#         {
+#             'input_tooth': ['tooth20','tooth21'],
+#             'fc_size': FC_SIZE
+#         }
+# }
 
 class NetConfig(object):
     shape_box = SHAPE_BOX
@@ -53,7 +79,7 @@ class TrainDataConfig(object):
     format = 'mhd'
 
 
-class TestDataConfig(object):
+class ValiDataConfig(object):
     world_to_cubic = 128 / 12.
     batch_size = 4
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Validate'
@@ -62,3 +88,10 @@ class TestDataConfig(object):
     switch_after_shuffles = 10 ** 10  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
+class TestDataConfig(object):
+    world_to_cubic=128/12.
+    batch_size=1
+    total_case_dir='F:/ProjectData/Feature2/DataSet/Validate'
+    data_list=None
+    load_case_once=1  #每次读的病例数
+    switch_after_shuffles=1 #当前数据洗牌n次读取新数据

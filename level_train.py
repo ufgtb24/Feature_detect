@@ -3,7 +3,7 @@ import commen_structure as commen
 import os
 import numpy as np
 from CNN import CNN
-from config import MODEL_PATH, SHAPE_BOX, TASK_DICT, NetConfig, TrainDataConfig, TestDataConfig
+from config import MODEL_PATH, SHAPE_BOX, TASK_DICT, NetConfig, TrainDataConfig, ValiDataConfig
 from dataRelated import BatchGenerator
 
 
@@ -89,9 +89,9 @@ if __name__ == '__main__':
         test_batch_gen = {}
         for task, task_content in NetConfig.task_dict.items():
             TrainDataConfig.data_list = task_content['input_tooth']
-            TestDataConfig.data_list = TrainDataConfig.data_list
+            ValiDataConfig.data_list = TrainDataConfig.data_list
             train_batch_gen[task] = BatchGenerator(TrainDataConfig, name='_train')
-            test_batch_gen[task] = BatchGenerator(TestDataConfig, name='_test')
+            test_batch_gen[task] = BatchGenerator(ValiDataConfig, name='_test')
 
         sess.run(tf.global_variables_initializer())
 
