@@ -5,8 +5,8 @@ import os
 
 
 class BatchGenerator(object):
-    def __init__(self,data_config,need_target=True,need_name=False):
-
+    def __init__(self,data_config,name,need_target=True,need_name=False):
+        self.name=name
         self.box_train=None
         self.need_target=need_target
         self.need_name=need_name
@@ -64,7 +64,6 @@ class BatchGenerator(object):
 
     def load_case_list(self,case_load):
         # 读取多个病例
-        print('load data')
         box_list=[]
         y_list=[]
         name_index_list=[]
@@ -151,6 +150,7 @@ class BatchGenerator(object):
             self.index=0
             self.shuffle_times+=1
             if self.load_case_once>0 and self.shuffle_times >= self.switch_after_shuffles:
+                print('load data for '+ self.name)
                 self.load_case_list(self.get_case_list())
                 self.shuffle_times = 0
             self.suffle()

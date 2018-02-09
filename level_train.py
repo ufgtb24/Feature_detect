@@ -3,7 +3,7 @@ import commen_structure as commen
 import os
 import numpy as np
 from CNN import CNN
-from config import MODEL_PATH, SHAPE_BOX, TASK_DICT
+from config import MODEL_PATH, SHAPE_BOX, TASK_DICT, NetConfig, TrainDataConfig, TestDataConfig
 from dataRelated import BatchGenerator
 
 
@@ -36,42 +36,19 @@ class Level(object):
                                                                  max_global_norm=1.0).optimize_op
 
 
-class NetConfig(object):
-    shape_box = SHAPE_BOX
-    channels = [32, 32, 64, 64, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
-    task_dict =TASK_DICT
-    pooling = [True, True, True, True, True, True, True]
-    filter_size = [5, 3, 3, 3, 3, 3, 3]  # 决定左侧的参数多少
-    stride = [1, 1, 1, 1, 1, 1, 1]  # 决定右侧的memory
-    layer_num = len(channels)
-    task_layer_num = 1
 
 
-class TrainDataConfig(object):
-    world_to_cubic = 128 / 12.
-    batch_size = 4
-    # total_case_dir='F:/ProjectData/Feature/Tooth'
-    total_case_dir = 'F:/ProjectData/Feature2/Tooth_test/Tooth'
-    data_list=None
-    load_case_once = 10  # 每次读的病例数 若果=0,则只load一次，读入全部
-    switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
-    format = 'mhd'
-
-
-class TestDataConfig(object):
-    world_to_cubic = 128 / 12.
-    batch_size = 4
-    total_case_dir = 'F:/ProjectData/Feature2/test_mul'
-    data_list=None
-    load_case_once = 0  # 每次读的病例数
-    switch_after_shuffles = 10 ** 10  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
-    format = 'mhd'
+def getRandomTask():
+    task_num = len(TASK_DICT)
+    x = np.random.rand() * task_num
+    key_list = list(TASK_DICT.keys())
+    for i in range(task_num):
+        if x < i + 1:
+            return key_list[i]
 
 
 if __name__ == '__main__':
-    NEED_RESTORE = False
-    NEED_SAVE = True
-    MODEL_PATH = MODEL_PATH + 'level_1/'
+
 
     keep_prob = tf.placeholder(tf.float32, name='keep_prob_input')
     phase = tf.placeholder(tf.bool, name='phase_input')
@@ -92,44 +69,37 @@ if __name__ == '__main__':
     ################
 
     with tf.Session() as sess:
-
         # writer = tf.summary.FileWriter('log/', sess.graph)
-        sess.run(tf.global_variables_initializer())
 
-        if NEED_RESTORE:
-            assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
-            saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
-
-        winner_loss={task:10**10 for task in TASK_DICT.keys()}
-        step_from_last_mininum = {task:0 for task in TASK_DICT.keys()}
-        iter_task = {task:0 for task in TASK_DICT.keys()}
-
+        NEED_RESTORE = True
+        NEED_SAVE = True
         test_step = 5
         average = 0
         remember = 0.9
         less_100_case = 0
         longest_term = 0
         start = False
+        need_early_stop=False
+        EARLY_STOP_STEP=200
 
+        winner_loss={task:10**10 for task in TASK_DICT.keys()}
+        step_from_last_mininum = {task:0 for task in TASK_DICT.keys()}
+        iter_task = {task:0 for task in TASK_DICT.keys()}
         train_batch_gen = {}
         test_batch_gen = {}
         for task, task_content in NetConfig.task_dict.items():
             TrainDataConfig.data_list = task_content['input_tooth']
             TestDataConfig.data_list = TrainDataConfig.data_list
-            train_batch_gen[task] = BatchGenerator(TrainDataConfig)
-            test_batch_gen[task] = BatchGenerator(TestDataConfig)
+            train_batch_gen[task] = BatchGenerator(TrainDataConfig, name='_train')
+            test_batch_gen[task] = BatchGenerator(TestDataConfig, name='_test')
 
-        def getRandomTask():
-            task_num=len(TASK_DICT)
-            x=np.random.rand()*task_num
-            key_list=list(TASK_DICT.keys())
-            for i in range(task_num):
-                if x<i+1:
-                    return key_list[i]
+        sess.run(tf.global_variables_initializer())
 
+        if NEED_RESTORE:
+            assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
+            saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
-
-        for iter in range(40000):
+        for iter in range(100000):
 
             task=getRandomTask()
 
@@ -141,6 +111,8 @@ if __name__ == '__main__':
                 if start == False:
                     save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
                     start = True
+                if  need_early_stop and min(step_from_last_mininum.values())>EARLY_STOP_STEP:
+                    break
                 step_from_last_mininum[task] += 1
                 box_batch, y_batch = test_batch_gen[task].get_batch()
                 feed_dict = {level.box: box_batch, level.targets[task]: y_batch,

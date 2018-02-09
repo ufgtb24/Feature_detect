@@ -249,6 +249,5 @@ if __name__ == '__main__':
     # show_single('F:\\ProjectData\\Feature\\croped\\')
     # traverse_croped('F:/ProjectData/Feature2/display_crop/feature_1')
 
-    # traverse_origin('F:\\ProjectData\\Feature2\\Tooth_test\\Tooth\\0816$TH67Initial\\tooth2')
-    num=check_availability('F:\\ProjectData\\Feature2\\Tooth_test\\Tooth')
-    print(num)
+    traverse_origin('F:/ProjectData/Feature2/DataSet/Train\\0822$TH76PreTx\\tooth20')
+    # print(check_availability('F:/ProjectData/Feature2/DataSet/Validate'))

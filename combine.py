@@ -20,7 +20,7 @@ filename_tensor_name = "save/Const:0"
 output_graph = os.path.join(MODEL_PATH,'whole/output_graph.pb')
 clear_devices = False
 initializer_nodes=[]
-variable_names_blacklist="box_crop_var1,box_crop_var2"
+variable_names_blacklist=""
 
 def generate_pb():
     freeze_graph.freeze_graph(input_graph,
