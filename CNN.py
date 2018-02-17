@@ -13,20 +13,41 @@ class CNN(object):
         self.param=param
         self.phase=phase
         self.keep_prob=keep_prob
-        box=tf.expand_dims(box,axis=4)
+        box=tf.expand_dims(box,axis=5)
         if len(param.task_dict)==1:
             self.param.task_layer_num=0
         commen_layer_index = range(self.param.layer_num - self.param.task_layer_num)
         task_layer_index = range(self.param.layer_num - self.param.task_layer_num, self.param.layer_num)
-        with tf.variable_scope('commen'):
-            commen = self.build_CNN(box, commen_layer_index)
-        self.output = {}
+        commen_task_list=[]
+        output_task_list=[]
+        index=0
         for task,task_content in param.task_dict.items():
             with tf.variable_scope(task):
-                conv = self.build_CNN(commen,task_layer_index)
-                fc_size=task_content['fc_size']
-                output=self.build_FC(conv,fc_size)
-                self.output[task]=output
+                with tf.variable_scope('commen'):
+                    commen,filter_layer_list = self.build_CNN(box[index], commen_layer_index)
+                    commen_task_list.append(filter_layer_list)
+                    index+=1
+
+                with tf.variable_scope('specialized'):
+                    conv,_ = self.build_CNN(commen,task_layer_index)
+                    fc_size=task_content['fc_size']
+                    output=self.build_FC(conv,fc_size)
+                    output_task_list.append(output)
+
+        self.output_multi_task=tf.concat(output_task_list,axis=1,name='build_predict')
+
+        def regular_layer(task_var_list):
+            assert len(task_var_list) > 1
+            layer_term=0
+            with tf.variable_scope('add_var_in_layer'):
+                for i in range(len(task_var_list)-1):
+                    layer_term+=tf.reduce_sum(tf.square(task_var_list[i] - task_var_list[i+1]))
+                layer_term += tf.reduce_sum(tf.square(task_var_list[-1] - task_var_list[0]))
+                return layer_term
+
+        with tf.variable_scope('calculate_reg_term'):
+            commen_layer_list = zip(*commen_task_list)
+            self.regularization_term=tf.reduce_sum(tf.stack([regular_layer(task_list) for task_list in commen_layer_list]))
 
 
     def build_CNN(self,input_box,layer_index):
@@ -35,12 +56,14 @@ class CNN(object):
             # box = tf.reshape(self.box, shape=[-1, self.param.h, self.param.w, self.param.d, 1])
             # [B,H,W,D,1]
             conv = input_box
+            filter_vars=[]
             for c in layer_index:
-                conv = commen.conv3d(conv, self.param.channels[c ], filter_size=self.param.filter_size[c],
+                conv,filter_var = commen.conv3d(conv, self.param.channels[c ], filter_size=self.param.filter_size[c],
                                      stride=self.param.stride[c ],phase=self.phase,
                                       pooling=self.param.pooling[c ],scope="conv_"+ str(c))
+                filter_vars.append(filter_var)
 
-        return conv
+        return conv,filter_vars
 
     def build_FC(self,conv,fc_size):
         with tf.variable_scope('FC'):

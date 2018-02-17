@@ -13,28 +13,28 @@ class Level(object):
 
         self.keep_prob = keep_prob
         self.phase = phase
+        self.regularization_term=Param.regularization_term
 
         with tf.variable_scope(scope):
-            self.pred = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box).output
+            cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
+            self.pred = cnn.output_multi_task
+            self.reg_term=cnn.regularization_term
             self.optimizers = {}
 
             if need_target:
-                self.targets = {}
-                self.losses = {}
-                for task, task_content in Param.task_dict.items():
-                    self.targets[task] = tf.placeholder(tf.float32, shape=[None, task_content['fc_size'][-1]],
-                                                        name="Place_holder" + task)
-                    self.losses[task] = tf.reduce_mean(
-                        tf.reduce_sum(tf.square(self.pred[task] - self.targets[task]), axis=1) / 2., axis=0)
-            if is_training == True:
-                self.optimizers = {}
-                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-                for task in Param.task_dict.keys():
-                    with tf.control_dependencies(update_ops):
-                        # Ensures that we execute the update_ops before performing the train_step
-                        self.optimizers[task] = commen.Optimizer(self.losses[task], name=task,initial_learning_rate=0.01,
-                                                                 max_global_norm=1.0).optimize_op
+                self.targets= tf.placeholder(tf.float32, shape=[None, Param.output_size],
+                                                    name="multi_task_target")
+                with tf.variable_scope('error'):
+                    error=tf.reduce_mean(tf.reduce_sum(
+                        tf.square(self.pred - self.targets), axis=1) /(2*len(Param.task_dict)), axis=0)
+                self.losses = error +self.regularization_term*self.reg_term
 
+            if is_training == True:
+                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+                with tf.control_dependencies(update_ops):
+                    # Ensures that we execute the update_ops before performing the train_step
+                    self.optimizer = commen.Optimizer(self.losses,initial_learning_rate=0.01,
+                                                                 max_global_norm=1.0).optimize_op
 
 
 
@@ -49,14 +49,13 @@ def getRandomTask():
 
 if __name__ == '__main__':
 
-
     keep_prob = tf.placeholder(tf.float32, name='keep_prob_input')
     phase = tf.placeholder(tf.bool, name='phase_input')
-    input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
+    input_box = tf.placeholder(tf.uint8, shape=[len(TASK_DICT),None] + SHAPE_BOX, name='input_box')
     box = tf.to_float(input_box)
-
     level = Level(Param=NetConfig, is_training=True, scope='level_1', input_box=box,
                   keep_prob=keep_prob, phase=phase)
+        
 
     # saver = tf.train.Saver(max_to_keep=1)
     ################
@@ -71,7 +70,7 @@ if __name__ == '__main__':
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
-        NEED_RESTORE = True
+        NEED_RESTORE = False
         NEED_SAVE = True
         test_step = 5
         average = 0
@@ -79,14 +78,16 @@ if __name__ == '__main__':
         less_100_case = 0
         longest_term = 0
         start = False
-        need_early_stop=False
-        EARLY_STOP_STEP=200
+        need_early_stop=True
+        EARLY_STOP_STEP=1000
 
-        winner_loss={task:10**10 for task in TASK_DICT.keys()}
-        step_from_last_mininum = {task:0 for task in TASK_DICT.keys()}
-        iter_task = {task:0 for task in TASK_DICT.keys()}
+        winner_loss=10**10
+        step_from_last_mininum = 0
+        iter_task = 0
         train_batch_gen = {}
         test_batch_gen = {}
+        box_and_y_batch_list=[]
+        y_batch_list=[]
         for task, task_content in NetConfig.task_dict.items():
             TrainDataConfig.data_list = task_content['input_tooth']
             ValiDataConfig.data_list = TrainDataConfig.data_list
@@ -100,34 +101,43 @@ if __name__ == '__main__':
             saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
         for iter in range(100000):
+            #[task:[box_batch,y_batch]]
+            task_box_and_y_batch_list=[train_batch_gen[task].get_batch() for task in NetConfig.task_dict.keys()]
+            # [box_batch_shape]*task_num, [y_batch_shape]*task_num
+            box_task_list,y_task_list=zip(*task_box_and_y_batch_list)
+            box_task_batch=np.stack(box_task_list)
+            y_batch=np.concatenate(y_task_list,axis=1)
 
-            task=getRandomTask()
-
-            box_batch, y_batch = train_batch_gen[task].get_batch()
-            feed_dict = {level.box: box_batch, level.targets[task]: y_batch,
+            feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                          phase: True, keep_prob: 0.5}
-            _, loss_train = sess.run([level.optimizers[task], level.losses[task]], feed_dict=feed_dict)
+            _, loss_train = sess.run([level.optimizer, level.losses], feed_dict=feed_dict)
             if iter % test_step == 0:
                 if start == False:
                     save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
                     start = True
-                if  need_early_stop and min(step_from_last_mininum.values())>EARLY_STOP_STEP:
+                if  need_early_stop and step_from_last_mininum>EARLY_STOP_STEP:
                     break
-                step_from_last_mininum[task] += 1
-                box_batch, y_batch = test_batch_gen[task].get_batch()
-                feed_dict = {level.box: box_batch, level.targets[task]: y_batch,
+                step_from_last_mininum += 1
+                # [task:[box_batch,y_batch]]
+                task_box_and_y_batch_list = [test_batch_gen[task].get_batch() for task in NetConfig.task_dict.keys()]
+                # [box_batch_shape]*task_num, [y_batch_shape]*task_num
+                box_task_list, y_task_list = zip(*task_box_and_y_batch_list)
+                box_task_batch = np.stack(box_task_list)
+                y_batch = np.concatenate(y_task_list, axis=1)
+
+                feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                              phase: False, keep_prob: 1}
-                loss_test = sess.run(level.losses[task], feed_dict=feed_dict)
-                if loss_test < winner_loss[task]:
-                    winner_loss[task] = loss_test
-                    step_from_last_mininum[task] = 0
-                    if NEED_SAVE and loss_test < 200:
+                loss_test = sess.run(level.losses, feed_dict=feed_dict)
+                if loss_test < winner_loss:
+                    winner_loss = loss_test
+                    step_from_last_mininum = 0
+                    if NEED_SAVE and loss_test < 1000:
                         save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
 
-                print("%s  %d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n "
-                      % (task,iter_task[task], loss_train, loss_test, winner_loss[task], step_from_last_mininum[task]))
+                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n "
+                      % (iter_task, loss_train, loss_test, winner_loss, step_from_last_mininum))
 
-                iter_task[task]+=1
+                iter_task+=1
 
 
 

@@ -38,7 +38,7 @@ def conv3d(input, output_channels, phase,pooling,filter_size=3,stride=1, scope="
         h = tf.nn.relu(h)
         if pooling:
             h=pooling3d(h)
-    return h
+    return h,filter
 
 
 #要计算位置，不能要，否则就不准确了
@@ -89,7 +89,7 @@ def mse(output, target):
         return tf.reduce_mean(tf.reduce_sum(tf.square(output - target), axis=1))
 
 class Optimizer(object):
-    def __init__(self, loss, initial_learning_rate, name,op_type='Adam', max_global_norm=1.0,
+    def __init__(self, loss, initial_learning_rate, op_type='Adam', max_global_norm=1.0,
                    num_steps_per_decay=10000,decay_rate=0.1,momentum=None):
         """ Create a simple optimizer.
 
@@ -106,7 +106,7 @@ class Optimizer(object):
                 this, do nothing. Otherwise, rescale all gradients so that
                 the global norm because `max_global_norm`.
         """
-        with tf.variable_scope('Optimizer'+name):
+        with tf.variable_scope('Optimizer'):
             trainables = tf.trainable_variables()
             grads = tf.gradients(loss, trainables)
             grads, _ = tf.clip_by_global_norm(grads, clip_norm=max_global_norm)
