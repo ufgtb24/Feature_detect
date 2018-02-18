@@ -4,6 +4,8 @@ MODEL_PATH = 'F:/ProjectData/Feature2/models/model_up/'
 Feature_Target=1
 SHAPE_BOX=[128,128,128]
 FC_SIZE=[128,32,6]
+
+
 # TASK_DICT = {
 #     'ALL':
 #         {
@@ -79,6 +81,58 @@ class NetConfig(object):
     regularization_term=1000
 
 
+TRAIL_DETAIL = [
+    {
+    'FC_SIZE':[128,32,6],
+    'task_layer_num':0,
+    'regularization_term':1000
+    },
+    {
+    'FC_SIZE':[128,32,6],
+    'task_layer_num':1,
+    'regularization_term':1000
+    },
+    {
+    'FC_SIZE':[128,32,6],
+    'task_layer_num':2,
+    'regularization_term':1000
+    },
+
+    {
+    'FC_SIZE':[128,32,6],
+    'task_layer_num':0,
+    'regularization_term':10000
+    },
+    {
+    'FC_SIZE':[128,32,6],
+    'task_layer_num':1,
+    'regularization_term':10000
+    },
+    {
+    'FC_SIZE':[128,32,6],
+    'task_layer_num':2,
+    'regularization_term':10000
+    },
+
+    {
+    'FC_SIZE':[32,6],
+    'task_layer_num':0,
+    'regularization_term':10000
+    },
+    {
+    'FC_SIZE':[32,6],
+    'task_layer_num':1,
+    'regularization_term':10000
+    },
+    {
+    'FC_SIZE':[32,6],
+    'task_layer_num':2,
+    'regularization_term':10000
+    }
+
+]
+
+
 class TrainDataConfig(object):
     world_to_cubic = 128 / 12.
     batch_size = 1
@@ -106,3 +160,4 @@ class TestDataConfig(object):
     data_list=None
     load_case_once=1  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据
+
