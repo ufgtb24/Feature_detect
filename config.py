@@ -3,7 +3,7 @@ MODEL_PATH = 'F:/ProjectData/Feature2/models/model_up/'
 # MODEL_PATH = 'F:/ProjectData/Feature2/output_pb/'
 Feature_Target=1
 SHAPE_BOX=[128,128,128]
-FC_SIZE=[128,32,6]
+FC_SIZE=[128,6]
 
 
 # TASK_DICT = {
@@ -69,13 +69,14 @@ TASK_DICT = {
 
 class NetConfig(object):
     shape_box = SHAPE_BOX
-    channels = [32, 32, 64, 64, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
+    # channels = [32, 32, 64, 64, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
+    channels = [64, 64, 64, 128, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
     # channels = [32, 32, 64, 64, 128]  # 决定左侧的参数多少和左侧的memory
     task_dict =TASK_DICT
     output_size=sum([task_content['fc_size'][-1] for task_content in task_dict.values()])
-    pooling = [True, True, True, True, True,True,True]
-    filter_size = [5, 3, 3, 3, 3, 3, 3,1,1]  # 决定左侧的参数多少
-    stride = [1]*9  # 决定右侧的memory
+    pooling = [True, True, False, True, True,True,True]
+    filter_size = [7, 3, 3, 3, 3, 3, 3,1,1]  # 决定左侧的参数多少
+    stride = [2]+[1]*9  # 决定右侧的memory
     layer_num = len(channels)
     task_layer_num =0
     regularization_term=1000
@@ -83,59 +84,59 @@ class NetConfig(object):
 
 TRAIL_DETAIL = [
     {
-    'FC_SIZE':[128,32,6],
+    'FC_SIZE':[32,6],
     'task_layer_num':0,
-    'regularization_term':1000
+    'regularization_term':1
     },
     {
-    'FC_SIZE':[128,32,6],
-    'task_layer_num':1,
-    'regularization_term':1000
+    'FC_SIZE':[64,6],
+    'task_layer_num':0,
+    'regularization_term':1
     },
     {
-    'FC_SIZE':[128,32,6],
-    'task_layer_num':2,
-    'regularization_term':1000
+    'FC_SIZE':[32,6],
+    'task_layer_num':0,
+    'regularization_term':0.1
     },
 
     {
-    'FC_SIZE':[128,32,6],
+    'FC_SIZE':[64,6],
     'task_layer_num':0,
-    'regularization_term':10000
+    'regularization_term':0.1
     },
-    {
-    'FC_SIZE':[128,32,6],
-    'task_layer_num':1,
-    'regularization_term':10000
-    },
-    {
-    'FC_SIZE':[128,32,6],
-    'task_layer_num':2,
-    'regularization_term':10000
-    },
-
-    {
-    'FC_SIZE':[32,6],
-    'task_layer_num':0,
-    'regularization_term':10000
-    },
-    {
-    'FC_SIZE':[32,6],
-    'task_layer_num':1,
-    'regularization_term':10000
-    },
-    {
-    'FC_SIZE':[32,6],
-    'task_layer_num':2,
-    'regularization_term':10000
-    }
+    # {
+    # 'FC_SIZE':[64,6],
+    # 'task_layer_num':0,
+    # 'regularization_term':0.1
+    # },
+    # {
+    # 'FC_SIZE':[64,6],
+    # 'task_layer_num':2,
+    # 'regularization_term':1
+    # },
+    #
+    # {
+    # 'FC_SIZE':[128,6],
+    # 'task_layer_num':0,
+    # 'regularization_term':10
+    # },
+    # {
+    # 'FC_SIZE':[128,6],
+    # 'task_layer_num':1,
+    # 'regularization_term':10
+    # },
+    # {
+    # 'FC_SIZE':[128,6],
+    # 'task_layer_num':2,
+    # 'regularization_term':10
+    # },
 
 ]
 
 
 class TrainDataConfig(object):
     world_to_cubic = 128 / 12.
-    batch_size = 1
+    batch_size = 4
     # total_case_dir='F:/ProjectData/Feature/Tooth'
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Train'
     data_list=None
@@ -146,18 +147,18 @@ class TrainDataConfig(object):
 
 class ValiDataConfig(object):
     world_to_cubic = 128 / 12.
-    batch_size = 1
+    batch_size = 4
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Validate'
     data_list=None
     load_case_once = 0  # 每次读的病例数
-    switch_after_shuffles = 1  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    switch_after_shuffles = 10**10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 class TestDataConfig(object):
     world_to_cubic=128/12.
-    batch_size=1
+    batch_size=4
     total_case_dir='F:/ProjectData/Feature2/DataSet/Validate'
     data_list=None
-    load_case_once=1  #每次读的病例数
+    load_case_once=0  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据
 

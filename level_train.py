@@ -26,9 +26,9 @@ class Level(object):
                 self.targets= tf.placeholder(tf.float32, shape=[None, Param.output_size],
                                                     name="multi_task_target")
                 with tf.variable_scope('error'):
-                    error=tf.reduce_mean(tf.reduce_sum(
+                    self.error=tf.reduce_mean(tf.reduce_sum(
                         tf.square(self.pred - self.targets), axis=1) /(2*len(Param.task_dict)), axis=0)
-                self.losses = error +self.regularization_term*self.reg_term
+                self.losses = self.error +self.regularization_term*self.reg_term
 
             if is_training == True:
                 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -89,8 +89,8 @@ if __name__ == '__main__':
             less_100_case = 0
             longest_term = 0
             start = False
-            need_early_stop=True
-            EARLY_STOP_STEP=1000
+            need_early_stop = True
+            EARLY_STOP_STEP=2000
 
             winner_loss=10**10
             step_from_last_mininum = 0
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
                 feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                              phase: True, keep_prob: 0.5}
-                _, loss_train = sess.run([level.optimizer, level.losses], feed_dict=feed_dict)
+                _, loss_train = sess.run([level.optimizer, level.error], feed_dict=feed_dict)
                 if iter % test_step == 0:
                     if start == False:
                         save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
                     feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                                  phase: False, keep_prob: 1}
-                    loss_test = sess.run(level.losses, feed_dict=feed_dict)
+                    loss_test = sess.run(level.error, feed_dict=feed_dict)
                     if loss_test < winner_loss:
                         winner_loss = loss_test
                         step_from_last_mininum = 0
@@ -151,8 +151,9 @@ if __name__ == '__main__':
 
                     iter_task+=1
 
-            with open('log/log.txt', 'a') as f:
-                f.write('trail_num =%d, error=%f \n '%(i,final_error))
+        tf.reset_default_graph()
+        with open('log/log.txt', 'a') as f:
+            f.write('trail_num =%d, error=%f \n '%(i,final_error))
 
 
 
