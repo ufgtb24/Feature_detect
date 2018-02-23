@@ -69,9 +69,10 @@ TASK_DICT = {
 
 class NetConfig(object):
     shape_box = SHAPE_BOX
-    # channels = [32, 32, 64, 64, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
-    channels = [64, 64, 64, 128, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
-    # channels = [32, 32, 64, 64, 128]  # 决定左侧的参数多少和左侧的memory
+    # channels = [64, 64, 64, 128, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
+
+    # channels = [16, 64, 256, 256,1024]  # 决定左侧的参数多少和左侧的memory
+    channels = [16, 64, 128, 128,256]  # 决定左侧的参数多少和左侧的memory
     task_dict =TASK_DICT
     output_size=sum([task_content['fc_size'][-1] for task_content in task_dict.values()])
     pooling = [True, True, False, True, True,True,True]
@@ -79,31 +80,26 @@ class NetConfig(object):
     stride = [2]+[1]*9  # 决定右侧的memory
     layer_num = len(channels)
     task_layer_num =0
-    regularization_term=1000
+    regularization_coord=1000
 
 
 TRAIL_DETAIL = [
     {
-    'FC_SIZE':[32,6],
+    'FC_SIZE':[128,6],
     'task_layer_num':0,
-    'regularization_term':1
+    'regularization_term':1000
     },
-    {
-    'FC_SIZE':[64,6],
-    'task_layer_num':0,
-    'regularization_term':1
-    },
-    {
-    'FC_SIZE':[32,6],
-    'task_layer_num':0,
-    'regularization_term':0.1
-    },
-
-    {
-    'FC_SIZE':[64,6],
-    'task_layer_num':0,
-    'regularization_term':0.1
-    },
+    # {
+    # 'FC_SIZE':[128,6],
+    # 'task_layer_num':0,
+    # 'regularization_term':0.01
+    # },
+    #
+    # {
+    # 'FC_SIZE':[32,6],
+    # 'task_layer_num':0,
+    # 'regularization_term':1
+    # },
     # {
     # 'FC_SIZE':[64,6],
     # 'task_layer_num':0,
@@ -147,11 +143,11 @@ class TrainDataConfig(object):
 
 class ValiDataConfig(object):
     world_to_cubic = 128 / 12.
-    batch_size = 4
+    batch_size = 8
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Validate'
     data_list=None
-    load_case_once = 0  # 每次读的病例数
-    switch_after_shuffles = 10**10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    load_case_once = 4  # 每次读的病例数
+    switch_after_shuffles = 1  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 class TestDataConfig(object):

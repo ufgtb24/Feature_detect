@@ -14,7 +14,6 @@ class Level(object):
 
         self.keep_prob = keep_prob
         self.phase = phase
-        self.regularization_term=Param.regularization_term
 
         with tf.variable_scope(scope):
             cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
@@ -28,7 +27,7 @@ class Level(object):
                 with tf.variable_scope('error'):
                     self.error=tf.reduce_mean(tf.reduce_sum(
                         tf.square(self.pred - self.targets), axis=1) /(2*len(Param.task_dict)), axis=0)
-                self.losses = self.error +self.regularization_term*self.reg_term
+                self.losses = self.error +self.reg_term*Param.regularization_coord
 
             if is_training == True:
                 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -82,7 +81,7 @@ if __name__ == '__main__':
             # writer = tf.summary.FileWriter('log/', sess.graph)
 
             NEED_RESTORE = False
-            NEED_SAVE = False
+            NEED_SAVE = True
             test_step = 5
             average = 0
             remember = 0.9
@@ -94,7 +93,6 @@ if __name__ == '__main__':
 
             winner_loss=10**10
             step_from_last_mininum = 0
-            iter_task = 0
             train_batch_gen = {}
             test_batch_gen = {}
             box_and_y_batch_list=[]
@@ -120,7 +118,7 @@ if __name__ == '__main__':
                 y_batch=np.concatenate(y_task_list,axis=1)
 
                 feed_dict = {input_box: box_task_batch, level.targets: y_batch,
-                             phase: True, keep_prob: 0.5}
+                             phase: True, keep_prob: 1}
                 _, loss_train = sess.run([level.optimizer, level.error], feed_dict=feed_dict)
                 if iter % test_step == 0:
                     if start == False:
@@ -139,17 +137,16 @@ if __name__ == '__main__':
 
                     feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                                  phase: False, keep_prob: 1}
-                    loss_test = sess.run(level.error, feed_dict=feed_dict)
+                    loss_test,reg_loss = sess.run([level.error,level.reg_term], feed_dict=feed_dict)
                     if loss_test < winner_loss:
                         winner_loss = loss_test
                         step_from_last_mininum = 0
-                        if NEED_SAVE and loss_test < 1000:
+                        if NEED_SAVE and loss_test < 100:
                             save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
 
-                    print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n "
-                          % (iter_task, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                    print("%d  trainCost=%f   testCost=%f   winnerCost=%f   reg_loss=%f   test_step=%d\n "
+                          % (iter, loss_train, loss_test, winner_loss, reg_loss,step_from_last_mininum))
 
-                    iter_task+=1
 
         tf.reset_default_graph()
         with open('log/log.txt', 'a') as f:
