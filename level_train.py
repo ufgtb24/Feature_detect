@@ -107,7 +107,7 @@ if __name__ == '__main__':
                 assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
                 saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
-            loss_last=2>>31
+            # loss_last=2>>31
             case_name=' '
             for iter in range(100000):
                 #[task:[box_batch,y_batch]]
@@ -121,10 +121,10 @@ if __name__ == '__main__':
                 feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                              phase: True, keep_prob: 1}
                 _, loss_train = sess.run([level.optimizer, level.error], feed_dict=feed_dict)
-                if loss_train-2000>loss_last:
-                    with open('log/log.txt', 'a') as f:
-                        f.write('error_case= %s \n ' % (case_name))
-                loss_last=loss_train
+                # if loss_train-8000>loss_last:
+                #     with open('log/log.txt', 'a') as f:
+                #         f.write('error_case= %s \n ' % (case_name))
+                # loss_last=loss_train
 
                 if iter % test_step == 0:
                     if start == False:

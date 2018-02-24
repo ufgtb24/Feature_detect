@@ -72,10 +72,14 @@ def loadpickle(path):
 def load_y(info_file, world_to_cubic):
     info = np.reshape(np.loadtxt(info_file), [-1, 9])
     origin = info[:, :3]
+
     origin = np.tile(origin, np.array([2]))
     target = info[:, 3:]
+    valide=True
+    if 0 in target:
+        valide=False
     target = ((target - origin) * world_to_cubic).astype(int)
-    return target
+    return target,valide
 
 
 def load_itk(filename):
@@ -149,19 +153,23 @@ def check_availability(dir):
     for case_name in Tooth_dir:
         full_case_dir = dir + '\\' + case_name
 
-
+        valide_case=True
         for tooth in os.listdir(full_case_dir):
             case_tooth_dir = full_case_dir + '\\' + tooth
             info_file=case_tooth_dir+"\\info.txt"
 
-            feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
+            feature,valide_tooth = load_y(info_file, GRID_SIZE / WORLD_SIZE)
+            if valide_tooth==False:
+                valide_case=False
+                break
 
-            num = feature.shape[0]
+        if valide_case==False:
+            print(full_case_dir)
+            # for i in range(num):
+            #     if feature[i, 0]<feature[i, 3]:
+            #         error_num+=1
+            #         print('data_error in %s'%(case_tooth_dir))
 
-            for i in range(num):
-                if feature[i, 0]<feature[i, 3]:
-                    error_num+=1
-                    print('data_error in %s'%(case_tooth_dir))
     return error_num
 
 
@@ -170,7 +178,7 @@ def traverse_origin(dir):
     # 读取世界坐标
     box = loadmhd(dir)
     info_file = os.path.join(dir, 'info.txt')
-    feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
+    feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
     num = feature.shape[0]
 
     for i in range(num):
@@ -190,7 +198,7 @@ def traverse_origin(dir):
                       scale_factor=1,)
                       # transparent=True)
 
-        mlab.points3d(ex, ey, ez,
+        mlab.points3d(ex+100, ey, ez,
                       mode="cube",
                       color=(0, 0, 1),
                       scale_factor=1)
@@ -249,5 +257,5 @@ if __name__ == '__main__':
     # show_single('F:\\ProjectData\\Feature\\croped\\')
     # traverse_croped('F:/ProjectData/Feature2/display_crop/feature_1')
 
-    traverse_origin('F:/ProjectData/Feature2/DataSet/Train\\0822$TH76PreTx\\tooth18')
+    traverse_origin('F:/ProjectData/Feature2/DataSet/Train/0822$RO147PreTx_mirror\\tooth20')
     # print(check_availability('F:/ProjectData/Feature2/DataSet/Validate'))
