@@ -95,8 +95,6 @@ if __name__ == '__main__':
             step_from_last_mininum = 0
             train_batch_gen = {}
             test_batch_gen = {}
-            box_and_y_batch_list=[]
-            y_batch_list=[]
             for task, task_content in NetConfig.task_dict.items():
                 TrainDataConfig.data_list = task_content['input_tooth']
                 ValiDataConfig.data_list = TrainDataConfig.data_list
@@ -109,17 +107,25 @@ if __name__ == '__main__':
                 assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
                 saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
+            loss_last=2>>31
+            case_name=' '
             for iter in range(100000):
                 #[task:[box_batch,y_batch]]
                 task_box_and_y_batch_list=[train_batch_gen[task].get_batch() for task in NetConfig.task_dict.keys()]
                 # [box_batch_shape]*task_num, [y_batch_shape]*task_num
-                box_task_list,y_task_list=zip(*task_box_and_y_batch_list)
+                box_task_list,y_task_list,name_task_list=zip(*task_box_and_y_batch_list)
                 box_task_batch=np.stack(box_task_list)
                 y_batch=np.concatenate(y_task_list,axis=1)
-
+                if name_task_list[0]!=None:
+                    case_name=name_task_list[0]
                 feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                              phase: True, keep_prob: 1}
                 _, loss_train = sess.run([level.optimizer, level.error], feed_dict=feed_dict)
+                if loss_train-2000>loss_last:
+                    with open('log/log.txt', 'a') as f:
+                        f.write('error_case= %s \n ' % (case_name))
+                loss_last=loss_train
+
                 if iter % test_step == 0:
                     if start == False:
                         save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
@@ -131,7 +137,7 @@ if __name__ == '__main__':
                     # [task:[box_batch,y_batch]]
                     task_box_and_y_batch_list = [test_batch_gen[task].get_batch() for task in NetConfig.task_dict.keys()]
                     # [box_batch_shape]*task_num, [y_batch_shape]*task_num
-                    box_task_list, y_task_list = zip(*task_box_and_y_batch_list)
+                    box_task_list, y_task_list,_ = zip(*task_box_and_y_batch_list)
                     box_task_batch = np.stack(box_task_list)
                     y_batch = np.concatenate(y_task_list, axis=1)
 
@@ -149,8 +155,6 @@ if __name__ == '__main__':
 
 
         tf.reset_default_graph()
-        with open('log/log.txt', 'a') as f:
-            f.write('trail_num =%d, error=%f \n '%(i,final_error))
 
 
 

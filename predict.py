@@ -89,7 +89,6 @@ if __name__ == '__main__':
     g_list = list(set(tf.global_variables()) - temp_var_g)
     saver_22 = tf.train.Saver(var_list=g_list)
 
-
     # box_whole=tf.squeeze(level_1.box,axis=0)
 
     pred_end_1 = recover_coord(level_1.pred[0, :3], level_21.pred[0], SHAPE_CROP)

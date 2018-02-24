@@ -146,11 +146,13 @@ class BatchGenerator(object):
             self.y = self.y[perm]
 
     def get_batch(self):
+        case_name=None
         if self.index+ self.batch_size>self.sample_num:
             self.index=0
             self.shuffle_times+=1
             if self.load_case_once>0 and self.shuffle_times >= self.switch_after_shuffles:
                 print('load data for '+ self.name)
+                case_name=self.get_case_list()[0]
                 self.load_case_list(self.get_case_list())
                 self.shuffle_times = 0
             self.suffle()
@@ -167,13 +169,11 @@ class BatchGenerator(object):
         return_list=[box_batch]
         if self.need_target:
             return_list.append(y_batch)
+            return_list.append(case_name)
         if self.need_name:
             return_list.append(self.case_load[name_index_batch])
 
         return return_list
-
-
-
 
 
 if __name__ == '__main__':
