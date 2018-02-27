@@ -10,6 +10,16 @@ from dataRelated import BatchGenerator
 
 class Level(object):
     def __init__(self, Param, is_training, scope, input_box, keep_prob, phase, need_target=True):
+        '''
+
+        :param Param:
+        :param is_training:
+        :param scope:
+        :param input_box: shape=[len(TASK_DICT),None] + SHAPE_BOX
+        :param keep_prob:
+        :param phase:
+        :param need_target:
+        '''
         self.box = input_box
 
         self.keep_prob = keep_prob
@@ -18,7 +28,6 @@ class Level(object):
         with tf.variable_scope(scope):
             cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             self.pred = cnn.output_multi_task
-            self.reg_term=cnn.regularization_term
             self.optimizers = {}
 
             if need_target:
@@ -27,6 +36,12 @@ class Level(object):
                 with tf.variable_scope('error'):
                     self.error=tf.reduce_mean(tf.reduce_sum(
                         tf.square(self.pred - self.targets), axis=1) /(2*len(Param.task_dict)), axis=0)
+
+                if len(Param.task_dict) > 1:
+                    self.reg_term = cnn.regularization_term
+                else:
+                    self.reg_term = tf.zeros([])
+
                 self.losses = self.error +self.reg_term*Param.regularization_coord
 
             if is_training == True:
@@ -82,7 +97,7 @@ if __name__ == '__main__':
 
             NEED_RESTORE = False
             NEED_SAVE = True
-            test_step = 5
+            test_step = 10
             average = 0
             remember = 0.9
             less_100_case = 0

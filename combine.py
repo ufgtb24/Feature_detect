@@ -1,14 +1,15 @@
 import os
 
 from tensorflow.python.tools import freeze_graph
-
+import tensorflow as tf
 from config import MODEL_PATH
+PB_PATH = 'output_graph/input_graph.pb'
 
 checkpoint_state_name = "checkpoint_state"
 input_graph_name = "input_graph.pb"
 output_graph_name = "output_graph.pb"
 
-input_graph = os.path.join(MODEL_PATH,'whole/input_graph.pb')
+input_graph = os.path.join(MODEL_PATH,PB_PATH)
 input_saver = ""
 input_binary = False
 input_checkpoint = os.path.join(MODEL_PATH,'whole/model.ckpt')
@@ -22,7 +23,8 @@ clear_devices = False
 initializer_nodes=[]
 variable_names_blacklist=""
 
-def generate_pb():
+def generate_pb(gd):
+    tf.train.write_graph(gd, MODEL_PATH, PB_PATH)
     freeze_graph.freeze_graph(input_graph,
                               input_saver,
                               input_binary,

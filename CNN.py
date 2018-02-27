@@ -7,8 +7,7 @@ class CNN(object):
         conv and fc
         :param param:
         :param phase:
-        :param box: [b,24,h,w,d]
-        :param pos: [b,24,3]
+        :param box: [task_num,b,h,w,d]
         '''
         self.param=param
         self.phase=phase
@@ -34,6 +33,7 @@ class CNN(object):
                     output=self.build_FC(conv,fc_size)
                     output_task_list.append(output)
 
+        #[b,multi_output_size]
         self.output_multi_task=tf.concat(output_task_list,axis=1,name='build_predict')
 
         def regular_layer(task_var_list):
@@ -45,9 +45,10 @@ class CNN(object):
                 layer_term += tf.reduce_sum(tf.square(task_var_list[-1] - task_var_list[0]))
                 return layer_term
 
-        with tf.variable_scope('calculate_reg_term'):
-            commen_layer_list = zip(*commen_task_list)
-            self.regularization_term=tf.reduce_sum(tf.stack([regular_layer(task_list) for task_list in commen_layer_list]))
+        if len(param.task_dict) > 1:
+            with tf.variable_scope('calculate_reg_term'):
+                commen_layer_list = zip(*commen_task_list)
+                self.regularization_term=tf.reduce_sum(tf.stack([regular_layer(task_list) for task_list in commen_layer_list]))
 
 
     def build_CNN(self,input_box,layer_index):

@@ -6,39 +6,31 @@ SHAPE_BOX=[128,128,128]
 FC_SIZE=[128,6]
 
 
-# TASK_DICT = {
-#     'ALL':
-#         {
-#             'input_tooth': ['tooth2','tooth3','tooth4','tooth5','tooth14','tooth15','tooth12','tooth13'],
-#             'fc_size': FC_SIZE
-#         }
-#
-# }
 
 TASK_DICT = {
     'LB':
         {
-            'input_tooth': ['tooth18','tooth19'],
+            'input_tooth': ['tooth18','tooth19','tooth20','tooth21','tooth28','tooth29','tooth30','tooth31'],
             'fc_size': FC_SIZE
         },
 
-    'LF':
-        {
-            'input_tooth': ['tooth20','tooth21'],
-            'fc_size': FC_SIZE
-        },
-
-    'RB':
-        {
-            'input_tooth': ['tooth28','tooth29'],
-            'fc_size': FC_SIZE
-        },
-
-    'RF':
-        {
-            'input_tooth': ['tooth30','tooth31'],
-            'fc_size': FC_SIZE
-        }
+    # 'LF':
+    #     {
+    #         'input_tooth': ['tooth28','tooth29','tooth30','tooth31'],
+    #         'fc_size': FC_SIZE
+    #     },
+    #
+    # 'RB':
+    #     {
+    #         'input_tooth': ['tooth28','tooth29'],
+    #         'fc_size': FC_SIZE
+    #     },
+    #
+    # 'RF':
+    #     {
+    #         'input_tooth': ['tooth30','tooth31'],
+    #         'fc_size': FC_SIZE
+    #     }
 }
 #
 # # TASK_DICT = {
@@ -70,6 +62,7 @@ TASK_DICT = {
 class NetConfig(object):
     shape_box = SHAPE_BOX
     # channels = [64, 64, 64, 128, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
+    # channels = [32, 64, 64, 128, 128, 256, 512]  # 决定左侧的参数多少和左侧的memory
 
     # channels = [16, 64, 256, 256,1024]  # 决定左侧的参数多少和左侧的memory
     channels = [16, 64, 128, 128,256]  # 决定左侧的参数多少和左侧的memory
@@ -136,7 +129,7 @@ class TrainDataConfig(object):
     # total_case_dir='F:/ProjectData/Feature/Tooth'
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Train'
     data_list=None
-    load_case_once = 1  # 每次读的病例数 若果=0,则只load一次，读入全部
+    load_case_once = 4 # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
@@ -146,8 +139,8 @@ class ValiDataConfig(object):
     batch_size = 8
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Validate'
     data_list=None
-    load_case_once = 1  # 每次读的病例数
-    switch_after_shuffles = 1  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    load_case_once =4 # 每次读的病例数
+    switch_after_shuffles =1  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 class TestDataConfig(object):
