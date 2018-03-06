@@ -7,7 +7,7 @@ from combine import generate_pb
 from config import MODEL_PATH, SHAPE_BOX, NetConfig, TestDataConfig
 from dataRelated import BatchGenerator
 from display import edges
-from level_train import Level
+from level_train import DetectNet
 
 
 def recover_coord(fp_1,fp_2,shape_crop):
@@ -34,8 +34,8 @@ if __name__ == '__main__':
     input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
     box=tf.to_float(input_box)
 
-    level = Level(Param=NetConfig, is_training=False, scope='level_1', input_box=box,
-                  keep_prob=keep_prob, phase=phase)
+    level = DetectNet(Param=NetConfig, is_training=False, scope='level_1', input_box=box,
+                      keep_prob=keep_prob, phase=phase)
 
     saver = tf.train.Saver(var_list=tf.global_variables())
 

@@ -3,7 +3,7 @@ import os
 
 from config import MODEL_PATH, SHAPE_BOX
 from dataRelated import  BatchGenerator
-from level_train import Level
+from level_train import DetectNet
 
 
 class NetConfig(object):
@@ -43,8 +43,8 @@ if __name__ == '__main__':
     input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
     box=tf.to_float(input_box)
 
-    level=Level(Param=NetConfig,is_training=True,scope='level_1',input_box=box,
-                keep_prob=keep_prob, phase=phase)
+    level=DetectNet(Param=NetConfig, is_training=True, scope='level_1', input_box=box,
+                    keep_prob=keep_prob, phase=phase)
 
     # saver = tf.train.Saver(max_to_keep=1)
 ################
