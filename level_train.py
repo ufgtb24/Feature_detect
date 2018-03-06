@@ -1,4 +1,6 @@
 import tensorflow as tf
+from tensorflow.contrib import slim
+
 import commen_structure as commen
 import os
 import numpy as np
@@ -6,6 +8,7 @@ from CNN import CNN
 from config import MODEL_PATH, SHAPE_BOX, TASK_DICT, NetConfig, \
     TrainDataConfig, ValiDataConfig,TRAIL_DETAIL
 from dataRelated import BatchGenerator
+import inception_v3 as icp
 
 
 class Level(object):
@@ -26,23 +29,17 @@ class Level(object):
         self.phase = phase
 
         with tf.variable_scope(scope):
-            cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
-            self.pred = cnn.output_multi_task
-            self.optimizers = {}
+            # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
+            with slim.arg_scope(icp.inception_v3_arg_scope()):
+                self.pred = icp.inception_v3(input_box, num_features=6, is_training=phase)
+                self.optimizers = {}
 
             if need_target:
                 self.targets= tf.placeholder(tf.float32, shape=[None, Param.output_size],
                                                     name="multi_task_target")
                 with tf.variable_scope('error'):
                     self.error=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred - self.targets), axis=1) /(2*len(Param.task_dict)), axis=0)
-
-                if len(Param.task_dict) > 1:
-                    self.reg_term = cnn.regularization_term
-                else:
-                    self.reg_term = tf.zeros([])
-
-                self.losses = self.error +self.reg_term*Param.regularization_coord
+                        tf.square(self.pred - self.targets), axis=1) /2, axis=0)
 
             if is_training == True:
                 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -78,6 +75,8 @@ if __name__ == '__main__':
         phase = tf.placeholder(tf.bool, name='phase_input')
         input_box = tf.placeholder(tf.uint8, shape=[len(TASK_DICT),None] + SHAPE_BOX, name='input_box')
         box = tf.to_float(input_box)
+        inception_v3()
+
         level = Level(Param=NetConfig, is_training=True, scope='level_1', input_box=box,
                       keep_prob=keep_prob, phase=phase)
 
@@ -128,11 +127,9 @@ if __name__ == '__main__':
                 #[task:[box_batch,y_batch]]
                 task_box_and_y_batch_list=[train_batch_gen[task].get_batch() for task in NetConfig.task_dict.keys()]
                 # [box_batch_shape]*task_num, [y_batch_shape]*task_num
-                box_task_list,y_task_list,name_task_list=zip(*task_box_and_y_batch_list)
+                box_task_list,y_task_list=zip(*task_box_and_y_batch_list)
                 box_task_batch=np.stack(box_task_list)
                 y_batch=np.concatenate(y_task_list,axis=1)
-                if name_task_list[0]!=None:
-                    case_name=name_task_list[0]
                 feed_dict = {input_box: box_task_batch, level.targets: y_batch,
                              phase: True, keep_prob: 1}
                 _, loss_train = sess.run([level.optimizer, level.error], feed_dict=feed_dict)
@@ -152,7 +149,7 @@ if __name__ == '__main__':
                     # [task:[box_batch,y_batch]]
                     task_box_and_y_batch_list = [test_batch_gen[task].get_batch() for task in NetConfig.task_dict.keys()]
                     # [box_batch_shape]*task_num, [y_batch_shape]*task_num
-                    box_task_list, y_task_list,_ = zip(*task_box_and_y_batch_list)
+                    box_task_list, y_task_list = zip(*task_box_and_y_batch_list)
                     box_task_batch = np.stack(box_task_list)
                     y_batch = np.concatenate(y_task_list, axis=1)
 
