@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6953e4f6-32dc-4230-94f1-cee426f45bbb" name="Default" comment="">
+    <list default="true" id="6953e4f6-32dc-4230-94f1-cee426f45bbb" name="Default" comment="predict with multi-task model">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/inception_v3.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+<<<<<<< HEAD
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.py" afterPath="$PROJECT_DIR$/config.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataRelated.py" afterPath="$PROJECT_DIR$/dataRelated.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/inception_v3.py" afterPath="$PROJECT_DIR$/inception_v3.py" />
+=======
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/level_train.py" afterPath="$PROJECT_DIR$/level_train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -35,27 +39,41 @@
     <SUITE FILE_PATH="coverage/Feature_Detect$test2.coverage" NAME="test2 Coverage Results" MODIFIED="1520390181300" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Tests" />
     <SUITE FILE_PATH="coverage/Feature_Detect$level_2_train.coverage" NAME="level_2_train Coverage Results" MODIFIED="1509598728960" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$commen_process.coverage" NAME="commen_process Coverage Results" MODIFIED="1517301665995" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+<<<<<<< HEAD
     <SUITE FILE_PATH="coverage/Feature_Detect$level_train.coverage" NAME="level_train Coverage Results" MODIFIED="1520417711465" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+=======
+    <SUITE FILE_PATH="coverage/Feature_Detect$level_train.coverage" NAME="level_train Coverage Results" MODIFIED="1519717651168" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
     <SUITE FILE_PATH="coverage/Feature_Detect$crop_data.coverage" NAME="crop_data Coverage Results" MODIFIED="1515553911889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$predict.coverage" NAME="predict Coverage Results" MODIFIED="1519715237440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Feature_Detect$augment_data.coverage" NAME="augment_data Coverage Results" MODIFIED="1508468907489" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
+<<<<<<< HEAD
     <splitter split-orientation="horizontal" split-proportion="0.5994409">
+=======
+    <splitter split-orientation="horizontal" split-proportion="0.5395367">
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-          <file leaf-file-name="level_train.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/level_train.py">
+          <file leaf-file-name="display.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/display.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="455">
                   <caret line="42" column="0" lean-forward="true" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
+=======
+                <state relative-caret-position="0">
+                  <caret line="153" column="46" lean-forward="false" selection-start-line="153" selection-start-column="46" selection-end-line="153" selection-end-column="46" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                   <folding>
-                    <element signature="e#0#23#0" expanded="true" />
+                    <element signature="e#0#24#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
+<<<<<<< HEAD
           <file leaf-file-name="dataRelated.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/dataRelated.py">
               <provider selected="true" editor-type-id="text-editor">
@@ -85,6 +103,15 @@
                   <caret line="126" column="32" lean-forward="false" selection-start-line="126" selection-start-column="32" selection-end-line="126" selection-end-column="32" />
                   <folding>
                     <element signature="e#725#763#0" expanded="true" />
+=======
+          <file leaf-file-name="level_train.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/level_train.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="528">
+                  <caret line="24" column="11" lean-forward="true" selection-start-line="24" selection-start-column="11" selection-end-line="24" selection-end-column="11" />
+                  <folding>
+                    <element signature="e#0#23#0" expanded="true" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                   </folding>
                 </state>
               </provider>
@@ -93,6 +120,7 @@
           <file leaf-file-name="config.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/config.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="720">
                   <caret line="30" column="16" lean-forward="true" selection-start-line="30" selection-start-column="16" selection-end-line="30" selection-end-column="16" />
                   <folding />
@@ -109,6 +137,13 @@
                     <element signature="n#!!doc" expanded="false" />
                     <element signature="e#761#799#0" expanded="true" />
                     <element signature="e#24620#24643#0" expanded="false" />
+=======
+                <state relative-caret-position="816">
+                  <caret line="59" column="5" lean-forward="false" selection-start-line="59" selection-start-column="5" selection-end-line="59" selection-end-column="5" />
+                  <folding>
+                    <element signature="e#756#757#0" expanded="false" />
+                    <element signature="e#2107#2110#0" expanded="false" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                   </folding>
                 </state>
               </provider>
@@ -117,12 +152,18 @@
           <file leaf-file-name="inception_compare.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/inception_compare.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="9840">
                   <caret line="423" column="47" lean-forward="false" selection-start-line="423" selection-start-column="47" selection-end-line="423" selection-end-column="47" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
                     <element signature="e#761#799#0" expanded="true" />
                   </folding>
+=======
+                <state relative-caret-position="403">
+                  <caret line="429" column="4" lean-forward="false" selection-start-line="429" selection-start-column="4" selection-end-line="429" selection-end-column="4" />
+                  <folding />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                 </state>
               </provider>
             </entry>
@@ -131,11 +172,19 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
+<<<<<<< HEAD
           <file leaf-file-name="commen_structure.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/commen_structure.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="382">
                   <caret line="34" column="40" lean-forward="false" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="40" />
+=======
+          <file leaf-file-name="CNN.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/CNN.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="1440">
+                  <caret line="61" column="42" lean-forward="false" selection-start-line="61" selection-start-column="42" selection-end-line="61" selection-end-column="42" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                   <folding />
                 </state>
               </provider>
@@ -144,6 +193,7 @@
           <file leaf-file-name="level_train.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/level_train.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="678">
                   <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
                   <folding>
@@ -151,6 +201,14 @@
                     <marker date="1520417711392" expanded="true" signature="345:1892" ph="..." />
                     <marker date="1520417711392" expanded="true" signature="437:1892" ph="..." />
                     <marker date="1520417711392" expanded="true" signature="750:1892" ph="..." />
+=======
+                <state relative-caret-position="1848">
+                  <caret line="77" column="15" lean-forward="false" selection-start-line="77" selection-start-column="15" selection-end-line="77" selection-end-column="15" />
+                  <folding>
+                    <element signature="e#0#23#0" expanded="true" />
+                    <marker date="1520303886230" expanded="true" signature="816:1943" ph="..." />
+                    <marker date="1520303886230" expanded="true" signature="1131:1491" ph="..." />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                   </folding>
                 </state>
               </provider>
@@ -173,15 +231,22 @@
           <file leaf-file-name="inception_v3.py" pinned="false" current-in-tab="false">
             <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/contrib/slim/python/slim/nets/inception_v3.py">
               <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
                 <state relative-caret-position="420">
                   <caret line="722" column="19" lean-forward="true" selection-start-line="722" selection-start-column="19" selection-end-line="722" selection-end-column="19" />
+=======
+                <state relative-caret-position="12432">
+                  <caret line="518" column="47" lean-forward="false" selection-start-line="518" selection-start-column="47" selection-end-line="518" selection-end-column="47" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                   <folding>
                     <element signature="e#761#799#0" expanded="true" />
+                    <element signature="e#25930#27039#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
+<<<<<<< HEAD
           <file leaf-file-name="layers.py" pinned="false" current-in-tab="true">
             <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/contrib/layers/python/layers/layers.py">
               <provider selected="true" editor-type-id="text-editor">
@@ -218,6 +283,18 @@
                 <state relative-caret-position="394">
                   <caret line="141" column="4" lean-forward="false" selection-start-line="141" selection-start-column="4" selection-end-line="141" selection-end-column="4" />
                   <folding />
+=======
+          <file leaf-file-name="inception_v3.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/inception_v3.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="588">
+                  <caret line="627" column="13" lean-forward="false" selection-start-line="627" selection-start-column="13" selection-end-line="627" selection-end-column="13" />
+                  <folding>
+                    <element signature="n#!!doc" expanded="false" />
+                    <element signature="e#761#799#0" expanded="true" />
+                    <element signature="e#8630#8657#0" expanded="false" />
+                  </folding>
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
                 </state>
               </provider>
             </entry>
@@ -235,6 +312,16 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
+<<<<<<< HEAD
+=======
+      <find>info\=np\.loadtxt\(info_file\)\.astype\(np\.float32\)\n</find>
+      <find>loadtxt</find>
+      <find>np.save</find>
+      <find>%f</find>
+      <find>os.path.</find>
+      <find>load crop data</find>
+      <find>MODEL</find>
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
       <find>MODEL_PATH</find>
       <find>need_target</find>
       <find>summary</find>
@@ -257,6 +344,7 @@
       <find>64</find>
       <find>slim</find>
       <find>inception_v3_arg_scope</find>
+<<<<<<< HEAD
       <find>Mixed_6b</find>
       <find>7x1</find>
       <find>keep_prob</find>
@@ -265,12 +353,13 @@
       <find>variables_collections</find>
       <find>batch_norm</find>
       <find>is_training_value = utils.constant_value(is_training)</find>
+=======
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
     </findStrings>
     <replaceStrings>
       <replace>avg_pool3d</replace>
       <replace>5</replace>
       <replace>96</replace>
-      <replace>3x1x1</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -309,9 +398,11 @@
         <option value="$PROJECT_DIR$/combine.py" />
         <option value="$PROJECT_DIR$/CNN.py" />
         <option value="$PROJECT_DIR$/predict.py" />
+        <option value="$PROJECT_DIR$/config.py" />
         <option value="E:/TensorFlowCplusplus/tensorflow/tensorflow/configure.py" />
         <option value="$PROJECT_DIR$/inception.py" />
         <option value="$PROJECT_DIR$/inception_v3_test.py" />
+<<<<<<< HEAD
         <option value="$PROJECT_DIR$/inception_compare.py" />
         <option value="$PROJECT_DIR$/Tests/test2.py" />
         <option value="$PROJECT_DIR$/config.py" />
@@ -319,6 +410,10 @@
         <option value="C:/Program Files/Python35/Lib/site-packages/tensorflow/contrib/slim/python/slim/nets/inception_v3.py" />
         <option value="$PROJECT_DIR$/level_train.py" />
         <option value="$PROJECT_DIR$/inception_v3.py" />
+=======
+        <option value="$PROJECT_DIR$/inception_v3.py" />
+        <option value="$PROJECT_DIR$/level_train.py" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
       </list>
     </option>
   </component>
@@ -532,7 +627,11 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="C:/Program Files/Git/bin/git.exe" />
+<<<<<<< HEAD
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
+=======
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -873,14 +972,7 @@
       <option name="project" value="LOCAL" />
       <updated>1519715574691</updated>
     </task>
-    <task id="LOCAL-00029" summary="add inception">
-      <created>1520304062433</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1520304062433</updated>
-    </task>
-    <option name="localTasksCounter" value="30" />
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TodoView">
@@ -895,16 +987,23 @@
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="2578" height="1408" extended-state="6" />
     <layout>
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17332268" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32861805" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32956383" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32148626" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25798723" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+<<<<<<< HEAD
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.42407107" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32861805" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15415336" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875606" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+=======
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.273021" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32861805" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30613893" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -914,6 +1013,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875606" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -934,6 +1034,7 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <MESSAGE value="研究出tf.control_denpendencies 和 wheel_loop的正确用法" />
     <MESSAGE value="1 修改了依赖逻辑&#10;2 预测中使用两个初始变量" />
     <MESSAGE value="1. 命名输入输出&#10;2. RefSwitch转换为 Switch&#10;3. 但是output的生成还没有集成到input生成中" />
     <MESSAGE value="添加生成output的代码" />
@@ -958,8 +1059,7 @@
     <MESSAGE value="同时训练完美版" />
     <MESSAGE value="detect invalid data" />
     <MESSAGE value="predict with multi-task model" />
-    <MESSAGE value="add inception" />
-    <option name="LAST_COMMIT_MESSAGE" value="add inception" />
+    <option name="LAST_COMMIT_MESSAGE" value="predict with multi-task model" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1039,6 +1139,7 @@
           <line>109</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
+<<<<<<< HEAD
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/inception_v3.py</url>
           <line>632</line>
@@ -1074,6 +1175,8 @@
           <line>568</line>
           <option name="timeStamp" value="179" />
         </line-breakpoint>
+=======
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -1082,7 +1185,11 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
+<<<<<<< HEAD
       <option name="time" value="180" />
+=======
+      <option name="time" value="151" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1091,6 +1198,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="6600">
           <caret line="275" column="4" lean-forward="false" selection-start-line="275" selection-start-column="4" selection-end-line="275" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Program Files/Python35/Lib/site-packages/numpy/lib/shape_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-768">
+          <caret line="825" column="13" lean-forward="true" selection-start-line="825" selection-start-column="13" selection-end-line="825" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -1141,6 +1255,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="276">
           <caret line="1117" column="8" lean-forward="false" selection-start-line="1117" selection-start-column="8" selection-end-line="1117" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/L2_train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1176">
+          <caret line="53" column="27" lean-forward="false" selection-start-line="53" selection-start-column="27" selection-end-line="53" selection-end-column="27" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1243,11 +1365,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/dataRelated.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3480">
+          <caret line="147" column="8" lean-forward="false" selection-start-line="147" selection-start-column="8" selection-end-line="147" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://E:/TensorFlowCplusplus/tensorflow/tensorflow/configure.py" />
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/layers/convolutional.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10848">
           <caret line="464" column="37" lean-forward="false" selection-start-line="464" selection-start-column="37" selection-end-line="464" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="816">
+          <caret line="59" column="5" lean-forward="false" selection-start-line="59" selection-start-column="5" selection-end-line="59" selection-end-column="5" />
+          <folding>
+            <element signature="e#756#757#0" expanded="false" />
+            <element signature="e#2107#2110#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1259,10 +1400,37 @@
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
+=======
+    <entry file="file://$PROJECT_DIR$/CNN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1440">
+          <caret line="61" column="42" lean-forward="false" selection-start-line="61" selection-start-column="42" selection-end-line="61" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/variable_scope.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="403">
+          <caret line="1794" column="6" lean-forward="false" selection-start-line="1794" selection-start-column="6" selection-end-line="1794" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/contrib/layers/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-144">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/commen_structure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="595">
+          <caret line="34" column="40" lean-forward="false" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="40" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1273,7 +1441,22 @@
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/L2_train.py">
+=======
+    <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/contrib/slim/python/slim/nets/inception_v3.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12432">
+          <caret line="518" column="47" lean-forward="false" selection-start-line="518" selection-start-column="47" selection-end-line="518" selection-end-column="47" />
+          <folding>
+            <element signature="e#761#799#0" expanded="true" />
+            <element signature="e#25930#27039#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/inception_v3_test.py">
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1728">
           <caret line="76" column="29" lean-forward="false" selection-start-line="76" selection-start-column="29" selection-end-line="76" selection-end-column="29" />
@@ -1308,6 +1491,7 @@
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="317">
@@ -1366,10 +1550,17 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="720">
           <caret line="30" column="16" lean-forward="true" selection-start-line="30" selection-start-column="16" selection-end-line="30" selection-end-column="16" />
+=======
+    <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/contrib/layers/python/layers/layers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="403">
+          <caret line="429" column="4" lean-forward="false" selection-start-line="429" selection-start-column="4" selection-end-line="429" selection-end-column="4" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
           <folding />
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/dataRelated.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="336">
@@ -1392,12 +1583,21 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="420">
           <caret line="722" column="19" lean-forward="true" selection-start-line="722" selection-start-column="19" selection-end-line="722" selection-end-column="19" />
+=======
+    <entry file="file://$PROJECT_DIR$/inception_v3.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="588">
+          <caret line="627" column="13" lean-forward="false" selection-start-line="627" selection-start-column="13" selection-end-line="627" selection-end-column="13" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
           <folding>
+            <element signature="n#!!doc" expanded="false" />
             <element signature="e#761#799#0" expanded="true" />
+            <element signature="e#8630#8657#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/python/ops/gen_nn_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="475">
@@ -1450,12 +1650,19 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-3258">
           <caret line="126" column="32" lean-forward="false" selection-start-line="126" selection-start-column="32" selection-end-line="126" selection-end-column="32" />
+=======
+    <entry file="file://$PROJECT_DIR$/level_train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="528">
+          <caret line="24" column="11" lean-forward="true" selection-start-line="24" selection-start-column="11" selection-end-line="24" selection-end-column="11" />
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
           <folding>
             <element signature="e#725#763#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
     <entry file="file://C:/Program Files/Python35/Lib/site-packages/tensorflow/contrib/layers/python/layers/layers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="380">
@@ -1486,6 +1693,8 @@
         </state>
       </provider>
     </entry>
+=======
+>>>>>>> parent of 270df0c... simple task with inception, but finished with exit code 0xC00000FD
   </component>
   <component name="masterDetails">
     <states>

@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
 from crop_data import CropedBatchGenerator
-from level_train import DetectNet
+from level_train import Level
 from config import MODEL_PATH, Feature_Target
 
 
@@ -39,8 +39,8 @@ if __name__ == '__main__':
     keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
     phase = tf.placeholder(tf.bool,name='phase_input')
 
-    level=DetectNet(Param=NetConfig, is_training=True, scope='level_2' + str(Feature_Target),
-                    keep_prob = keep_prob, phase = phase)
+    level=Level(Param=NetConfig, is_training=True, scope='level_2'+str(Feature_Target),
+                keep_prob = keep_prob, phase = phase)
 
     # saver = tf.train.Saver(max_to_keep=1)
 ################

@@ -6,6 +6,7 @@ SHAPE_BOX=[128,128,128,1]
 FC_SIZE=[128,6]
 
 
+
 class TrainDataConfig(object):
     world_to_cubic = 128 / 12.
     batch_size = 4

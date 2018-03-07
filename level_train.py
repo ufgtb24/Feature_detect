@@ -1,8 +1,6 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
 import numpy as np
-from tensorflow.contrib.memory_stats import BytesInUse
-
 import commen_structure as commen
 import os
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig
@@ -11,14 +9,14 @@ import inception_v3 as icp
 
 
 class DetectNet(object):
-    def __init__(self,scope, input_box_train, targets_train, input_box_test, targets_test):
+    def __init__(self, is_training,scope, input_box, targets):
         '''
 
         :param Param:
-        :param is_training: hard code used in construction
-        :param phase: place_holder used in running
+        :param is_training: place_holder used in running
         :param scope:
         :param input_box: shape=[None] + SHAPE_BOX   placeholder
+        :param keep_prob:
         :param need_target:
         '''
 
@@ -26,26 +24,17 @@ class DetectNet(object):
         with tf.variable_scope(scope):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
-                self.pred_train = icp.inception_v3(input_box_train, num_features=6, is_training=True,dropout_keep_prob=0.5)
+                self.pred = icp.inception_v3(input_box, num_features=6, is_training=is_training,dropout_keep_prob=0.5)
 
-            with tf.variable_scope('error'):
-                self.error_train = tf.reduce_mean(tf.reduce_sum(
-                    tf.square(self.pred_train - targets_train), axis=1) / 2, axis=0)
+                with tf.variable_scope('error'):
+                    self.error=tf.reduce_mean(tf.reduce_sum(
+                        tf.square(self.pred - targets), axis=1) /2, axis=0)
 
-            with tf.variable_scope('optimizer'):
-                self.optimizer = tf.train.AdamOptimizer(0.01).minimize(self.error_train)
-
-        with tf.variable_scope(scope,reuse=True):
-            # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
-            with slim.arg_scope(icp.inception_v3_arg_scope()):
-                self.pred_test = icp.inception_v3(input_box_test, num_features=6, is_training=False,dropout_keep_prob=0.5)
-
-
-            with tf.variable_scope('error'):
-                self.error_test=tf.reduce_mean(tf.reduce_sum(
-                    tf.square(self.pred_test - targets_test), axis=1) /2, axis=0)
-
-
+                # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+                # with tf.control_dependencies(update_ops):
+                with tf.variable_scope('optimizer'):
+                    # Ensures that we execute the update_ops before performing the train_step
+                    self.optimizer = tf.train.AdamOptimizer(0.01).minimize( self.error)
 
 
 
@@ -57,19 +46,13 @@ if __name__ == '__main__':
 
 
     is_training = tf.placeholder(tf.bool, name='is_training')
-    input_box_train = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
-    input_box_test = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
-    targets_train = tf.placeholder(tf.float32, shape=[None, 6],
-                                  name="targets")
-    targets_test = tf.placeholder(tf.float32, shape=[None, 6],
+    input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
+    targets = tf.placeholder(tf.float32, shape=[None, 6],
                                   name="targets")
 
-    box_train = tf.to_float(input_box_train)
-    box_test = tf.to_float(input_box_test)
+    box = tf.to_float(input_box)
 
-    detector = DetectNet( input_box_train=box_train, targets_train=targets_train,
-                          input_box_test=box_test, targets_test=targets_test,
-                          scope='detector')
+    detector = DetectNet(is_training=is_training, scope='detector', input_box=box, targets=targets)
 
 
     # saver = tf.train.Saver(max_to_keep=1)
@@ -113,9 +96,9 @@ if __name__ == '__main__':
         case_name=' '
         for iter in range(100000):
             box_batch, y_batch = train_batch_gen.get_batch()
-            feed_dict = {input_box_train: box_batch, targets_train: y_batch}
+            feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 
-            _, loss_train,pred_train = sess.run([detector.optimizer, detector.error_train,detector.pred_train], feed_dict=feed_dict)
+            _, loss_train = sess.run([detector.optimizer, detector.error], feed_dict=feed_dict)
 
             if iter % test_step == 0:
                 if start == False:
@@ -127,8 +110,8 @@ if __name__ == '__main__':
                 step_from_last_mininum += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
 
-                feed_dict = {input_box_test: box_batch, targets_test: y_batch}
-                loss_test,pred_test = sess.run([detector.error_test,detector.pred_test], feed_dict=feed_dict)
+                feed_dict = {input_box: box_batch, targets: y_batch,is_training: False}
+                loss_test = sess.run(detector.error, feed_dict=feed_dict)
                 if loss_test < winner_loss:
                     winner_loss = loss_test
                     step_from_last_mininum = 0
@@ -136,10 +119,7 @@ if __name__ == '__main__':
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                      % (iter, loss_train, loss_test, winner_loss,step_from_last_mininum))
-
-                # print("pred_train= ",pred_train )
-                # print("pred_test= ",pred_test )
+                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
 
 
 

@@ -7,7 +7,7 @@ from combine import generate_pb
 from config import MODEL_PATH, NetConfig, TASK_DICT
 from dataRelated import BatchGenerator
 from display import edges
-from level_train import DetectNet
+from level_train import Level
 
 SHAPE_BOX = [128, 128, 128]
 SHAPE_CROP = [32, 32, 32]
@@ -47,8 +47,8 @@ if __name__ == '__main__':
     input_box = tf.placeholder(tf.uint8, shape=[1, None] + SHAPE_BOX, name='input_box')
     box = tf.to_float(input_box)
 
-    level_1=DetectNet(Param=NetConfig, is_training=False, scope='level_1', input_box=box,
-                      keep_prob=keep_prob, phase=phase)
+    level_1=Level(Param=NetConfig, is_training=False, scope='level_1',input_box=box,
+                  keep_prob=keep_prob,phase=phase)
 
 
     saver_1 = tf.train.Saver(var_list=tf.global_variables())

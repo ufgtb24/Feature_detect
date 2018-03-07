@@ -386,7 +386,7 @@ def inception_v3_base(inputs,
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
-     
+
 
       # mixed_8: 4 x 4 x 640.
       end_point = 'Mixed_7a'
@@ -503,18 +503,15 @@ def inception_v3_base(inputs,
               branch_3, depth(96), 1, scope='Conv2d_0b_1')
         net = array_ops.concat([branch_0, branch_1, branch_2, branch_3], 4)
       end_points[end_point] = net
-      if end_point == final_endpoint:
-        return net, end_points
-    raise ValueError('Unknown final endpoint %s' % final_endpoint)
+      return net, end_points
 
 
 def inception_v3(inputs,
                  num_features=6,
-                 is_training=True,
+                 is_training=None,
                  dropout_keep_prob=0.5,
                  min_depth=16,
                  depth_multiplier=1.0,
-                 spatial_squeeze=True,
                  reuse=None,
                  scope='InceptionV3'):
   """Inception model from http://arxiv.org/abs/1512.00567.
