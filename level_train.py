@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
 import numpy as np
+from tensorflow.contrib.memory_stats import BytesInUse
+
 import commen_structure as commen
 import os
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig
@@ -9,7 +11,7 @@ import inception_v3 as icp
 
 
 class DetectNet(object):
-    def __init__(self, is_training, phase,scope, input_box, keep_prob, targets):
+    def __init__(self,scope, input_box_train, targets_train, input_box_test, targets_test):
         '''
 
         :param Param:
@@ -17,7 +19,6 @@ class DetectNet(object):
         :param phase: place_holder used in running
         :param scope:
         :param input_box: shape=[None] + SHAPE_BOX   placeholder
-        :param keep_prob:
         :param need_target:
         '''
 
@@ -25,19 +26,26 @@ class DetectNet(object):
         with tf.variable_scope(scope):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
-                self.pred = icp.inception_v3(input_box, num_features=6, is_training=phase,dropout_keep_prob=keep_prob)
+                self.pred_train = icp.inception_v3(input_box_train, num_features=6, is_training=True,dropout_keep_prob=0.5)
+
+            with tf.variable_scope('error'):
+                self.error_train = tf.reduce_mean(tf.reduce_sum(
+                    tf.square(self.pred_train - targets_train), axis=1) / 2, axis=0)
+
+            with tf.variable_scope('optimizer'):
+                self.optimizer = tf.train.AdamOptimizer(0.01).minimize(self.error_train)
+
+        with tf.variable_scope(scope,reuse=True):
+            # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
+            with slim.arg_scope(icp.inception_v3_arg_scope()):
+                self.pred_test = icp.inception_v3(input_box_test, num_features=6, is_training=False,dropout_keep_prob=0.5)
 
 
-            if is_training == True:
-                with tf.variable_scope('error'):
-                    self.error=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred - targets), axis=1) /2, axis=0)
+            with tf.variable_scope('error'):
+                self.error_test=tf.reduce_mean(tf.reduce_sum(
+                    tf.square(self.pred_test - targets_test), axis=1) /2, axis=0)
 
-                update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-                with tf.control_dependencies(update_ops):
-                    # Ensures that we execute the update_ops before performing the train_step
-                    self.optimizer = commen.Optimizer(self.error,initial_learning_rate=0.01,
-                                                                 max_global_norm=1.0).optimize_op
+
 
 
 
@@ -48,16 +56,20 @@ if __name__ == '__main__':
     final_error=0
 
 
-    keep_prob = tf.placeholder(tf.float32, name='keep_prob_input')
-    phase = tf.placeholder(tf.bool, name='phase_input')
-    input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
-    targets = tf.placeholder(tf.float32, shape=[None, 6],
+    is_training = tf.placeholder(tf.bool, name='is_training')
+    input_box_train = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
+    input_box_test = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
+    targets_train = tf.placeholder(tf.float32, shape=[None, 6],
+                                  name="targets")
+    targets_test = tf.placeholder(tf.float32, shape=[None, 6],
                                   name="targets")
 
-    box = tf.to_float(input_box)
+    box_train = tf.to_float(input_box_train)
+    box_test = tf.to_float(input_box_test)
 
-    detector = DetectNet(is_training=True, scope='level_1', input_box=box,
-                         keep_prob=keep_prob, phase=phase, targets=targets)
+    detector = DetectNet( input_box_train=box_train, targets_train=targets_train,
+                          input_box_test=box_test, targets_test=targets_test,
+                          scope='detector')
 
 
     # saver = tf.train.Saver(max_to_keep=1)
@@ -69,8 +81,9 @@ if __name__ == '__main__':
     var_list += bn_moving_vars
     saver = tf.train.Saver(var_list=var_list, max_to_keep=1)
     ################
-
-    with tf.Session() as sess:
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
         NEED_RESTORE = False
@@ -100,11 +113,9 @@ if __name__ == '__main__':
         case_name=' '
         for iter in range(100000):
             box_batch, y_batch = train_batch_gen.get_batch()
-            box_batch=np.expand_dims(box_batch,4)
-            feed_dict = {input_box: box_batch, targets: y_batch,
-                         phase: True, keep_prob: 0.5}
+            feed_dict = {input_box_train: box_batch, targets_train: y_batch}
 
-            _, loss_train = sess.run([detector.optimizer, detector.error], feed_dict=feed_dict)
+            _, loss_train,pred_train = sess.run([detector.optimizer, detector.error_train,detector.pred_train], feed_dict=feed_dict)
 
             if iter % test_step == 0:
                 if start == False:
@@ -115,11 +126,9 @@ if __name__ == '__main__':
                     break
                 step_from_last_mininum += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
-                box_batch = np.expand_dims(box_batch, 4)
 
-                feed_dict = {input_box: box_batch, targets: y_batch,
-                             phase: False, keep_prob: 1}
-                loss_test = sess.run(detector.error, feed_dict=feed_dict)
+                feed_dict = {input_box_test: box_batch, targets_test: y_batch}
+                loss_test,pred_test = sess.run([detector.error_test,detector.pred_test], feed_dict=feed_dict)
                 if loss_test < winner_loss:
                     winner_loss = loss_test
                     step_from_last_mininum = 0
@@ -127,7 +136,10 @@ if __name__ == '__main__':
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                      % (iter, loss_train, loss_test, winner_loss,step_from_last_mininum))
+
+                # print("pred_train= ",pred_train )
+                # print("pred_test= ",pred_test )
 
 
 

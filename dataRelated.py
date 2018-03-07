@@ -155,8 +155,7 @@ class BatchGenerator(object):
                 self.shuffle_times = 0
             self.suffle()
 
-
-        box_batch= self.box[self.index:   self.index + self.batch_size].copy()
+        box_batch= np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(),4)
         if self.need_name:
             global name_index_batch
             name_index_batch= self.name_index[self.index:   self.index + self.batch_size]

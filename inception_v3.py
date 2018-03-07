@@ -420,7 +420,7 @@ def inception_v3_base(inputs,
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
-      # mixed_9: 4 x 4 x 1024.
+      # mixed_9: 4 x 4 x 1408.
       end_point = 'Mixed_7b'
       with variable_scope.variable_scope(end_point):
         with variable_scope.variable_scope('Branch_0'):
@@ -463,7 +463,7 @@ def inception_v3_base(inputs,
       if end_point == final_endpoint:
         return net, end_points
 
-      # mixed_10: 4 x 4 x 1024.
+      # mixed_10: 4 x 4 x 1408.
       end_point = 'Mixed_7c'
       with variable_scope.variable_scope(end_point):
         with variable_scope.variable_scope('Branch_0'):
@@ -511,7 +511,7 @@ def inception_v3_base(inputs,
 def inception_v3(inputs,
                  num_features=6,
                  is_training=True,
-                 dropout_keep_prob=0.8,
+                 dropout_keep_prob=0.5,
                  min_depth=16,
                  depth_multiplier=1.0,
                  spatial_squeeze=True,
@@ -628,13 +628,9 @@ def inception_v3(inputs,
             activation_fn=None,
             normalizer_fn=None,
             scope='Conv2d_1c_1x1')
-        if spatial_squeeze:
-          logits = array_ops.squeeze(logits, [1, 2, 3], name='SpatialSqueeze')
-        # 6
-      # end_points['Logits'] = logits
-      # end_points['Predictions'] = prediction_fn(logits, scope='Predictions')
+      # 6
+      logits = array_ops.squeeze(logits, [1, 2, 3], name='SpatialSqueeze')
   return logits
-
 
 inception_v3.default_image_size = 299
 
@@ -692,14 +688,15 @@ def inception_v3_arg_scope(weight_decay=0.00004,
       # epsilon to prevent 0s in variance.
       'epsilon': 0.001,
       # collection containing update_ops.
-      'updates_collections': ops.GraphKeys.UPDATE_OPS,
+      # 'updates_collections': ops.GraphKeys.UPDATE_OPS,
+      'updates_collections': None,
       # collection containing the moving mean and moving variance.
-      'variables_collections': {
-          'beta': None,
-          'gamma': None,
-          'moving_mean': [batch_norm_var_collection],
-          'moving_variance': [batch_norm_var_collection],
-      }
+      # 'variables_collections': {
+      #     'beta': None,
+      #     'gamma': None,
+      #     'moving_mean': [batch_norm_var_collection],
+      #     'moving_variance': [batch_norm_var_collection],
+      # }
   }
 
   # Set weight_decay for weights in Conv and FC layers.
