@@ -9,7 +9,7 @@ FC_SIZE=[128,6]
 
 class TrainDataConfig(object):
     world_to_cubic = 128 / 12.
-    batch_size = 4
+    batch_size = 16
     # total_case_dir='F:/ProjectData/Feature/Tooth'
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Train'
     data_list=['tooth18','tooth19','tooth20','tooth21','tooth28','tooth29','tooth30','tooth31']

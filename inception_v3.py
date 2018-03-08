@@ -27,6 +27,7 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variable_scope
+from my_batch_norm import bn_layer_top
 
 trunc_normal = lambda stddev: init_ops.truncated_normal_initializer(0.0, stddev)
 
@@ -562,7 +563,7 @@ def inception_v3(inputs,
   with variable_scope.variable_scope(
       scope, 'InceptionV3', [inputs, num_features], reuse=reuse) as scope:
     with arg_scope(
-        [layers_lib.batch_norm, layers_lib.dropout], is_training=is_training):
+        [bn_layer_top, layers_lib.dropout], is_training=is_training):
       net, end_points = inception_v3_base(
           inputs,
           scope=scope,
@@ -687,7 +688,6 @@ def inception_v3_arg_scope(weight_decay=0.00004,
       # collection containing update_ops.
       # 'updates_collections': ops.GraphKeys.UPDATE_OPS,
       'updates_collections': None,
-      'fused':True,
       'scale':True,
       # collection containing the moving mean and moving variance.
       'variables_collections': {
@@ -707,6 +707,7 @@ def inception_v3_arg_scope(weight_decay=0.00004,
         weights_initializer=init_ops.truncated_normal_initializer(
             stddev=stddev),
         activation_fn=nn_ops.relu,
-        normalizer_fn=layers_lib.batch_norm,
-        normalizer_params=batch_norm_params) as sc:
+        normalizer_fn=bn_layer_top,
+        # normalizer_fn=None,
+        ) as sc:
       return sc

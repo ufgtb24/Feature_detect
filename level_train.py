@@ -131,9 +131,9 @@ if __name__ == '__main__':
                     if NEED_SAVE and loss_test < 50:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
-                # print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                #       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
-                print_moving_vars(sess)
+                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
+                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                # print_moving_vars(sess)
 
 
 
