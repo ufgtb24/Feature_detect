@@ -687,13 +687,15 @@ def inception_v3_arg_scope(weight_decay=0.00004,
       # collection containing update_ops.
       # 'updates_collections': ops.GraphKeys.UPDATE_OPS,
       'updates_collections': None,
+      'fused':True,
+      'scale':True,
       # collection containing the moving mean and moving variance.
-      # 'variables_collections': {
-      #     'beta': None,
-      #     'gamma': None,
-      #     'moving_mean': [batch_norm_var_collection],
-      #     'moving_variance': [batch_norm_var_collection],
-      # }
+      'variables_collections': {
+          'beta': None,
+          'gamma': None,
+          'moving_mean': [batch_norm_var_collection],
+          'moving_variance': [batch_norm_var_collection],
+      }
   }
 
   # Set weight_decay for weights in Conv and FC layers.

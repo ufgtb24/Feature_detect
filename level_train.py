@@ -38,8 +38,6 @@ class DetectNet(object):
 
 
 
-
-
 if __name__ == '__main__':
 
     final_error=0
@@ -55,6 +53,7 @@ if __name__ == '__main__':
     detector = DetectNet(is_training=is_training, scope='detector', input_box=box, targets=targets)
 
 
+
     # saver = tf.train.Saver(max_to_keep=1)
     ################
     var_list = tf.trainable_variables()
@@ -63,6 +62,20 @@ if __name__ == '__main__':
     bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name]
     var_list += bn_moving_vars
     saver = tf.train.Saver(var_list=var_list, max_to_keep=1)
+
+    # get_var_list = tf.get_collection(key='moving_vars', scope='detector/InceptionV3/Conv2d_1')
+    e1_params = [t for t in tf.get_collection(key='moving_vars') if
+                 t.name.startswith('detector/InceptionV3/Conv2d_1') and
+                  t.name.endswith('moving_variance:0')]
+    # e1_params = tf.get_collection(key='moving_vars')
+    # get_c = tf.get_default_graph().get_all_collection_keys()
+
+
+    def print_moving_vars(sess):
+
+        print(sess.run(e1_params))
+
+
     ################
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -118,8 +131,9 @@ if __name__ == '__main__':
                     if NEED_SAVE and loss_test < 50:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
 
-                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                # print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
+                #       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                print_moving_vars(sess)
 
 
 
