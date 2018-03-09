@@ -119,7 +119,7 @@ def inception_v3_base(inputs,
       if end_point == final_endpoint:
         return net, end_points
       # 64 x 64 x 32
-      end_point = 'MaxPool_3'
+      end_point = 'MaxPool_2'
       net = layers_lib.max_pool3d(net, 2, stride=2, scope=end_point)
       end_points[end_point] = net
       if end_point == final_endpoint:
@@ -127,19 +127,19 @@ def inception_v3_base(inputs,
       # 32 x 32 x 32.
       pass
       # increase dimension
-      end_point = 'Conv2d_4'
+      end_point = 'Conv2d_3'
       net = layers.conv3d(net, depth(40), 1, scope=end_point)
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
       # 32 x 32 x 40.
-      end_point = 'Conv2d_5'
+      end_point = 'Conv2d_4'
       net = layers.conv3d(net, depth(96), 3, scope=end_point)
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
       # 32 x 32 x 96.
-      end_point = 'MaxPool_6'
+      end_point = 'MaxPool_4'
       net = layers_lib.max_pool3d(net, 2, stride=2, scope=end_point)
       end_points[end_point] = net
       if end_point == final_endpoint:
@@ -152,7 +152,7 @@ def inception_v3_base(inputs,
         stride=1,
         padding='SAME'):
      # mixed: 16 x 16 x 128.
-      end_point = 'Mixed_5b'
+      end_point = 'Mixed_5a'
       with variable_scope.variable_scope(end_point):
         with variable_scope.variable_scope('Branch_0'):
           branch_0 = layers.conv3d(
@@ -179,7 +179,7 @@ def inception_v3_base(inputs,
         return net, end_points
 
       # mixed_1: 16 x 16 x 144.
-      end_point = 'Mixed_5c'
+      end_point = 'Mixed_5b'
       with variable_scope.variable_scope(end_point):
           with variable_scope.variable_scope('Branch_0'):
               branch_0 = layers.conv3d(
@@ -204,33 +204,7 @@ def inception_v3_base(inputs,
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
-      # # mixed_2: 35 x 35 x 288.
-      # end_point = 'Mixed_5d'
-      # with variable_scope.variable_scope(end_point):
-      #   with variable_scope.variable_scope('Branch_0'):
-      #     branch_0 = layers.conv3d(
-      #         net, depth(64), 1, scope='Conv2d_0a_1x1')
-      #   with variable_scope.variable_scope('Branch_1'):
-      #     branch_1 = layers.conv3d(
-      #         net, depth(48), 1, scope='Conv2d_0a_1x1')
-      #     branch_1 = layers.conv3d(
-      #         branch_1, depth(64), 5, scope='Conv2d_0b_5x5')
-      #   with variable_scope.variable_scope('Branch_2'):
-      #     branch_2 = layers.conv3d(
-      #         net, depth(64), 1, scope='Conv2d_0a_1x1')
-      #     branch_2 = layers.conv3d(
-      #         branch_2, depth(96), 3, scope='Conv2d_0b_3x3')
-      #     branch_2 = layers.conv3d(
-      #         branch_2, depth(96), 3, scope='Conv2d_0c_3x3')
-      #   with variable_scope.variable_scope('Branch_3'):
-      #     branch_3 = layers_lib.avg_pool3d(net, 3, scope='AvgPool_0a_3x3')
-      #     branch_3 = layers.conv3d(
-      #         branch_3, depth(64), 1, scope='Conv2d_0b_1x1')
-      #   net = array_ops.concat([branch_0, branch_1, branch_2, branch_3], 3)
-      # end_points[end_point] = net
-      # if end_point == final_endpoint:
-      #   return net, end_points
-      pass
+
       # mixed: 8 x 8 x 384.
       end_point = 'Mixed_6a'
       with variable_scope.variable_scope(end_point):
@@ -509,7 +483,6 @@ def inception_v3_base(inputs,
 def inception_v3(inputs,
                  num_features=6,
                  is_training=None,
-                 dropout_keep_prob=0.5,
                  min_depth=16,
                  depth_multiplier=1.0,
                  reuse=None,
@@ -532,7 +505,6 @@ def inception_v3(inputs,
     inputs: a tensor of size [batch_size, height, width, channels].
     num_features: number of predicted features.
     is_training: whether is training or not.
-    dropout_keep_prob: the percentage of activation values that are retained.
     min_depth: Minimum depth value (number of channels) for all convolution ops.
       Enforced when depth_multiplier < 1, and not an active constraint when
       depth_multiplier >= 1.
@@ -567,43 +539,6 @@ def inception_v3(inputs,
           min_depth=min_depth,
           depth_multiplier=depth_multiplier)
 
-      # Auxiliary Head logits
-      # with arg_scope(
-      #     [layers.conv3d, layers_lib.max_pool3d, layers_lib.avg_pool3d],
-      #     stride=1,
-      #     padding='SAME'):
-      #   aux_logits = end_points['Mixed_6e']
-      #   with variable_scope.variable_scope('AuxLogits'):
-      #     aux_logits = layers_lib.avg_pool3d(
-      #         aux_logits, 5,
-      #         stride=3,
-      #         padding='VALID',
-      #         scope='AvgPool_1a_5x5')
-      #     aux_logits = layers.conv3d(
-      #         aux_logits, depth(128), 1, scope='Conv2d_1b_1x1')
-      #
-      #     # Shape of feature map before the final layer.
-      #     kernel_size = _reduced_kernel_size_for_small_input(aux_logits, 5)
-      #     aux_logits = layers.conv3d(
-      #         aux_logits,
-      #         depth(768),
-      #         kernel_size,
-      #         weights_initializer=trunc_normal(0.01),
-      #         padding='VALID',
-      #         scope='Conv2d_2a_{}x{}'.format(*kernel_size))
-      #     aux_logits = layers.conv3d(
-      #         aux_logits,
-      #         num_features, 1,
-      #         activation_fn=None,
-      #         normalizer_fn=None,
-      #         weights_initializer=trunc_normal(0.001),
-      #         scope='Conv2d_2b_1x1')
-      #     if spatial_squeeze:
-      #       aux_logits = array_ops.squeeze(
-      #           aux_logits, [1, 2], name='SpatialSqueeze')
-      #     end_points['AuxLogits'] = aux_logits
-
-      # Final pooling and prediction
       with variable_scope.variable_scope('Logits'):
         # kernel_size = _reduced_kernel_size_for_small_input(net, [8, 8])
         kernel_size = [4,4,4]
@@ -614,7 +549,7 @@ def inception_v3(inputs,
             scope='AvgPool_1a_{}x{}'.format(*kernel_size))
         # 1 x 1 x 1024
         net = layers_lib.dropout(
-            net, keep_prob=dropout_keep_prob, scope='Dropout_1b')
+            net, keep_prob=0.5, scope='Dropout_1b')
         end_points['PreLogits'] = net
         # 1024
         logits = layers.conv3d(
@@ -664,36 +599,16 @@ def _reduced_kernel_size_for_small_input(input_tensor, kernel_size):
 
 
 def inception_v3_arg_scope(weight_decay=0.00004,
-                           stddev=0.1,
-                           batch_norm_var_collection='moving_vars'):
+                           stddev=0.1):
   """Defines the default InceptionV3 arg scope.
 
   Args:
     weight_decay: The weight decay to use for regularizing the model.
     stddev: The standard deviation of the trunctated normal weight initializer.
-    batch_norm_var_collection: The name of the collection for the batch norm
-      variables.
 
   Returns:
     An `arg_scope` to use for the inception v3 model.
   """
-  batch_norm_params = {
-      # Decay for the moving averages.
-      'decay': 0.9997,
-      # epsilon to prevent 0s in variance.
-      'epsilon': 0.001,
-      # collection containing update_ops.
-      # 'updates_collections': ops.GraphKeys.UPDATE_OPS,
-      'updates_collections': None,
-      'scale':True,
-      # collection containing the moving mean and moving variance.
-      'variables_collections': {
-          'beta': None,
-          'gamma': None,
-          'moving_mean': [batch_norm_var_collection],
-          'moving_variance': [batch_norm_var_collection],
-      }
-  }
 
   # Set weight_decay for weights in Conv and FC layers.
   with arg_scope(
@@ -705,6 +620,5 @@ def inception_v3_arg_scope(weight_decay=0.00004,
             stddev=stddev),
         activation_fn=nn_ops.relu,
         normalizer_fn=bn_layer_top,
-        # normalizer_fn=None,
         ) as sc:
       return sc

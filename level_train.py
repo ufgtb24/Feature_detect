@@ -8,7 +8,7 @@ import inception_v3 as icp
 
 class DetectNet(object):
     def __init__(self, is_training,input_box, targets,scope='detector',
-                 need_optim=True,dropout_keep_prob=0.5):
+                 need_optim=True):
         '''
         :param Param:
         :param is_training: place_holder used in running
@@ -21,7 +21,7 @@ class DetectNet(object):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
                 self.pred = icp.inception_v3(input_box, num_features=6,
-                                             is_training=is_training,dropout_keep_prob=dropout_keep_prob)
+                                             is_training=is_training)
 
                 with tf.variable_scope('error'):
                     self.error=tf.reduce_mean(tf.reduce_sum(
@@ -55,8 +55,8 @@ if __name__ == '__main__':
     var_list = tf.trainable_variables()
     g_list = tf.global_variables()
     ########## 确认BN 模块中的名字是否如下，如不一致，将不会保存！！！！
-    bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name]
-    bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name]
+    bn_moving_vars = [g for g in g_list if 'moving_avg' in g.name]
+    bn_moving_vars += [g for g in g_list if 'moving_var' in g.name]
     var_list += bn_moving_vars
     saver = tf.train.Saver(var_list=var_list, max_to_keep=1)
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
         NEED_RESTORE = False
         NEED_SAVE = True
-        test_step = 5
+        test_step = 3
         average = 0
         remember = 0.9
         less_100_case = 0
@@ -87,11 +87,12 @@ if __name__ == '__main__':
 
         if NEED_RESTORE:
             assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
+            #文件内容必须大于等于模型内容
             saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
         # loss_last=2>>31
         case_name=' '
-        for iter in range(40000):
+        for iter in range(100000):
             box_batch, y_batch = train_batch_gen.get_batch()
             feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 

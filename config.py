@@ -13,18 +13,18 @@ class TrainDataConfig(object):
     # total_case_dir='F:/ProjectData/Feature/Tooth'
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Train'
     data_list=['tooth2','tooth3','tooth4','tooth5','tooth12','tooth13','tooth14','tooth15']
-    load_case_once = 4 # 每次读的病例数 若果=0,则只load一次，读入全部
+    load_case_once = 10 # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 
 class ValiDataConfig(object):
     world_to_cubic = 128 / 12.
-    batch_size = 4
+    batch_size = 16
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Validate'
     data_list=TrainDataConfig.data_list
-    load_case_once =4 # 每次读的病例数
-    switch_after_shuffles =1  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    load_case_once =0 # 每次读的病例数
+    switch_after_shuffles =10**10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'
 
 class TestDataConfig(object):
