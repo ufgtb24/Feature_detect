@@ -23,23 +23,23 @@ def bn_layer(x, scope, is_training, epsilon=0.001, decay=0.99, reuse=None):
         gamma = tf.get_variable("gamma", shape[-1], initializer=tf.constant_initializer(1.0), trainable=True)
         # beta: a trainable shift value
         beta = tf.get_variable("beta", shape[-1], initializer=tf.constant_initializer(0.0), trainable=True)
-        moving_avg = tf.get_variable("moving_avg", shape[-1], initializer=tf.constant_initializer(0.0), trainable=False)
-        moving_var = tf.get_variable("moving_var", shape[-1], initializer=tf.constant_initializer(1.0), trainable=False)
+        moving_mean = tf.get_variable("moving_mean", shape[-1], initializer=tf.constant_initializer(0.0), trainable=False)
+        moving_variance = tf.get_variable("moving_variance", shape[-1], initializer=tf.constant_initializer(1.0), trainable=False)
         if is_training:
             # tf.nn.moments == Calculate the mean and the variance of the tensor x
-            # avg, var = tf.nn.moments(x, np.arange(len(shape) - 1), keep_dims=True)
-            avg, var = tf.nn.moments(x, list(range(len(shape)-1)))
-            #update_moving_avg = moving_averages.assign_moving_average(moving_avg, avg, decay)
-            update_moving_avg=tf.assign(moving_avg, moving_avg*decay+avg*(1-decay))
-            #update_moving_var = moving_averages.assign_moving_average(moving_var, var, decay)
-            update_moving_var=tf.assign(moving_var, moving_var*decay+var*(1-decay))
-            control_inputs = [update_moving_avg, update_moving_var]
+            # mean, var = tf.nn.moments(x, np.arange(len(shape) - 1), keep_dims=True)
+            mean, var = tf.nn.moments(x, list(range(len(shape)-1)))
+            #update_moving_mean = moving_averages.assign_moving_average(moving_mean, mean, decay)
+            update_moving_mean=tf.assign(moving_mean, moving_mean*decay+mean*(1-decay))
+            #update_moving_variance = moving_averages.assign_moving_average(moving_variance, var, decay)
+            update_moving_variance=tf.assign(moving_variance, moving_variance*decay+var*(1-decay))
+            control_inputs = [update_moving_mean, update_moving_variance]
         else:
-            avg = moving_avg
-            var = moving_var
+            mean = moving_mean
+            var = moving_variance
             control_inputs = []
         with tf.control_dependencies(control_inputs):
-            output = tf.nn.batch_normalization(x, avg, var, offset=beta, scale=gamma, variance_epsilon=epsilon)
+            output = tf.nn.batch_normalization(x, mean, var, offset=beta, scale=gamma, variance_epsilon=epsilon)
 
     return output
 

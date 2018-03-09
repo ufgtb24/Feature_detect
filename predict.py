@@ -4,13 +4,11 @@ import numpy as np
 from mayavi import mlab
 # from crop_data import crop_batch
 from combine import generate_pb
-from config import MODEL_PATH, NetConfig, TASK_DICT
+from config import MODEL_PATH, ValiDataConfig, SHAPE_BOX
 from dataRelated import BatchGenerator
 from display import edges
-from level_train import Level
+from level_train import DetectNet
 
-SHAPE_BOX = [128, 128, 128]
-SHAPE_CROP = [32, 32, 32]
 
 
 def recover_coord(fp_1,fp_2,shape_crop):
@@ -19,15 +17,6 @@ def recover_coord(fp_1,fp_2,shape_crop):
         cubic_pos=fp_1-(shape_crop / 2).astype(np.int32)+fp_2
         cubic_pos=tf.to_int32(cubic_pos)
         return cubic_pos
-
-
-
-# class DataConfig(object):
-#     world_to_cubic=128/12.
-#     batch_size=1
-#     total_case_dir='F:/ProjectData/Feature2/saved_mhd/single_test/'
-#     load_case_once=1  #每次读的病例数
-#     switch_after_shuffles=1 #当前数据洗牌n次读取新数据
 
 class TestDataConfig(object):
     world_to_cubic = 128 / 12.
@@ -41,19 +30,19 @@ class TestDataConfig(object):
 if __name__ == '__main__':
     NEED_WRITE_GRAPH=False
     NEED_DISPLAY=True
-    keep_prob = tf.placeholder(tf.float32,name='keep_prob_input')
-    phase = tf.placeholder(tf.bool,name='phase_input')
+    is_training = tf.placeholder(tf.bool,name='is_training')
 
-    input_box = tf.placeholder(tf.uint8, shape=[1, None] + SHAPE_BOX, name='input_box')
+    input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
     box = tf.to_float(input_box)
+    targets = tf.placeholder(tf.float32, shape=[None, 6],
+                                  name="targets")
 
-    level_1=Level(Param=NetConfig, is_training=False, scope='level_1',input_box=box,
-                  keep_prob=keep_prob,phase=phase)
+    detector = DetectNet(is_training=is_training, scope='detector', input_box=box, targets=targets)
 
 
-    saver_1 = tf.train.Saver(var_list=tf.global_variables())
+    saver = tf.train.Saver(var_list=tf.global_variables())
     # [b,multi_output_size]
-    pred_end = tf.to_int32(tf.identity(level_1.pred,name="output_node"))
+    pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
 
     saver = tf.train.Saver()
 
@@ -61,7 +50,7 @@ if __name__ == '__main__':
         # writer = tf.summary.FileWriter('log/', sess.graph)
         sess.run(tf.global_variables_initializer())
         # assert os.path.exists(MODEL_PATH+ 'checkpoint')  # 判断模型是否存在
-        saver_1.restore(sess, os.path.join(MODEL_PATH,'model.ckpt'))  # 存在就从模型中恢复变量
+        saver.restore(sess, os.path.join(MODEL_PATH,'model.ckpt'))  # 存在就从模型中恢复变量
         # saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
 
         if NEED_WRITE_GRAPH:
@@ -78,28 +67,23 @@ if __name__ == '__main__':
                 elif node.op == 'AssignAdd':
                     node.op = 'Add'
                     if 'use_locking' in node.attr: del node.attr['use_locking']
-
-
-            # tf.train.write_graph(sess.graph_def, MODEL_PATH, 'whole/input_graph.pb')
-            # writer = tf.summary.FileWriter(os.path.join(MODEL_PATH,'../logs/'), sess.graph)
             generate_pb(gd)
 
         if NEED_DISPLAY:
-            test_batch_gen = BatchGenerator(TestDataConfig, name='test',need_target=True,need_name=True)
+            test_batch_gen = BatchGenerator(ValiDataConfig, name='test',need_target=True,need_name=True)
             while True:
                 # box_batch,y_batch,name_batch = test_batch_gen.get_batch()
                 box_batch,y_batch,name_batch = test_batch_gen.get_batch()
 
                 box_batch=np.expand_dims(box_batch,axis=0)
-                feed_dict = {input_box: box_batch,
-                             phase: False, keep_prob: 1}
+                feed_dict = {input_box: box_batch,targets: y_batch,
+                             is_training: False}
 
-                f = sess.run(pred_end, feed_dict=feed_dict)
-                loss=np.mean(np.sum( np.square(f-y_batch),axis=1)/2.,axis=0)
+                f,error = sess.run([pred_end,detector.error], feed_dict=feed_dict)
 
                 for i in range(box_batch.shape[0]):
                     f=f[i]
-                    print(name_batch[0],"  ",f,"   ",loss)
+                    print(name_batch[i],"  ",f,"   ",error)
                     f_1=f[:3]
                     f_2=f[3:]
 

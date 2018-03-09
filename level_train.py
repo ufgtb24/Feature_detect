@@ -58,23 +58,11 @@ if __name__ == '__main__':
     ################
     var_list = tf.trainable_variables()
     g_list = tf.global_variables()
+    ########## 确认BN 模块中的名字是否如下，如不一致，将不会保存！！！！
     bn_moving_vars = [g for g in g_list if 'moving_mean' in g.name]
     bn_moving_vars += [g for g in g_list if 'moving_variance' in g.name]
     var_list += bn_moving_vars
     saver = tf.train.Saver(var_list=var_list, max_to_keep=1)
-
-    # get_var_list = tf.get_collection(key='moving_vars', scope='detector/InceptionV3/Conv2d_1')
-    e1_params = [t for t in tf.get_collection(key='moving_vars') if
-                 t.name.startswith('detector/InceptionV3/Conv2d_1') and
-                  t.name.endswith('moving_variance:0')]
-    # e1_params = tf.get_collection(key='moving_vars')
-    # get_c = tf.get_default_graph().get_all_collection_keys()
-
-
-    def print_moving_vars(sess):
-
-        print(sess.run(e1_params))
-
 
     ################
     config = tf.ConfigProto()
@@ -84,7 +72,7 @@ if __name__ == '__main__':
 
         NEED_RESTORE = False
         NEED_SAVE = True
-        test_step = 10
+        test_step = 5
         average = 0
         remember = 0.9
         less_100_case = 0
@@ -107,7 +95,7 @@ if __name__ == '__main__':
 
         # loss_last=2>>31
         case_name=' '
-        for iter in range(100000):
+        for iter in range(40000):
             box_batch, y_batch = train_batch_gen.get_batch()
             feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 
