@@ -37,13 +37,8 @@ if __name__ == '__main__':
     targets = tf.placeholder(tf.float32, shape=[None, 6],
                                   name="targets")
 
-    detector = DetectNet(is_training=is_training, scope='detector', input_box=box, targets=targets)
-
-
-    saver = tf.train.Saver(var_list=tf.global_variables())
-    # [b,multi_output_size]
+    detector = DetectNet(is_training=is_training, need_optim=False,scope='detector', input_box=box, targets=targets)
     pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
-
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
@@ -75,7 +70,6 @@ if __name__ == '__main__':
                 # box_batch,y_batch,name_batch = test_batch_gen.get_batch()
                 box_batch,y_batch,name_batch = test_batch_gen.get_batch()
 
-                box_batch=np.expand_dims(box_batch,axis=0)
                 feed_dict = {input_box: box_batch,targets: y_batch,
                              is_training: False}
 

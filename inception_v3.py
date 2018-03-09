@@ -22,7 +22,6 @@ from tensorflow.contrib import layers
 from tensorflow.contrib.framework.python.ops import arg_scope
 from tensorflow.contrib.layers.python.layers import layers as layers_lib
 from tensorflow.contrib.layers.python.layers import regularizers
-from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import nn_ops
@@ -541,8 +540,6 @@ def inception_v3(inputs,
       for all convolution ops. The value must be greater than zero. Typical
       usage will be to set this value in (0, 1) to reduce the number of
       parameters or computation cost of the model.
-    spatial_squeeze: if True, logits is of shape is [B, C], if false logits is
-        of shape [B, 1, 1, C], where B is batch_size and C is number of classes.
     reuse: whether or not the network and its variables should be reused. To be
       able to reuse 'scope' must be given.
     scope: Optional variable_scope.

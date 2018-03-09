@@ -1,7 +1,5 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
-import numpy as np
-import commen_structure as commen
 import os
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig
 from dataRelated import BatchGenerator
@@ -9,29 +7,27 @@ import inception_v3 as icp
 
 
 class DetectNet(object):
-    def __init__(self, is_training,scope, input_box, targets):
+    def __init__(self, is_training,input_box, targets,scope='detector',
+                 need_optim=True,dropout_keep_prob=0.5):
         '''
-
         :param Param:
         :param is_training: place_holder used in running
         :param scope:
         :param input_box: shape=[None] + SHAPE_BOX   placeholder
         :param keep_prob:
-        :param need_target:
         '''
-
 
         with tf.variable_scope(scope):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
-                self.pred = icp.inception_v3(input_box, num_features=6, is_training=is_training,dropout_keep_prob=0.5)
+                self.pred = icp.inception_v3(input_box, num_features=6,
+                                             is_training=is_training,dropout_keep_prob=dropout_keep_prob)
 
                 with tf.variable_scope('error'):
                     self.error=tf.reduce_mean(tf.reduce_sum(
                         tf.square(self.pred - targets), axis=1) /2, axis=0)
 
-                # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-                # with tf.control_dependencies(update_ops):
+            if need_optim:
                 with tf.variable_scope('optimizer'):
                     # Ensures that we execute the update_ops before performing the train_step
                     self.optimizer = tf.train.AdamOptimizer(0.01).minimize( self.error)
@@ -50,7 +46,7 @@ if __name__ == '__main__':
 
     box = tf.to_float(input_box)
 
-    detector = DetectNet(is_training=is_training, scope='detector', input_box=box, targets=targets)
+    detector = DetectNet(is_training=is_training, input_box=box, targets=targets)
 
 
 
