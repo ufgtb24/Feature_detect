@@ -30,7 +30,7 @@ class DetectNet(object):
             if need_optim:
                 with tf.variable_scope('optimizer'):
                     # Ensures that we execute the update_ops before performing the train_step
-                    self.optimizer = tf.train.AdamOptimizer(0.01).minimize( self.error)
+                    self.optimizer = tf.train.AdamOptimizer(0.001,epsilon=1.0).minimize( self.error)
 
 
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         longest_term = 0
         start = False
         need_early_stop = True
-        EARLY_STOP_STEP=2000
+        EARLY_STOP_STEP=6000
 
         winner_loss=10**10
         step_from_last_mininum = 0

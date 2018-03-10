@@ -318,7 +318,7 @@ def inception_v3_base(inputs,
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
-      pass
+
       # mixed4: 8 x 8 x 384.
       end_point = 'Mixed_6d'
       with variable_scope.variable_scope(end_point):

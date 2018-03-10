@@ -30,8 +30,8 @@ class ValiDataConfig(object):
 class TestDataConfig(object):
     world_to_cubic=128/12.
     batch_size=1
-    total_case_dir='F:/ProjectData/Feature2/DataSet/Validate'
-    data_list=None
-    load_case_once=0  #每次读的病例数
+    total_case_dir=ValiDataConfig.total_case_dir
+    data_list=TrainDataConfig.data_list
+    load_case_once=1  #每次读的病例数
     switch_after_shuffles=1 #当前数据洗牌n次读取新数据
 
