@@ -1,10 +1,11 @@
 
-MODEL_PATH = 'F:/ProjectData/Feature2/models/model_up/'
+MODEL_PATH = 'F:/ProjectData/Feature2/models/model_low/'
 # MODEL_PATH = 'F:/ProjectData/Feature2/output_pb/'
 Feature_Target=1
 SHAPE_BOX=[128,128,128,1]
 FC_SIZE=[128,6]
-
+Upper_set=['tooth2','tooth3','tooth4','tooth5','tooth12','tooth13','tooth14','tooth15']
+Lowwer_set=['tooth18','tooth19','tooth20','tooth21','tooth28','tooth29','tooth30','tooth31']
 
 
 class TrainDataConfig(object):
@@ -12,7 +13,7 @@ class TrainDataConfig(object):
     batch_size = 16
     # total_case_dir='F:/ProjectData/Feature/Tooth'
     total_case_dir = 'F:/ProjectData/Feature2/DataSet/Train'
-    data_list=['tooth2','tooth3','tooth4','tooth5','tooth12','tooth13','tooth14','tooth15']
+    data_list=Lowwer_set
     load_case_once = 10 # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     format = 'mhd'

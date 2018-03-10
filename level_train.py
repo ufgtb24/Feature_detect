@@ -30,9 +30,11 @@ class DetectNet(object):
             if need_optim:
                 with tf.variable_scope('optimizer'):
                     # Ensures that we execute the update_ops before performing the train_step
-                    self.optimizer = tf.train.AdamOptimizer(0.001,epsilon=1.0).minimize( self.error)
-
-
+                    # optimizer = tf.train.AdamOptimizer(0.001,epsilon=1.0)
+                    optimizer = tf.train.AdamOptimizer()
+                    gvs = optimizer.compute_gradients(self.error)
+                    capped_gvs = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in gvs]
+                    self.train_op = optimizer.apply_gradients(capped_gvs)
 
 if __name__ == '__main__':
 
@@ -96,7 +98,7 @@ if __name__ == '__main__':
             box_batch, y_batch = train_batch_gen.get_batch()
             feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 
-            _, loss_train = sess.run([detector.optimizer, detector.error], feed_dict=feed_dict)
+            _, loss_train = sess.run([detector.train_op, detector.error], feed_dict=feed_dict)
 
             if iter % test_step == 0:
                 if start == False:
