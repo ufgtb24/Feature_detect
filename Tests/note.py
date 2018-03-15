@@ -82,11 +82,11 @@ print(s.run(w))
 #     print('w= ', s.run(w))
 
 ########## get_collection ############
-# e1_params = [t for t in tf.get_collection(key='moving_vars') if
-#              t.name.startswith('detector/InceptionV3/Conv2d_1') and
-#               t.name.endswith('moving_variance:0')]
-# get_c = tf.get_default_graph().get_all_collection_keys()
-# def print_moving_vars(sess):
-#     print(sess.run(e1_params))
+e1_params = [t for t in tf.get_collection(key='moving_vars') if
+             t.name.startswith('detector/InceptionV3/Conv2d_1') and
+              t.name.endswith('moving_variance:0')]
+get_c = tf.get_default_graph().get_all_collection_keys()
+def print_moving_vars(sess):
+    print(sess.run(e1_params))
 
 

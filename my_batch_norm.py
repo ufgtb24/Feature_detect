@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow.contrib.framework import add_arg_scope
+from tensorflow.python.training import moving_averages
 
 
 def bn_layer(x, scope, is_training, epsilon=0.001, decay=0.99, reuse=None):
@@ -28,10 +29,24 @@ def bn_layer(x, scope, is_training, epsilon=0.001, decay=0.99, reuse=None):
             # tf.nn.moments == Calculate the mean and the variance of the tensor x
             # avg, var = tf.nn.moments(x, np.arange(len(shape) - 1), keep_dims=True)
             avg, var = tf.nn.moments(x, list(range(len(shape)-1)))
+
             #update_moving_avg = moving_averages.assign_moving_average(moving_avg, avg, decay)
-            update_moving_avg=tf.assign(moving_avg, moving_avg*decay+avg*(1-decay))
+            # update_moving_avg=tf.assign_add(moving_avg, moving_avg*decay+avg*(1-decay))
+
+            update_moving_avg = moving_averages.assign_moving_average(
+                moving_avg, avg, decay, zero_debias=False)
+
             #update_moving_var = moving_averages.assign_moving_average(moving_var, var, decay)
-            update_moving_var=tf.assign(moving_var, moving_var*decay+var*(1-decay))
+            # update_moving_var=tf.assign_add(moving_var, moving_var*decay+var*(1-decay))
+
+            update_moving_var = moving_averages.assign_moving_average(
+                moving_var, var, decay, zero_debias=False)
+
+            # #update_moving_avg = moving_averages.assign_moving_average(moving_avg, avg, decay)
+            # update_moving_avg=tf.assign(moving_avg, moving_avg*decay+avg*(1-decay))
+            # #update_moving_var = moving_averages.assign_moving_average(moving_var, var, decay)
+            # update_moving_var=tf.assign(moving_var, moving_var*decay+var*(1-decay))
+            #
             control_inputs = [update_moving_avg, update_moving_var]
         else:
             avg = moving_avg

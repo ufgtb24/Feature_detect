@@ -15,13 +15,14 @@ class DetectNet(object):
         :param scope:
         :param input_box: shape=[None] + SHAPE_BOX   placeholder
         :param keep_prob:
+
         '''
 
         with tf.variable_scope(scope):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
                 self.pred = icp.inception_v3(input_box, num_features=6,
-                                             is_training=is_training)
+                                             is_training=is_training,scope='InceptionV3')
 
                 with tf.variable_scope('error'):
                     self.error=tf.reduce_mean(tf.reduce_sum(
@@ -94,7 +95,7 @@ if __name__ == '__main__':
 
         # loss_last=2>>31
         case_name=' '
-        for iter in range(100000):
+        for iter in range(40000):
             box_batch, y_batch = train_batch_gen.get_batch()
             feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 

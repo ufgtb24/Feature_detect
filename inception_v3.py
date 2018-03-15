@@ -101,7 +101,7 @@ def inception_v3_base(inputs,
     raise ValueError('depth_multiplier is not greater than zero.')
   depth = lambda d: max(int(d * depth_multiplier), min_depth)
 
-  with variable_scope.variable_scope(scope, 'InceptionV3', [inputs]):
+  with variable_scope.variable_scope(scope, 'Base', [inputs]):
     with arg_scope(
         [layers.conv3d, layers_lib.max_pool3d, layers_lib.avg_pool3d],
         stride=1,
@@ -535,7 +535,7 @@ def inception_v3(inputs,
         [bn_layer_top, layers_lib.dropout], is_training=is_training):
       net, end_points = inception_v3_base(
           inputs,
-          scope=scope,
+          scope='Base',
           min_depth=min_depth,
           depth_multiplier=depth_multiplier)
 
