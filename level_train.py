@@ -70,7 +70,7 @@ if __name__ == '__main__':
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
         NEED_RESTORE = False
-        NEED_SAVE = True
+        NEED_SAVE = False
         test_step = 3
         average = 0
         remember = 0.9
