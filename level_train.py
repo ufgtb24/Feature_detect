@@ -1,14 +1,14 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
 import os
-from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig
+from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig
 from dataRelated import BatchGenerator
 import inception_v3 as icp
 
 
 class DetectNet(object):
     def __init__(self, is_training,input_box, targets,scope='detector',
-                 need_optim=True):
+                 need_optim=True,clip_grd=True):
         '''
         :param Param:
         :param is_training: place_holder used in running
@@ -21,7 +21,7 @@ class DetectNet(object):
         with tf.variable_scope(scope):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
-                self.pred = icp.inception_v3(input_box, num_features=6,
+                self.pred = icp.inception_v3(input_box, output_dim=DataConfig.output_dim,
                                              is_training=is_training,scope='InceptionV3')
 
                 with tf.variable_scope('error'):
@@ -33,9 +33,12 @@ class DetectNet(object):
                     # Ensures that we execute the update_ops before performing the train_step
                     # optimizer = tf.train.AdamOptimizer(0.001,epsilon=1.0)
                     optimizer = tf.train.AdamOptimizer()
-                    gvs = optimizer.compute_gradients(self.error)
-                    capped_gvs = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in gvs]
-                    self.train_op = optimizer.apply_gradients(capped_gvs)
+                    if clip_grd:
+                        gvs = optimizer.compute_gradients(self.error)
+                        capped_gvs = [(tf.clip_by_value(grad, -1., 1.), var) for grad, var in gvs]
+                        self.train_op = optimizer.apply_gradients(capped_gvs)
+                    else:
+                        self.train_op = optimizer.minimize(self.error)
 
 if __name__ == '__main__':
 
@@ -44,12 +47,13 @@ if __name__ == '__main__':
 
     is_training = tf.placeholder(tf.bool, name='is_training')
     input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
-    targets = tf.placeholder(tf.float32, shape=[None, 6],
+    targets = tf.placeholder(tf.float32, shape=[None, DataConfig.output_dim],
                                   name="targets")
 
     box = tf.to_float(input_box)
 
-    detector = DetectNet(is_training=is_training, input_box=box, targets=targets)
+    detector = DetectNet(is_training=is_training, input_box=box, targets=targets,
+                         clip_grd=False)
 
 
 
@@ -83,8 +87,8 @@ if __name__ == '__main__':
         winner_loss=10**10
         step_from_last_mininum = 0
 
-        train_batch_gen=BatchGenerator(TrainDataConfig, name='_train')
-        test_batch_gen= BatchGenerator(ValiDataConfig, name='_test')
+        train_batch_gen=BatchGenerator(TrainDataConfig)
+        test_batch_gen= BatchGenerator(ValiDataConfig)
 
         sess.run(tf.global_variables_initializer())
 
@@ -112,16 +116,18 @@ if __name__ == '__main__':
                 box_batch, y_batch = test_batch_gen.get_batch()
 
                 feed_dict = {input_box: box_batch, targets: y_batch,is_training: False}
-                loss_test = sess.run(detector.error, feed_dict=feed_dict)
+                loss_test,pred_get = sess.run([detector.error,detector.pred], feed_dict=feed_dict)
                 if loss_test < winner_loss:
                     winner_loss = loss_test
                     step_from_last_mininum = 0
                     if NEED_SAVE and loss_test < 50:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
-
+                # print('\n\n\n')
+                # print(y_batch)
+                # print('#################')
+                # print(pred_get)
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
                       % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
-                # print_moving_vars(sess)
 
 
 

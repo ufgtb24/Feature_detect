@@ -27,6 +27,7 @@ from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variable_scope
 from my_batch_norm import bn_layer_top
+import tensorflow as tf
 
 trunc_normal = lambda stddev: init_ops.truncated_normal_initializer(0.0, stddev)
 
@@ -481,7 +482,7 @@ def inception_v3_base(inputs,
 
 
 def inception_v3(inputs,
-                 num_features=6,
+                 output_dim,
                  is_training=None,
                  min_depth=16,
                  depth_multiplier=1.0,
@@ -503,7 +504,6 @@ def inception_v3(inputs,
 
   Args:
     inputs: a tensor of size [batch_size, height, width, channels].
-    num_features: number of predicted features.
     is_training: whether is training or not.
     min_depth: Minimum depth value (number of channels) for all convolution ops.
       Enforced when depth_multiplier < 1, and not an active constraint when
@@ -529,8 +529,8 @@ def inception_v3(inputs,
     raise ValueError('depth_multiplier is not greater than zero.')
   depth = lambda d: max(int(d * depth_multiplier), min_depth)
 
-  with variable_scope.variable_scope(
-      scope, 'InceptionV3', [inputs, num_features], reuse=reuse) as scope:
+  with tf.variable_scope(
+      scope, reuse=reuse):
     with arg_scope(
         [bn_layer_top, layers_lib.dropout], is_training=is_training):
       net, end_points = inception_v3_base(
@@ -554,7 +554,7 @@ def inception_v3(inputs,
         # 1024
         logits = layers.conv3d(
             net,
-            num_features, 1,
+            output_dim, 1,
             activation_fn=None,
             normalizer_fn=None,
             scope='Conv2d_1c_1x1')

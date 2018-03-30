@@ -4,6 +4,9 @@ from mayavi import mlab
 import pickle
 import os
 
+from config import DataConfig, TrainDataConfig
+from dataRelated import BatchGenerator
+
 '''
 This funciton reads a '.mhd' file using SimpleITK and return the image array, origin and spacing of the image.
 '''
@@ -70,10 +73,10 @@ def loadpickle(path):
 
 
 def load_y(info_file, world_to_cubic):
-    info = np.reshape(np.loadtxt(info_file), [-1, 9])
+    info = np.reshape(np.loadtxt(info_file), [-1, 18])
     origin = info[:, :3]
 
-    origin = np.tile(origin, np.array([2]))
+    origin = np.tile(origin, np.array([5]))
     target = info[:, 3:]
     valide=True
     if 0 in target:
@@ -174,10 +177,46 @@ def check_availability(dir):
 
 
 
+
+
+def display_batch(box, y, feature_need):
+    num=box.shape[0]
+    ex, ey, ez = edges(GRID_SIZE)
+    mlab.points3d(ex + 100, ey, ez,
+                  mode="cube",
+                  color=(0, 0, 1),
+                  scale_factor=1)
+
+    for i in range(num):
+        ct = box[i]
+        for j in range(feature_need):
+            ct[y[i, 3*j], y[i, 3*j+1], y[i, 3*j+2]]=j+2
+        feature_index=[]
+        for j in range(feature_need):
+            feature_index.append(np.where(ct == j+2))
+        
+        x, y, z = np.where(ct == 1)
+        mlab.points3d(x, y, z,
+                      mode="cube",
+                      color=(0, 1, 0),
+                      scale_factor=1,)
+                      # transparent=True)
+
+        for j in range(feature_need):
+            mlab.points3d(feature_index[j][0], feature_index[j][1], feature_index[j][2],
+                          mode="cube",
+                          color=(1, 0, 0),
+                          scale_factor=1,
+                          transparent=True)
+        mlab.show()
+
+
+
 def traverse_origin(dir):
     # 读取世界坐标
     box = loadmhd(dir)
-    info_file = os.path.join(dir, 'info.txt')
+    info_file = os.path.join(dir, 'FaccControlPts.txt')
+    # feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
     feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
     num = feature.shape[0]
 
@@ -254,8 +293,23 @@ def traverse_croped(dir):
 WORLD_SIZE = 12.0
 GRID_SIZE = 128
 if __name__ == '__main__':
-    # show_single('F:\\ProjectData\\Feature\\croped\\')
-    # traverse_croped('F:/ProjectData/Feature2/display_crop/feature_1')
+    
+    
+    TrainDataConfig.load_case_once=1
+    TrainDataConfig.total_case_dir='F:/ProjectData/tmp/Train/'
+    TrainDataConfig.batch_size=1
+    TrainDataConfig.data_list=['tooth2','tooth3']
+    TrainDataConfig.feature_need=[1]
+    TrainDataConfig.label_file_name='FaccControlPts.txt'
 
-    traverse_origin('F:/ProjectData/Feature2/DataSet/Train/0822$RO147PreTx_mirror\\tooth20')
-    # print(check_availability('F:/ProjectData/Feature2/DataSet/Validate'))
+
+    num_feature_need=len(TrainDataConfig.feature_need)
+    train_batch_gen = BatchGenerator(TrainDataConfig)
+    for i in range(1000):
+        box_batch, y_batch=train_batch_gen.get_batch()
+        box_batch=np.squeeze(box_batch,4)
+        display_batch(box_batch,y_batch,num_feature_need)
+        
+        
+
+    # traverse_origin('F:/ProjectData/tmp/Train/0224$MC286Final\\tooth20')

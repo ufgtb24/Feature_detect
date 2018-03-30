@@ -5,8 +5,17 @@ import os
 
 
 class BatchGenerator(object):
-    def __init__(self,data_config,name,need_target=True,need_name=False):
-        self.name=name
+    def __init__(self,data_config,
+                 need_target=True,
+                 need_name=False):
+        self.usage=data_config.usage
+        self.num_feature=data_config.num_feature
+        self.label_file_name=data_config.label_file_name
+        info_index = []
+        for f in data_config.feature_need:
+            info_index += (3 * f + np.array([0, 1, 2])).tolist()
+        self.info_index=info_index
+        self.num_feature_need=len(data_config.feature_need)
         self.box_train=None
         self.need_target=need_target
         self.need_name=need_name
@@ -47,16 +56,20 @@ class BatchGenerator(object):
         self.index_dir += self.load_case_once
         return case_load
 
-    def load_single_side(self,full_case_dir,tooth_list):
+    def load_useful_tooth(self, full_case_dir, target_tooth_list):
         # 读取一个病例中的多颗牙齿
         box_list=[]
         y_list=[]
         y=None
-        for tooth in tooth_list:
+        actual_tooth_list=os.listdir(full_case_dir)
+
+        for tooth in target_tooth_list:
+            if tooth not in actual_tooth_list:
+                continue
             tooth_dir=full_case_dir+'\\'+tooth
             box_list.append(self.loadmhds(tooth_dir))
             if self.need_target:
-                y_list.append(self.load_y(tooth_dir+'\\info.txt'))
+                y_list.append(self.load_y(tooth_dir+'\\'+self.label_file_name))
         box=np.concatenate(box_list,axis=0)
         if self.need_target:
             y=np.concatenate(y_list,axis=0)
@@ -71,7 +84,7 @@ class BatchGenerator(object):
             self.case_load=np.array(case_load)
         for case_name,i in zip(case_load,range(len(case_load))):
             full_case_dir=self.total_case_dir+'\\'+case_name
-            box,y=self.load_single_side(full_case_dir,self.data_list)
+            box,y=self.load_useful_tooth(full_case_dir, self.data_list)
             box_list.append(box)
             if self.need_name:
                 name_index=np.ones((box.shape[0]),dtype=np.int32)*i
@@ -87,30 +100,21 @@ class BatchGenerator(object):
         self.sample_num=self.box.shape[0]
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
-    # def load_case_list(self,case_load):
-    # # 一个病例只包含一颗牙
-    #     print('load data')
-    #     box_list=[]
-    #     y_list=[]
-    #     for case_dir in case_load:
-    #         full_case_dir=self.total_case_dir+'\\'+case_dir
-    #         box_list.append(self.loadmhds(full_case_dir))
-    #         if self.need_target:
-    #             y_list.append(self.load_y(full_case_dir+'\\info.txt'))
-    #
-    #     self.box=np.concatenate(box_list,axis=0)
-    #     if self.need_target:
-    #         self.y=np.concatenate(y_list,axis=0)
-    #     self.sample_num=self.box.shape[0]
-    #     assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
     def load_y(self, info_file):
-        info = np.reshape(np.loadtxt(info_file), [-1, 9])
+        # print('file_dir = ',info_file,'\n')
+        info = np.reshape(np.loadtxt(info_file), [-1, 3*(self.num_feature+1)])
         origin = np.reshape(info[:, :3], [-1, 3])
-        origin = np.reshape(np.tile(origin, np.array([2])), [-1, 3])
-        target = np.reshape(info[:, 3:], [-1, 3])
-        target = np.reshape((target - origin) * self.world_to_cubic, [-1, 6]).astype(np.int32)
-        return target
+        origin = np.reshape(np.tile(origin, self.num_feature_need), [-1, 3])
+        
+        info_need=info[:,self.info_index]
+        feature = np.reshape(info_need, [-1, 3])
+        feature = np.reshape((feature - origin) * self.world_to_cubic, [-1, 3*self.num_feature_need]).astype(np.int32)
+        # nag_exist= np.where(feature <0)
+        # if len(nag_exist[0])>0:
+        #     print('ft_final:***************\n')
+        #     valid=False
+        return feature
 
     def load_mhd(self, filename):
         # Reads the image using SimpleITK
@@ -150,7 +154,7 @@ class BatchGenerator(object):
             self.index=0
             self.shuffle_times+=1
             if self.load_case_once>0 and self.shuffle_times >= self.switch_after_shuffles:
-                print('load data for '+ self.name)
+                print('load data for ' + self.usage)
                 self.load_case_list(self.get_case_list())
                 self.shuffle_times = 0
             self.suffle()
