@@ -5,6 +5,9 @@ from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataC
 from dataRelated import BatchGenerator
 import inception_v3 as icp
 
+train_batch_gen = BatchGenerator(TrainDataConfig)
+test_batch_gen = BatchGenerator(ValiDataConfig)
+
 
 class DetectNet(object):
     def __init__(self, is_training,input_box, targets,scope='detector',
@@ -22,11 +25,12 @@ class DetectNet(object):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
                 self.pred = icp.inception_v3(input_box, output_dim=DataConfig.output_dim,
-                                             is_training=is_training,scope='InceptionV3')
+                                             is_training=is_training,scope='InceptionV3',
+                                             depth_multiplier=1.)
 
                 with tf.variable_scope('error'):
                     self.error=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred - targets), axis=1) /2, axis=0)
+                        tf.square(self.pred - targets), axis=1) /DataConfig.num_feature_need, axis=0)
 
             if need_optim:
                 with tf.variable_scope('optimizer'):
@@ -52,8 +56,7 @@ if __name__ == '__main__':
 
     box = tf.to_float(input_box)
 
-    detector = DetectNet(is_training=is_training, input_box=box, targets=targets,
-                         clip_grd=False)
+    detector = DetectNet(is_training=is_training, input_box=box, targets=targets)
 
 
 
@@ -75,20 +78,18 @@ if __name__ == '__main__':
 
         NEED_RESTORE = False
         NEED_SAVE = False
+        
+        TOTAL_EPHOC=10000
         test_step = 3
-        average = 0
-        remember = 0.9
-        less_100_case = 0
-        longest_term = 0
-        start = False
         need_early_stop = True
-        EARLY_STOP_STEP=6000
+        EARLY_STOP_STEP=2000
 
         winner_loss=10**10
         step_from_last_mininum = 0
+        start = False
 
-        train_batch_gen=BatchGenerator(TrainDataConfig)
-        test_batch_gen= BatchGenerator(ValiDataConfig)
+        # train_batch_gen=BatchGenerator(TrainDataConfig)
+        # test_batch_gen= BatchGenerator(ValiDataConfig)
 
         sess.run(tf.global_variables_initializer())
 
@@ -97,9 +98,7 @@ if __name__ == '__main__':
             #文件内容必须大于等于模型内容
             saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
-        # loss_last=2>>31
-        case_name=' '
-        for iter in range(40000):
+        for iter in range(TOTAL_EPHOC):
             box_batch, y_batch = train_batch_gen.get_batch()
             feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 
@@ -120,7 +119,7 @@ if __name__ == '__main__':
                 if loss_test < winner_loss:
                     winner_loss = loss_test
                     step_from_last_mininum = 0
-                    if NEED_SAVE and loss_test < 50:
+                    if NEED_SAVE and loss_test < 500:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
                 # print('\n\n\n')
                 # print(y_batch)

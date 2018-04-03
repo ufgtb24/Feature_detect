@@ -9,13 +9,21 @@ class BatchGenerator(object):
                  need_target=True,
                  need_name=False):
         self.usage=data_config.usage
-        self.num_feature=data_config.num_feature
-        self.label_file_name=data_config.label_file_name
-        info_index = []
-        for f in data_config.feature_need:
-            info_index += (3 * f + np.array([0, 1, 2])).tolist()
-        self.info_index=info_index
-        self.num_feature_need=len(data_config.feature_need)
+        
+        if need_target:
+            final_task_dict={}
+            for task,task_content in data_config.task_dict.items():
+                
+                index = []
+                for f in task_content['feature_need']:
+                    index += (3 * f + np.array([0, 1, 2])).tolist()
+                    
+                task_content['index']=index
+    
+                final_task_dict[task]=task_content
+            
+            self.task_dict=final_task_dict
+            
         self.box_train=None
         self.need_target=need_target
         self.need_name=need_name
@@ -62,14 +70,30 @@ class BatchGenerator(object):
         y_list=[]
         y=None
         actual_tooth_list=os.listdir(full_case_dir)
-
         for tooth in target_tooth_list:
             if tooth not in actual_tooth_list:
                 continue
-            tooth_dir=full_case_dir+'\\'+tooth
+            tooth_dir=full_case_dir+tooth+'/'
             box_list.append(self.loadmhds(tooth_dir))
             if self.need_target:
-                y_list.append(self.load_y(tooth_dir+'\\'+self.label_file_name))
+                task_label_list=[]
+                for task_content in self.task_dict.values():
+                    task_label_list.append(
+                        self.load_y(
+                            tooth_dir+task_content['label_file'],
+                            task_content['num_feature'],
+                            len(task_content['feature_need']),
+                            task_content['index']
+                        )
+                    )
+                # batch_size = task_label_list[0].shape[0]
+                # for a in task_label_list:
+                #     x=a.shape[0]
+                #     if x!=batch_size:
+                #         print('error at ',full_case_dir)
+                #         pass
+                label_array=np.concatenate(task_label_list,axis=1)
+                y_list.append(label_array)
         box=np.concatenate(box_list,axis=0)
         if self.need_target:
             y=np.concatenate(y_list,axis=0)
@@ -82,8 +106,8 @@ class BatchGenerator(object):
         name_index_list=[]
         if self.need_name:
             self.case_load=np.array(case_load)
-        for case_name,i in zip(case_load,range(len(case_load))):
-            full_case_dir=self.total_case_dir+'\\'+case_name
+        for i,case_name in enumerate(case_load):
+            full_case_dir=self.total_case_dir+case_name+'/'
             box,y=self.load_useful_tooth(full_case_dir, self.data_list)
             box_list.append(box)
             if self.need_name:
@@ -101,15 +125,15 @@ class BatchGenerator(object):
         assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
 
 
-    def load_y(self, info_file):
+    def load_y(self, info_file,num_feature,num_feature_need,info_index):
         # print('file_dir = ',info_file,'\n')
-        info = np.reshape(np.loadtxt(info_file), [-1, 3*(self.num_feature+1)])
+        info = np.reshape(np.loadtxt(info_file), [-1, 3*(num_feature+1)])
         origin = np.reshape(info[:, :3], [-1, 3])
-        origin = np.reshape(np.tile(origin, self.num_feature_need), [-1, 3])
+        origin = np.reshape(np.tile(origin, num_feature_need), [-1, 3])
         
-        info_need=info[:,self.info_index]
+        info_need=info[:,info_index]
         feature = np.reshape(info_need, [-1, 3])
-        feature = np.reshape((feature - origin) * self.world_to_cubic, [-1, 3*self.num_feature_need]).astype(np.int32)
+        feature = np.reshape((feature - origin) * self.world_to_cubic, [-1, 3*num_feature_need]).astype(np.int32)
         # nag_exist= np.where(feature <0)
         # if len(nag_exist[0])>0:
         #     print('ft_final:***************\n')

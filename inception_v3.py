@@ -557,7 +557,7 @@ def inception_v3(inputs,
             output_dim, 1,
             activation_fn=None,
             normalizer_fn=None,
-            scope='Conv2d_1c_1x1')
+            scope='task_spec_conv')
       # 6
       logits = array_ops.squeeze(logits, [1, 2, 3], name='SpatialSqueeze')
   return logits

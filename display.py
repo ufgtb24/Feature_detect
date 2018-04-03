@@ -176,9 +176,6 @@ def check_availability(dir):
     return error_num
 
 
-
-
-
 def display_batch(box, y, feature_need):
     num=box.shape[0]
     ex, ey, ez = edges(GRID_SIZE)
@@ -296,19 +293,15 @@ if __name__ == '__main__':
     
     
     TrainDataConfig.load_case_once=1
-    TrainDataConfig.total_case_dir='F:/ProjectData/tmp/Train/'
     TrainDataConfig.batch_size=1
     TrainDataConfig.data_list=['tooth2','tooth3']
-    TrainDataConfig.feature_need=[1]
-    TrainDataConfig.label_file_name='FaccControlPts.txt'
-
-
-    num_feature_need=len(TrainDataConfig.feature_need)
-    train_batch_gen = BatchGenerator(TrainDataConfig)
+    train_batch_gen = BatchGenerator(TrainDataConfig,need_name=True)
     for i in range(1000):
-        box_batch, y_batch=train_batch_gen.get_batch()
+        box_batch, y_batch,name=train_batch_gen.get_batch()
         box_batch=np.squeeze(box_batch,4)
-        display_batch(box_batch,y_batch,num_feature_need)
+        if i%30==0:
+            print(name)
+            display_batch(box_batch,y_batch,TrainDataConfig.num_feature_need)
         
         
 

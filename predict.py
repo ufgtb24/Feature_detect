@@ -6,7 +6,7 @@ import numpy as np
 from mayavi import mlab
 # from crop_data import crop_batch
 from combine import load_graph, output_graph, PB_PATH, gen_frozen_graph
-from config import MODEL_PATH, ValiDataConfig, SHAPE_BOX, TestDataConfig
+from config import MODEL_PATH, ValiDataConfig, SHAPE_BOX, TestDataConfig, DataConfig
 from dataRelated import BatchGenerator
 from display import edges
 from level_train import DetectNet
@@ -22,30 +22,54 @@ def recover_coord(fp_1,fp_2,shape_crop):
 
 
 if __name__ == '__main__':
-    NEED_WRITE_GRAPH=False
-    NEED_DISPLAY=False
     NEED_INFERENCE=True
+    NEED_DISPLAY=False
+    NEED_SPLIT=True
+    NEED_WRITE_GRAPH=False
+    
     is_training = tf.placeholder(tf.bool,name='is_training')
 
     input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
     box = tf.to_float(input_box)
-    targets = tf.placeholder(tf.float32, shape=[None, 6],
+    targets = tf.placeholder(tf.float32, shape=[None, DataConfig.output_dim],
                                   name="targets")
 
     detector = DetectNet(is_training=is_training, need_optim=False,scope='detector', input_box=box, targets=targets)
     # pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
     pred_end = tf.identity(detector.pred,name='output_node')
-    saver = tf.train.Saver()
+    
+    #############
+    var_list = tf.trainable_variables()
+    g_list = tf.global_variables()
+
+    task_spec_vars = [g for g in var_list if 'task_spec_conv' in g.name]
+    ########## 确认BN 模块中的名字是否如下，如不一致，将不会保存！！！！
+    bn_moving_vars = [g for g in g_list if 'moving_avg' in g.name]
+    bn_moving_vars += [g for g in g_list if 'moving_var' in g.name]
+    var_list += bn_moving_vars
+
+    
+    
+    # var_list = tf.trainable_variables()
+    # task_spec_vars = [g for g in var_list if 'task_spec_conv' in g.name]
+
+    #############
+    saver = tf.train.Saver(var_list)
+    saver_spec = tf.train.Saver(task_spec_vars)
+    saver_commen = tf.train.Saver(var_list-task_spec_vars)
 
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         sess.run(tf.global_variables_initializer())
         saver.restore(sess, os.path.join(MODEL_PATH,'model.ckpt'))  # 存在就从模型中恢复变量
-        # saver.save(sess, os.path.join(MODEL_PATH,'whole/model.ckpt'))
+        
+        if NEED_SPLIT:
+            saver_commen.save(sess, os.path.join(MODEL_PATH,'commen/model.ckpt'))
+            saver_spec.save(sess, os.path.join(MODEL_PATH,'spec/model.ckpt'))
+            
         if NEED_WRITE_GRAPH:
             gd = sess.graph.as_graph_def()
-
 
             for node in gd.node:
                 if node.op == 'RefSwitch':
@@ -78,7 +102,7 @@ if __name__ == '__main__':
             # load_graph(output_graph)
 
         if NEED_INFERENCE:
-            test_batch_gen = BatchGenerator(ValiDataConfig, name='test',need_target=True,need_name=True)
+            test_batch_gen = BatchGenerator(ValiDataConfig, need_target=True,need_name=True)
             while True:
                 box_batch, y_batch, name_batch = test_batch_gen.get_batch()
 
@@ -89,7 +113,7 @@ if __name__ == '__main__':
                 print(error)
 
         if NEED_DISPLAY:
-            test_batch_gen = BatchGenerator(TestDataConfig, name='test',need_target=True,need_name=True)
+            test_batch_gen = BatchGenerator(TestDataConfig,need_target=True,need_name=True)
             while True:
                 # box_batch,y_batch,name_batch = test_batch_gen.get_batch()
                 box_batch,y_batch,name_batch = test_batch_gen.get_batch()
