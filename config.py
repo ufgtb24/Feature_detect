@@ -11,14 +11,14 @@ no_six=['tooth6']
 front_set=['tooth7','tooth8']
 
 TASK_DICT={
-    # 'facc':{
-    #     'num_feature':5,
-    #     'feature_need':[1,2,3,4,5],
-    #     'label_file':'FaccControlPts.txt'
-    # },
+    'facc':{
+        'num_feature':5,
+        'feature_need':[1,2,3,4,5],
+        'label_file':'FaccControlPts.txt'
+    },
     'groove':{
         'num_feature':2,
-        'feature_need':[1],
+        'feature_need':[1,2],
         'label_file':'info.txt'
     }
 }
@@ -32,7 +32,7 @@ class DataConfig(object):
     world_to_cubic = 128 / 12.
     data_list = back_set
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir='F:/ProjectData/tmp/Try/'
+    base_case_dir='F:/ProjectData/tmp/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict=TASK_DICT

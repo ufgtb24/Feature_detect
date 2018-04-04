@@ -30,9 +30,9 @@ class DetectNet(object):
 
                 with tf.variable_scope('error'):
                     self.error_f=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred[:5] - targets[:5]), axis=1) /5, axis=0)
+                        tf.square(self.pred[:15] - targets[:15]), axis=1) /5, axis=0)
                     self.error_g=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred[5:] - targets[5:]), axis=1) /2, axis=0)
+                        tf.square(self.pred[15:] - targets[15:]), axis=1) /2, axis=0)
                     
                     self.error=tf.reduce_mean(tf.reduce_sum(
                         tf.square(self.pred - targets), axis=1) /DataConfig.num_feature_need, axis=0)
@@ -107,7 +107,7 @@ if __name__ == '__main__':
             box_batch, y_batch = train_batch_gen.get_batch()
             feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 
-            _, loss_train = sess.run([detector.train_op, detector.error], feed_dict=feed_dict)
+            _, loss_train_f,loss_train_g = sess.run([detector.train_op, detector.error_f,detector.error_g], feed_dict=feed_dict)
 
             if iter % test_step == 0:
                 if start == False:
@@ -129,9 +129,9 @@ if __name__ == '__main__':
                 # print(y_batch)
                 # print('#################')
                 # print(pred_get)
-                print("%d   testCost_f=%f   winnerCost_f=%f   test_step_F=%d  testCost_f=%f   winnerCost_f=%f   test_step_F=%d\n"
-                      % (iter, loss_test_f, winner_loss_f, step_from_last_mininum_f,
-                         loss_test_g, winner_loss_g, step_from_last_mininum_g))
+                print("%d train_f=%f  test_f=%f   winner_f=%f   step_f=%d ||train_g=%f  test_g=%f   winner_g=%f   step_g=%d\n"
+                      % (iter, loss_train_f,loss_test_f, winner_loss_f, step_from_last_mininum_f,
+                         loss_train_g,loss_test_g, winner_loss_g, step_from_last_mininum_g))
 
 
 
