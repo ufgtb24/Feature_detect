@@ -29,6 +29,11 @@ class DetectNet(object):
                                              depth_multiplier=1.)
 
                 with tf.variable_scope('error'):
+                    self.error_f=tf.reduce_mean(tf.reduce_sum(
+                        tf.square(self.pred[:5] - targets[:5]), axis=1) /5, axis=0)
+                    self.error_g=tf.reduce_mean(tf.reduce_sum(
+                        tf.square(self.pred[5:] - targets[5:]), axis=1) /2, axis=0)
+                    
                     self.error=tf.reduce_mean(tf.reduce_sum(
                         tf.square(self.pred - targets), axis=1) /DataConfig.num_feature_need, axis=0)
 
@@ -84,8 +89,8 @@ if __name__ == '__main__':
         need_early_stop = True
         EARLY_STOP_STEP=2000
 
-        winner_loss=10**10
-        step_from_last_mininum = 0
+        winner_loss_f=winner_loss_g=10**10
+        step_from_last_mininum_f=step_from_last_mininum_g = 0
         start = False
 
         # train_batch_gen=BatchGenerator(TrainDataConfig)
@@ -108,25 +113,25 @@ if __name__ == '__main__':
                 if start == False:
                     save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
                     start = True
-                if  need_early_stop and step_from_last_mininum>EARLY_STOP_STEP:
-                    final_error=winner_loss
-                    break
-                step_from_last_mininum += 1
+                step_from_last_mininum_f += 1
+                step_from_last_mininum_g += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
 
                 feed_dict = {input_box: box_batch, targets: y_batch,is_training: False}
-                loss_test,pred_get = sess.run([detector.error,detector.pred], feed_dict=feed_dict)
-                if loss_test < winner_loss:
-                    winner_loss = loss_test
-                    step_from_last_mininum = 0
-                    if NEED_SAVE and loss_test < 500:
-                        save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
+                loss_test_f,loss_test_g = sess.run([detector.error_f,detector.error_g], feed_dict=feed_dict)
+                if loss_test_f < winner_loss_f:
+                    winner_loss_f = loss_test_f
+                    step_from_last_mininum_f = 0
+                if loss_test_g < winner_loss_g:
+                    winner_loss_g = loss_test_g
+                    step_from_last_mininum_g = 0
                 # print('\n\n\n')
                 # print(y_batch)
                 # print('#################')
                 # print(pred_get)
-                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                print("%d   testCost_f=%f   winnerCost_f=%f   test_step_F=%d  testCost_f=%f   winnerCost_f=%f   test_step_F=%d\n"
+                      % (iter, loss_test_f, winner_loss_f, step_from_last_mininum_f,
+                         loss_test_g, winner_loss_g, step_from_last_mininum_g))
 
 
 
