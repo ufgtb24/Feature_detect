@@ -8,7 +8,6 @@ import inception_v3 as icp
 train_batch_gen = BatchGenerator(TrainDataConfig)
 test_batch_gen = BatchGenerator(ValiDataConfig)
 
-
 class DetectNet(object):
     def __init__(self, is_training,input_box, targets,scope='detector',
                  need_optim=True,clip_grd=True):
@@ -29,11 +28,6 @@ class DetectNet(object):
                                              depth_multiplier=1.)
 
                 with tf.variable_scope('error'):
-                    self.error_f=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred[:15] - targets[:15]), axis=1) /5, axis=0)
-                    self.error_g=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred[15:] - targets[15:]), axis=1) /2, axis=0)
-                    
                     self.error=tf.reduce_mean(tf.reduce_sum(
                         tf.square(self.pred - targets), axis=1) /DataConfig.num_feature_need, axis=0)
 
@@ -81,16 +75,16 @@ if __name__ == '__main__':
     with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
-        NEED_RESTORE = False
-        NEED_SAVE = False
+        NEED_RESTORE = True
+        NEED_SAVE = True
         
         TOTAL_EPHOC=10000
         test_step = 3
         need_early_stop = True
-        EARLY_STOP_STEP=2000
+        EARLY_STOP_STEP=500
 
-        winner_loss_f=winner_loss_g=10**10
-        step_from_last_mininum_f=step_from_last_mininum_g = 0
+        winner_loss=10**10
+        step_from_last_mininum = 0
         start = False
 
         # train_batch_gen=BatchGenerator(TrainDataConfig)
@@ -107,31 +101,31 @@ if __name__ == '__main__':
             box_batch, y_batch = train_batch_gen.get_batch()
             feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
 
-            _, loss_train_f,loss_train_g = sess.run([detector.train_op, detector.error_f,detector.error_g], feed_dict=feed_dict)
+            _, loss_train = sess.run([detector.train_op, detector.error], feed_dict=feed_dict)
 
             if iter % test_step == 0:
                 if start == False:
                     save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
                     start = True
-                step_from_last_mininum_f += 1
-                step_from_last_mininum_g += 1
+                if  need_early_stop and step_from_last_mininum>EARLY_STOP_STEP:
+                    final_error=winner_loss
+                    break
+                step_from_last_mininum += 1
                 box_batch, y_batch = test_batch_gen.get_batch()
 
                 feed_dict = {input_box: box_batch, targets: y_batch,is_training: False}
-                loss_test_f,loss_test_g = sess.run([detector.error_f,detector.error_g], feed_dict=feed_dict)
-                if loss_test_f < winner_loss_f:
-                    winner_loss_f = loss_test_f
-                    step_from_last_mininum_f = 0
-                if loss_test_g < winner_loss_g:
-                    winner_loss_g = loss_test_g
-                    step_from_last_mininum_g = 0
+                loss_test,pred_get = sess.run([detector.error,detector.pred], feed_dict=feed_dict)
+                if loss_test < winner_loss:
+                    winner_loss = loss_test
+                    step_from_last_mininum = 0
+                    if NEED_SAVE and loss_test < 500:
+                        save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
                 # print('\n\n\n')
                 # print(y_batch)
                 # print('#################')
                 # print(pred_get)
-                print("%d train_f=%f  test_f=%f   winner_f=%f   step_f=%d ||train_g=%f  test_g=%f   winner_g=%f   step_g=%d\n"
-                      % (iter, loss_train_f,loss_test_f, winner_loss_f, step_from_last_mininum_f,
-                         loss_train_g,loss_test_g, winner_loss_g, step_from_last_mininum_g))
+                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
+                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
 
 
 

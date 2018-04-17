@@ -179,7 +179,7 @@ def check_availability(dir):
 def display_batch(box, y, feature_need):
     num=box.shape[0]
     ex, ey, ez = edges(GRID_SIZE)
-    mlab.points3d(ex + 100, ey, ez,
+    mlab.points3d(ex , ey, ez,
                   mode="cube",
                   color=(0, 0, 1),
                   scale_factor=1)
@@ -192,8 +192,8 @@ def display_batch(box, y, feature_need):
         for j in range(feature_need):
             feature_index.append(np.where(ct == j+2))
         
-        x, y, z = np.where(ct == 1)
-        mlab.points3d(x, y, z,
+        x1, x2, x3 = np.where(ct == 1)
+        mlab.points3d(x1, x2, x3,
                       mode="cube",
                       color=(0, 1, 0),
                       scale_factor=1,)
@@ -231,8 +231,8 @@ def traverse_origin(dir):
         mlab.points3d(x, y, z,
                       mode="cube",
                       color=(0, 1, 0),
-                      scale_factor=1,)
-                      # transparent=True)
+                      scale_factor=1,
+                      transparent=True)
 
         mlab.points3d(ex+100, ey, ez,
                       mode="cube",
