@@ -8,7 +8,6 @@ import inception_v3 as icp
 train_batch_gen = BatchGenerator(TrainDataConfig)
 test_batch_gen = BatchGenerator(ValiDataConfig)
 
-
 class DetectNet(object):
     def __init__(self, is_training,input_box, targets,scope='detector',
                  need_optim=True,clip_grd=True):
@@ -76,13 +75,13 @@ if __name__ == '__main__':
     with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
-        NEED_RESTORE = False
-        NEED_SAVE = False
+        NEED_RESTORE = True
+        NEED_SAVE = True
         
         TOTAL_EPHOC=10000
         test_step = 3
         need_early_stop = True
-        EARLY_STOP_STEP=2000
+        EARLY_STOP_STEP=500
 
         winner_loss=10**10
         step_from_last_mininum = 0
@@ -119,7 +118,7 @@ if __name__ == '__main__':
                 if loss_test < winner_loss:
                     winner_loss = loss_test
                     step_from_last_mininum = 0
-                    if NEED_SAVE and loss_test < 500:
+                    if NEED_SAVE and loss_test < 100:
                         save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
                 # print('\n\n\n')
                 # print(y_batch)
