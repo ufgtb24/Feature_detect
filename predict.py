@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     
     NEED_INFERENCE=True
-    NEED_TARGET=False
+    NEED_TARGET=True
     NEED_DISPLAY=True
     
     NEED_WRITE_GRAPH=False

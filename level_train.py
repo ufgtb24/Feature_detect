@@ -75,7 +75,7 @@ if __name__ == '__main__':
     with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
-        NEED_RESTORE = True
+        NEED_RESTORE = False
         NEED_SAVE = True
         
         TOTAL_EPHOC=10000
@@ -119,7 +119,7 @@ if __name__ == '__main__':
                     winner_loss = loss_test
                     step_from_last_mininum = 0
                     if NEED_SAVE and loss_test < 500:
-                        save_path = saver.save(sess, MODEL_PATH + '\\model.ckpt')
+                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
                 # print('\n\n\n')
                 # print(y_batch)
                 # print('#################')

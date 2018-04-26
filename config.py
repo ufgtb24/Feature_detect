@@ -1,17 +1,14 @@
 
-MODEL_PATH = 'F:/ProjectData/tmp/model/up_back'
+MODEL_PATH = 'F:/ProjectData/tmp/model/up_back/'
 SHAPE_BOX=[128,128,128,1]
 total_set=['tooth2','tooth3','tooth4','tooth5','tooth6','tooth7','tooth8']
 # Lowwer_set=['tooth18','tooth19','tooth20','tooth21','tooth28','tooth29','tooth30','tooth31']
 
-up_back=['tooth2','tooth3']
-up_middle=['tooth4','tooth5']
-up_canine=['tooth6']
-up_front=['tooth7','tooth8']
-low_back=['tooth30','tooth31']
-low_middle=['tooth28','tooth29']
-low_canine=['tooth27']
-low_front=['tooth25','tooth26']
+def get_feature_num():
+    num_feature_need = 0
+    for content in TASK_DICT.values():
+        num_feature_need += len(content['feature_need'])
+    return num_feature_need
 
 TASK_DICT={
     'facc':{
@@ -26,16 +23,14 @@ TASK_DICT={
     }
 }
 
-
-
-def get_feature_num():
-    num_feature_need = 0
-    for content in TASK_DICT.values():
-        num_feature_need += len(content['feature_need'])
-    return num_feature_need
-
-
-
+up_back=['tooth2','tooth3']
+up_middle=['tooth4','tooth5']
+up_canine=['tooth6']
+up_front=['tooth7','tooth8']
+low_back=['tooth30','tooth31']
+low_middle=['tooth28','tooth29']
+low_canine=['tooth27']
+low_front=['tooth25','tooth26']
 
 class DataConfig(object):
     data_list = up_back

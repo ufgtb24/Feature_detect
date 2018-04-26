@@ -4,7 +4,7 @@ from mayavi import mlab
 import pickle
 import os
 
-from config import DataConfig, TrainDataConfig
+from config import DataConfig, TrainDataConfig,TestDataConfig
 from dataRelated import BatchGenerator
 
 '''
@@ -178,11 +178,11 @@ def check_availability(dir):
 
 def display_batch(box, y, feature_need):
     num=box.shape[0]
-    ex, ey, ez = edges(GRID_SIZE)
-    mlab.points3d(ex , ey, ez,
-                  mode="cube",
-                  color=(0, 0, 1),
-                  scale_factor=1)
+    # ex, ey, ez = edges(GRID_SIZE)
+    # mlab.points3d(ex , ey, ez,
+    #               mode="cube",
+    #               color=(0, 0, 1),
+    #               scale_factor=1)
 
     for i in range(num):
         ct = box[i]
@@ -196,8 +196,8 @@ def display_batch(box, y, feature_need):
         mlab.points3d(x1, x2, x3,
                       mode="cube",
                       color=(0, 1, 0),
-                      scale_factor=1,)
-                      # transparent=True)
+                      scale_factor=1,
+                      transparent=True)
 
         for j in range(feature_need):
             mlab.points3d(feature_index[j][0], feature_index[j][1], feature_index[j][2],
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     TrainDataConfig.load_case_once=1
     TrainDataConfig.batch_size=1
     TrainDataConfig.data_list=['tooth2','tooth3']
-    train_batch_gen = BatchGenerator(TrainDataConfig,need_name=True)
+    train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
     for i in range(1000):
         box_batch, y_batch,name=train_batch_gen.get_batch()
         box_batch=np.squeeze(box_batch,4)
