@@ -113,7 +113,7 @@ def inception_v3_base(inputs,
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
-      # 64 x 64 x 16
+      # above is 64 x 64 x 16
       end_point = 'Conv2d_2'
       net = layers.conv3d(net, depth(32), 3, scope=end_point)
       end_points[end_point] = net
@@ -145,14 +145,14 @@ def inception_v3_base(inputs,
       end_points[end_point] = net
       if end_point == final_endpoint:
         return net, end_points
-      # 16 x 16 x 96.
+      # above is 16 x 16 x 96.
 
       # Inception blocks
     with arg_scope(
         [layers.conv3d, layers_lib.max_pool3d, layers_lib.avg_pool3d],
         stride=1,
         padding='SAME'):
-     # mixed: 16 x 16 x 128.
+     # mixed: below is 16 x 16 x 128.
       end_point = 'Mixed_5a'
       with variable_scope.variable_scope(end_point):
         with variable_scope.variable_scope('Branch_0'):

@@ -291,17 +291,13 @@ WORLD_SIZE = 12.0
 GRID_SIZE = 128
 if __name__ == '__main__':
     
-    
-    TrainDataConfig.load_case_once=1
-    TrainDataConfig.batch_size=1
-    TrainDataConfig.data_list=['tooth2','tooth3']
     train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
     for i in range(1000):
         box_batch, y_batch,name=train_batch_gen.get_batch()
         box_batch=np.squeeze(box_batch,4)
         if i%30==0:
             print(name)
-            display_batch(box_batch,y_batch,TrainDataConfig.num_feature_need)
+            display_batch(box_batch,y_batch,TestDataConfig.num_feature_need)
         
         
 
