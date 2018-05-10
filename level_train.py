@@ -23,7 +23,7 @@ class DetectNet(object):
         with tf.variable_scope(scope):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
-                self.pred = icp.inception_v3(input_box, task_dict=DataConfig.task_dict,
+                self.pred = icp.inception_v3(input_box, output_dim=DataConfig.output_dim,
                                              is_training=is_training,scope='InceptionV3',
                                              depth_multiplier=1.)
 
