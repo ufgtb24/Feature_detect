@@ -28,7 +28,7 @@ class BatchGenerator(object):
         self.need_target=need_target
         self.need_name=need_name
         self.total_case_dir=data_config.total_case_dir
-        self.total_case_list=self.get_total_case_list()
+        self.total_case_list=os.listdir(self.total_case_dir)
         self.total_case_num=len(self.total_case_list)
         self.load_case_once=data_config.load_case_once
         assert self.load_case_once <= self.total_case_num,\
@@ -47,8 +47,6 @@ class BatchGenerator(object):
             self.load_case_list(self.total_case_list)
         self.suffle()
 
-    def get_total_case_list(self):
-        return os.listdir(self.total_case_dir)
 
 
     def get_case_list(self):
@@ -86,18 +84,15 @@ class BatchGenerator(object):
                             task_content['index']
                         )
                     )
-                # batch_size = task_label_list[0].shape[0]
-                # for a in task_label_list:
-                #     x=a.shape[0]
-                #     if x!=batch_size:
-                #         print('error at ',full_case_dir)
-                #         pass
                 label_array=np.concatenate(task_label_list,axis=1)
                 y_list.append(label_array)
-        box=np.concatenate(box_list,axis=0)
-        if self.need_target:
-            y=np.concatenate(y_list,axis=0)
-        return box,y
+        if box_list!=[]:
+            box=np.concatenate(box_list,axis=0)
+            if self.need_target:
+                y=np.concatenate(y_list,axis=0)
+            return box,y
+        else:
+            return None
 
     def load_case_list(self,case_load):
         # 读取多个病例
@@ -108,22 +103,27 @@ class BatchGenerator(object):
             self.case_load=np.array(case_load)
         for i,case_name in enumerate(case_load):
             full_case_dir=self.total_case_dir+case_name+'/'
-            box,y=self.load_useful_tooth(full_case_dir, self.data_list)
+            load_result=self.load_useful_tooth(full_case_dir, self.data_list)
+            if load_result is not None:
+                box, y =load_result
+            else:
+                continue
             box_list.append(box)
             if self.need_name:
                 name_index=np.ones((box.shape[0]),dtype=np.int32)*i
                 name_index_list.append(name_index)
             if self.need_target:
                 y_list.append(y)
-
-        self.box=np.concatenate(box_list,axis=0)
-        if self.need_name:
-            self.name_index=np.concatenate(name_index_list,axis=0)
-        if self.need_target:
-            self.y=np.concatenate(y_list,axis=0)
-        self.sample_num=self.box.shape[0]
-        assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
-
+                
+        if box_list!=None:
+            self.box=np.concatenate(box_list,axis=0)
+            if self.need_name:
+                self.name_index=np.concatenate(name_index_list,axis=0)
+            if self.need_target:
+                self.y=np.concatenate(y_list,axis=0)
+            self.sample_num=self.box.shape[0]
+            assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
+        
 
     def load_y(self, info_file,num_feature,num_feature_need,info_index):
         # print('file_dir = ',info_file,'\n')
@@ -155,11 +155,12 @@ class BatchGenerator(object):
         '''
 
         box_list = []
+        if not os.path.exists(collection_path):
+            return None
         for fileName in os.listdir(collection_path):
             if os.path.splitext(fileName)[1] == '.mhd':
                 toothPath = os.path.join(collection_path, fileName)
                 box_list.append(self.load_mhd(toothPath))
-
         box = np.stack(box_list)
         box.shape = [-1] + list(box.shape[-3:])
         return box
