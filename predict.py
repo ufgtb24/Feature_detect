@@ -1,34 +1,29 @@
-
-import tensorflow as tf
+import time
+t0=time.time()
 import os
+import tensorflow as tf
 import numpy as np
 # from crop_data import crop_batch
 from combine import  PB_PATH, gen_frozen_graph
 from config import MODEL_PATH, SHAPE_BOX, TestDataConfig, DataConfig
 from dataRelated import BatchGenerator
-from display import edges, display_batch
+from display import  display_batch
 from level_train import DetectNet
 
-
-def recover_coord(fp_1,fp_2,shape_crop):
-    with tf.name_scope('recover_coord'):
-        shape_crop=np.array(shape_crop)
-        cubic_pos=fp_1-(shape_crop / 2).astype(np.int32)+fp_2
-        cubic_pos=tf.to_int32(cubic_pos)
-        return cubic_pos
-
+os.environ['TF_CUDNN_USE_AUTOTUNE'] = "1"
 
 if __name__ == '__main__':
-    os.environ['TF_CUDNN_USE_AUTOTUNE'] = "0"
 
     
     NEED_INFERENCE=True
     NEED_TARGET=True
-    NEED_DISPLAY=True
-    
+    NEED_DISPLAY=False
     NEED_WRITE_GRAPH=False
-    NEED_SPLIT=False
     
+    
+    
+    t1=time.time()
+    print('before build time= ',t1-t0)
     is_training = tf.placeholder(tf.bool,name='is_training')
 
     input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
@@ -52,14 +47,17 @@ if __name__ == '__main__':
 
     #############
     saver = tf.train.Saver(var_list)
-    # saver_spec = tf.train.Saver(task_spec_vars)
-    # saver_commen = tf.train.Saver(var_list-task_spec_vars)
+    t2=time.time()
+    print('build graph time = ',t2-t1)
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
+        
         sess.run(tf.global_variables_initializer())
         saver.restore(sess, os.path.join(MODEL_PATH,'model.ckpt'))  # 存在就从模型中恢复变量
-        
+        t3 = time.time()
+        print('init variable time = ', t3 - t2)
+
         # if NEED_SPLIT:
         #     saver_commen.save(sess, os.path.join(MODEL_PATH,'commen/model.ckpt'))
         #     saver_spec.save(sess, os.path.join(MODEL_PATH,'spec/model.ckpt'))
@@ -100,13 +98,17 @@ if __name__ == '__main__':
         if NEED_INFERENCE:
             if NEED_TARGET:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=True,need_name=True)
-                while True:
+                for iter in range(5):
                     box_batch, y_batch, name_batch = test_batch_gen.get_batch()
     
                     feed_dict = {input_box: box_batch, targets: y_batch,
                                  is_training: False}
-    
+                    print('TF_CUDNN_USE_AUTOTUNE = ',os.environ['TF_CUDNN_USE_AUTOTUNE'])
+                    t1 = time.time()
                     f, error = sess.run([pred_end, detector.error], feed_dict=feed_dict)
+                    t2 = time.time()
+                    print('run sess time = ', t2 - t1)
+
                     f=np.int32(f)
                     print(error)
     
