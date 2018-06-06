@@ -93,7 +93,7 @@ if __name__ == '__main__':
             NEED_RESTORE = False
             NEED_SAVE = False
             NEED_INIT_SAVE=False
-            TOTAL_EPHOC = 10000
+            TOTAL_EPHOC = 40000
             test_step = 3
             need_early_stop = True
             EARLY_STOP_STEP = 600

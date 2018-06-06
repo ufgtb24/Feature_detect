@@ -25,7 +25,7 @@ class BatchGenerator(object):
             
             self.task_dict=final_task_dict
         self.down_rate=data_config.down_rate
-        self.box_train=None
+        self.box=None
         self.need_target=need_target
         self.need_name=need_name
         self.total_case_dir=data_config.total_case_dir
@@ -97,6 +97,7 @@ class BatchGenerator(object):
 
     def load_case_list(self,case_load):
         # 读取多个病例
+        self.box=None
         box_list=[]
         y_list=[]
         name_index_list=[]

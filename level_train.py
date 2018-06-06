@@ -76,9 +76,10 @@ if __name__ == '__main__':
         # writer = tf.summary.FileWriter('log/', sess.graph)
 
         NEED_RESTORE = False
-        NEED_SAVE = True
-        
-        TOTAL_EPHOC=10000
+        NEED_SAVE = False
+        NEED_INIT_SAVE = False
+
+        TOTAL_EPHOC=40000
         test_step = 3
         need_early_stop = True
         EARLY_STOP_STEP=500
@@ -104,7 +105,7 @@ if __name__ == '__main__':
             _, loss_train = sess.run([detector.train_op, detector.error], feed_dict=feed_dict)
 
             if iter % test_step == 0:
-                if start == False:
+                if NEED_INIT_SAVE and start == False:
                     save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
                     start = True
                 if  need_early_stop and step_from_last_mininum>EARLY_STOP_STEP:
