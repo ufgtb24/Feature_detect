@@ -1,6 +1,6 @@
-
+BOX_LEN=128
 MODEL_PATH = 'F:/ProjectData/tmp/model/up_front/'
-SHAPE_BOX=[128,128,128,1]
+SHAPE_BOX=[BOX_LEN,BOX_LEN,BOX_LEN,1]
 total_set=['tooth2','tooth3','tooth4','tooth5','tooth6','tooth7','tooth8']
 # Lowwer_set=['tooth18','tooth19','tooth20','tooth21','tooth28','tooth29','tooth30','tooth31']
 
@@ -33,8 +33,8 @@ low_canine=['tooth27']
 low_front=['tooth25','tooth26']
 
 class DataConfig(object):
-    data_list = up_canine
-    world_to_cubic = 128 / 12.
+    data_list = total_set
+    world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir='F:/ProjectData/tmp/Try/'
     # output_dim=3*len(feature_need)
@@ -42,7 +42,7 @@ class DataConfig(object):
     task_dict=TASK_DICT
     num_feature_need=get_feature_num()
     output_dim = 3 * num_feature_need
-
+    down_rate=int(128/BOX_LEN)
 
 class TrainDataConfig(DataConfig):
     batch_size = 16
@@ -62,8 +62,8 @@ class ValiDataConfig(DataConfig):
 class TestDataConfig(DataConfig):
     batch_size=1
     total_case_dir=DataConfig.base_case_dir+'Validate/'
-    load_case_once=1  #每次读的病例数
-    switch_after_shuffles=1 #当前数据洗牌n次读取新数据
+    load_case_once=0  #每次读的病例数
+    switch_after_shuffles=10**10 #当前数据洗牌n次读取新数据
     usage='_Test'
 
 

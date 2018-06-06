@@ -2,6 +2,7 @@ import numpy as np
 import SimpleITK as sitk
 import os
 
+from config import BOX_LEN
 
 
 class BatchGenerator(object):
@@ -23,7 +24,7 @@ class BatchGenerator(object):
                 final_task_dict[task]=task_content
             
             self.task_dict=final_task_dict
-            
+        self.down_rate=data_config.down_rate
         self.box_train=None
         self.need_target=need_target
         self.need_name=need_name
@@ -134,10 +135,7 @@ class BatchGenerator(object):
         info_need=info[:,info_index]
         feature = np.reshape(info_need, [-1, 3])
         feature = np.reshape((feature - origin) * self.world_to_cubic, [-1, 3*num_feature_need]).astype(np.int32)
-        # nag_exist= np.where(feature <0)
-        # if len(nag_exist[0])>0:
-        #     print('ft_final:***************\n')
-        #     valid=False
+
         return feature
 
     def load_mhd(self, filename):
@@ -145,6 +143,8 @@ class BatchGenerator(object):
         itkimage = sitk.ReadImage(filename)
         # Convert the image to a  numpy array first and then shuffle the dimensions to get axis in the order z,y,x
         ct_scan = sitk.GetArrayFromImage(itkimage)
+        if self.down_rate>1:
+            ct_scan=ct_scan[::self.down_rate, ::self.down_rate,::self.down_rate]
 
         return ct_scan
 
@@ -202,18 +202,6 @@ class BatchGenerator(object):
 
 
 if __name__ == '__main__':
-
-    class DataConfig(object):
-        shape_box = [128, 128, 128]
-        shape_crop = [64, 64, 64]
-        world_to_cubic = 128 / 12.
-        batch_size_train = 2
-        batch_size_test = 1
-        total_case_dir = 'F:\\ProjectData\\Feature\\Tooth'
-        each_load_num = 10  # 每次读的病例数
-        switch_data_internal = 10  # 当前数据洗牌n次读取新数据
-        need_Save = False
-        need_Restore = False
-        format = 'mhd'
+    pass
 
 

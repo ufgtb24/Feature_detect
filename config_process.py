@@ -1,5 +1,7 @@
+from config import BOX_LEN
+
 MODEL_PATH = 'F:/ProjectData/tmp/model/'
-SHAPE_BOX = [128, 128, 128, 1]
+SHAPE_BOX = [BOX_LEN, BOX_LEN, BOX_LEN, 1]
 total_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 # Lowwer_set=['tooth18','tooth19','tooth20','tooth21','tooth28','tooth29','tooth30','tooth31']
 
@@ -91,7 +93,7 @@ def get_feature_num(task_dict):
 
 class DataConfig(object):
     data_list = low_middle
-    world_to_cubic = 128 / 12.
+    world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
     # output_dim=3*len(feature_need)

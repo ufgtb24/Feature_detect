@@ -4,7 +4,7 @@ from mayavi import mlab
 import pickle
 import os
 
-from config import DataConfig, TrainDataConfig,TestDataConfig
+from config import DataConfig, TrainDataConfig, TestDataConfig, BOX_LEN
 from dataRelated import BatchGenerator
 
 '''
@@ -114,7 +114,7 @@ def loadmhd(collection_path):
             box_list.append(load_itk(toothPath))
 
     box = np.stack(box_list)
-    box.shape = [-1, GRID_SIZE, GRID_SIZE, GRID_SIZE]
+    box.shape = [-1, BOX_LEN, BOX_LEN, BOX_LEN]
     return box
 
 
@@ -122,13 +122,13 @@ def show_single(dir):
     ct = load_itk(os.path.join(dir, 'toothlabel5_1_1_1.mhd'))
     info_file = os.path.join(dir, 'info.txt')
 
-    feature = load_y(info_file, GRID_SIZE / WORLD_SIZE)
+    feature = load_y(info_file, BOX_LEN / WORLD_SIZE)
 
     ct[feature[0, 0], feature[0, 1], feature[0, 2]] = 2
     ct[feature[0, 3], feature[0, 4], feature[0, 5]] = 2
 
     fz, fy, fx = np.where(ct == 2)
-    ex, ey, ez = edges(GRID_SIZE)
+    ex, ey, ez = edges(BOX_LEN)
     x, y, z = np.where(ct == 1)
 
     mlab.points3d(ex, ey, ez,
@@ -161,7 +161,7 @@ def check_availability(dir):
             case_tooth_dir = full_case_dir + '\\' + tooth
             info_file=case_tooth_dir+"\\info.txt"
 
-            feature,valide_tooth = load_y(info_file, GRID_SIZE / WORLD_SIZE)
+            feature,valide_tooth = load_y(info_file, BOX_LEN / WORLD_SIZE)
             if valide_tooth==False:
                 valide_case=False
                 break
@@ -196,8 +196,8 @@ def display_batch(box, y, feature_need):
         mlab.points3d(x1, x2, x3,
                       mode="cube",
                       color=(0, 1, 0),
-                      scale_factor=1,
-                      transparent=True)
+                      scale_factor=1,)
+                      # transparent=True)
 
         for j in range(feature_need):
             mlab.points3d(feature_index[j][0], feature_index[j][1], feature_index[j][2],
@@ -214,7 +214,7 @@ def traverse_origin(dir):
     box = loadmhd(dir)
     info_file = os.path.join(dir, 'FaccControlPts.txt')
     # feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
-    feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
+    feature ,_= load_y(info_file, BOX_LEN / WORLD_SIZE)
     num = feature.shape[0]
 
     for i in range(num):
@@ -225,7 +225,7 @@ def traverse_origin(dir):
 
         fx1, fy1, fz1 = np.where(ct == 2)
         fx2, fy2, fz2 = np.where(ct == 3)
-        ex, ey, ez = edges(GRID_SIZE)
+        ex, ey, ez = edges(BOX_LEN)
         x, y, z = np.where(ct == 1)
 
         mlab.points3d(x, y, z,
@@ -264,7 +264,7 @@ def traverse_croped(dir):
         fy = np.array([center_points[i, 1]])
         fz = np.array([center_points[i, 2]])
         ct = box[i]
-        ex, ey, ez = edges(GRID_SIZE)
+        ex, ey, ez = edges(BOX_LEN)
         x, y, z = np.where(ct == 1)
 
         mlab.points3d(x, y, z,
@@ -288,7 +288,6 @@ def traverse_croped(dir):
 
 
 WORLD_SIZE = 12.0
-GRID_SIZE = 128
 if __name__ == '__main__':
     
     train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
