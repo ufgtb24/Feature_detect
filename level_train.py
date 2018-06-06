@@ -4,12 +4,12 @@ import os
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig
 from dataRelated import BatchGenerator
 import inception_v3 as icp
-
+import numpy as np
 train_batch_gen = BatchGenerator(TrainDataConfig)
 test_batch_gen = BatchGenerator(ValiDataConfig)
 
 class DetectNet(object):
-    def __init__(self, is_training,input_box, targets,scope='detector',
+    def __init__(self, is_training,input_box,f_mask, targets,scope='detector',
                  need_optim=True,clip_grd=True):
         '''
         :param Param:
@@ -28,8 +28,17 @@ class DetectNet(object):
                                              depth_multiplier=1.)
 
                 with tf.variable_scope('error'):
-                    self.error=tf.reduce_mean(tf.reduce_sum(
-                        tf.square(self.pred - targets), axis=1) /DataConfig.num_feature_need, axis=0)
+                    # self.error=tf.reduce_mean(tf.reduce_sum(
+                    #     tf.square(self.pred - targets), axis=1) /DataConfig.num_feature_need, axis=0)
+                    
+                    
+                    ####################################
+                    f_output_masked = tf.boolean_mask(self.pred, f_mask)
+
+                    target_masked = tf.boolean_mask(targets, f_mask)
+
+                    self.error = 3 * tf.reduce_mean(tf.square(f_output_masked - target_masked))
+                    ####################################
 
             if need_optim:
                 with tf.variable_scope('optimizer'):
@@ -50,12 +59,13 @@ if __name__ == '__main__':
 
     is_training = tf.placeholder(tf.bool, name='is_training')
     input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
+    f_mask = tf.placeholder(tf.bool, shape=(None, DataConfig.output_dim))
     targets = tf.placeholder(tf.float32, shape=[None, DataConfig.output_dim],
                                   name="targets")
 
     box = tf.to_float(input_box)
 
-    detector = DetectNet(is_training=is_training, input_box=box, targets=targets)
+    detector = DetectNet(is_training=is_training, f_mask=f_mask,input_box=box, targets=targets)
 
 
 
@@ -82,7 +92,7 @@ if __name__ == '__main__':
         TOTAL_EPHOC=40000
         test_step = 3
         need_early_stop = True
-        EARLY_STOP_STEP=500
+        EARLY_STOP_STEP=3000
 
         winner_loss=10**10
         step_from_last_mininum = 0
@@ -99,8 +109,16 @@ if __name__ == '__main__':
             saver.restore(sess, MODEL_PATH + 'model.ckpt')  # 存在就从模型中恢复变量
 
         for iter in range(TOTAL_EPHOC):
-            box_batch, y_batch = train_batch_gen.get_batch()
-            feed_dict = {input_box: box_batch, targets: y_batch, is_training: True}
+            box_batch, class_batch, y_batch = train_batch_gen.get_batch()
+            mask = np.ones_like(y_batch, dtype=bool)
+            for i, class_num in enumerate(class_batch.tolist()):
+                if class_num > 1:
+                    mask[i, 15:] = False
+                    
+            feed_dict = {input_box: box_batch,
+                         targets: y_batch,
+                         f_mask:mask,
+                         is_training: True}
 
             _, loss_train = sess.run([detector.train_op, detector.error], feed_dict=feed_dict)
 
@@ -112,9 +130,18 @@ if __name__ == '__main__':
                     final_error=winner_loss
                     break
                 step_from_last_mininum += 1
-                box_batch, y_batch = test_batch_gen.get_batch()
+                
+                box_batch, class_batch, y_batch = test_batch_gen.get_batch()
+                mask = np.ones_like(y_batch, dtype=bool)
+                for i, class_num in enumerate(class_batch.tolist()):
+                    if class_num > 1:
+                        mask[i, 15:] = False
 
-                feed_dict = {input_box: box_batch, targets: y_batch,is_training: False}
+                feed_dict = {input_box: box_batch,
+                             targets: y_batch,
+                             f_mask: mask,
+                             is_training: False}
+
                 loss_test,pred_get = sess.run([detector.error,detector.pred], feed_dict=feed_dict)
                 if loss_test < winner_loss:
                     winner_loss = loss_test
