@@ -554,15 +554,13 @@ def inception_v3(inputs,
         # 1024
         pred = layers.conv3d(
             net,
-            output_dim, 1,
+            output_dim+4, 1,
             activation_fn=None,
             normalizer_fn=None,
-            scope='task_spec_conv')
+            scope='pred_output')
         # b x output_dim
         pred = array_ops.squeeze(pred, [1, 2, 3], name='SpatialSqueeze')
 
-      
-      
   return pred
 
 inception_v3.default_image_size = 299

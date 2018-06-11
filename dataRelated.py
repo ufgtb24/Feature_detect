@@ -71,13 +71,13 @@ class BatchGenerator(object):
         actual_tooth_list = os.listdir(full_case_dir)
         
         class_define = {
-            'tooth2': 0,
-            'tooth3': 0,
-            'tooth4': 1,
-            'tooth5': 1,
-            'tooth6': 2,
-            'tooth7': 3,
-            'tooth8': 3,
+            'tooth30': 0,
+            'tooth31': 0,
+            'tooth28': 1,
+            'tooth29': 1,
+            'tooth27': 2,
+            'tooth26': 3,
+            'tooth25': 3,
         }
         
         for tooth in target_tooth_list:
@@ -209,20 +209,25 @@ class BatchGenerator(object):
             self.suffle()
         
         box_batch = np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(), 4)
-        class_batch = self.class_[self.index:   self.index + self.batch_size]
-        if self.need_name:
-            global name_index_batch
-            name_index_batch = self.name_index[self.index:   self.index + self.batch_size]
-        if self.need_target:
-            global y_batch
-            y_batch = self.y[self.index:   self.index + self.batch_size]
-        self.index += self.batch_size
-        return_list = [box_batch, class_batch]
-        if self.need_target:
-            return_list.append(y_batch)
-        if self.need_name:
-            return_list.append(self.case_load[name_index_batch])
+        return_list = [box_batch]
         
+        if self.need_target:
+            y_batch = self.y[self.index:   self.index + self.batch_size]
+            mask_batch = np.ones_like(y_batch, dtype=bool)
+            class_batch = self.class_[self.index:   self.index + self.batch_size]
+            for i, class_num in enumerate(class_batch.tolist()):
+                if class_num > 1:
+                    mask_batch[i, 15:] = False
+
+            target_list=[y_batch,mask_batch,class_batch]
+            return_list+=target_list
+            
+        if self.need_name:
+            name_index_batch = self.name_index[self.index:   self.index + self.batch_size]
+            return_list+=[self.case_load[name_index_batch]]
+
+        self.index += self.batch_size
+
         return return_list
 
 

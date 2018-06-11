@@ -23,17 +23,10 @@ if __name__ == '__main__':
     
     t1=time.time()
     print('before build time= ',t1-t0)
-    is_training = tf.placeholder(tf.bool,name='is_training')
-
-    input_box = tf.placeholder(tf.uint8, shape=[None] + SHAPE_BOX, name='input_box')
-    box = tf.to_float(input_box)
-    targets = tf.placeholder(tf.float32, shape=[None, DataConfig.output_dim],
-                                  name="targets")
-    f_mask = tf.placeholder(tf.bool, shape=(None, DataConfig.output_dim))
-
-    detector = DetectNet(is_training=is_training, f_mask=f_mask, need_optim=False,scope='detector', input_box=box, targets=targets)
+    
+    detector = DetectNet(need_targets=NEED_TARGET,is_training_sti=False)
     # pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
-    pred_end = tf.identity(detector.pred,name='output_node')
+    pred_end = detector.total_output
     
     #############
     var_list = tf.trainable_variables()
@@ -106,11 +99,12 @@ if __name__ == '__main__':
                         if class_num > 1:
                             mask[i, 15:] = False
 
-                    feed_dict = {input_box: box_batch, targets: y_batch,
-                                 f_mask: mask,
-                                 is_training: False}
+                    feed_dict = {detector.input_box: box_batch,
+                                 detector.targets: y_batch,
+                                 detector.f_mask: mask,
+                                 detector.is_training: False}
                     t1 = time.time()
-                    f, error = sess.run([pred_end, detector.error], feed_dict=feed_dict)
+                    f, error = sess.run([pred_end, detector.feature_loss], feed_dict=feed_dict)
                     t2 = time.time()
                     print('run sess time = ', t2 - t1)
 
@@ -125,7 +119,7 @@ if __name__ == '__main__':
                 while True:
                     box_batch,  name_batch = test_batch_gen.get_batch()
         
-                    feed_dict = {input_box: box_batch,is_training: False}
+                    feed_dict = {detector.input_box: box_batch,detector.is_training: False}
         
                     f = sess.run(pred_end, feed_dict=feed_dict)
                     # f=f*12./128.

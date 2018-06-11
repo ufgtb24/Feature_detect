@@ -1,11 +1,17 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/all in one/'
+ROOT_PATH = 'F:/ProjectData/tmp/model/lowwer/'
+MODEL_PATH = ROOT_PATH+'model.ckpt'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 total_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
+down_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
+
+low_back = ['tooth30', 'tooth31']
+low_middle = ['tooth28', 'tooth29']
+low_canine = ['tooth27']
+low_front = ['tooth25', 'tooth26']
 
 
-# total_set=['tooth5','tooth6']
 
 def get_feature_num():
     num_feature_need = 0
@@ -37,7 +43,7 @@ TASK_DICT = OrderedDict(
 
 
 class DataConfig(object):
-    data_list = total_set
+    data_list = down_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
@@ -45,7 +51,7 @@ class DataConfig(object):
     # label_file_name='info.txt'
     task_dict = TASK_DICT
     num_feature_need = get_feature_num()
-    output_dim = 3 * num_feature_need
+    feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
 
 class TrainDataConfig(DataConfig):
