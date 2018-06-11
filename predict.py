@@ -10,14 +10,13 @@ from dataRelated import BatchGenerator
 from display import  display_batch
 from level_train import DetectNet
 
-os.environ['TF_CUDNN_USE_AUTOTUNE'] = "1"
 
 if __name__ == '__main__':
 
     
     NEED_INFERENCE=True
     NEED_TARGET=True
-    NEED_DISPLAY=False
+    NEED_DISPLAY=True
     NEED_WRITE_GRAPH=False
     
     
@@ -30,8 +29,9 @@ if __name__ == '__main__':
     box = tf.to_float(input_box)
     targets = tf.placeholder(tf.float32, shape=[None, DataConfig.output_dim],
                                   name="targets")
+    f_mask = tf.placeholder(tf.bool, shape=(None, DataConfig.output_dim))
 
-    detector = DetectNet(is_training=is_training, need_optim=False,scope='detector', input_box=box, targets=targets)
+    detector = DetectNet(is_training=is_training, f_mask=f_mask, need_optim=False,scope='detector', input_box=box, targets=targets)
     # pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
     pred_end = tf.identity(detector.pred,name='output_node')
     
@@ -99,11 +99,16 @@ if __name__ == '__main__':
             if NEED_TARGET:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=True,need_name=True)
                 for iter in range(5):
-                    box_batch, y_batch, name_batch = test_batch_gen.get_batch()
-    
+                    box_batch,class_batch, y_batch, name_batch = test_batch_gen.get_batch()
+
+                    mask = np.ones_like(y_batch, dtype=bool)
+                    for i, class_num in enumerate(class_batch.tolist()):
+                        if class_num > 1:
+                            mask[i, 15:] = False
+
                     feed_dict = {input_box: box_batch, targets: y_batch,
+                                 f_mask: mask,
                                  is_training: False}
-                    print('TF_CUDNN_USE_AUTOTUNE = ',os.environ['TF_CUDNN_USE_AUTOTUNE'])
                     t1 = time.time()
                     f, error = sess.run([pred_end, detector.error], feed_dict=feed_dict)
                     t2 = time.time()

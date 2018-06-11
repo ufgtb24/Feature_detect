@@ -1,6 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/capsNet/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/all in one/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 total_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 
@@ -49,17 +49,17 @@ class DataConfig(object):
     down_rate=int(128/BOX_LEN)
 
 class TrainDataConfig(DataConfig):
-    batch_size = 8
+    batch_size = 16
     total_case_dir = DataConfig.base_case_dir + 'Train/'
-    load_case_once = 10  # 每次读的病例数 若果=0,则只load一次，读入全部
+    load_case_once = 4  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     usage = '_Train'
 
 
 class ValiDataConfig(DataConfig):
-    batch_size = 8
+    batch_size = 16
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
-    load_case_once = 1  # 每次读的病例数
+    load_case_once = 4  # 每次读的病例数
     switch_after_shuffles = 10 ** 10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     usage = '_Validate'
 

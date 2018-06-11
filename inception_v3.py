@@ -547,20 +547,23 @@ def inception_v3(inputs,
             kernel_size,
             padding='VALID',
             scope='AvgPool_1a_{}x{}'.format(*kernel_size))
-        # 1 x 1 x 1024
+        # 1 x 1 x1 x 1024
         net = layers_lib.dropout(
             net, keep_prob=0.5, scope='Dropout_1b')
         end_points['PreLogits'] = net
         # 1024
-        logits = layers.conv3d(
+        pred = layers.conv3d(
             net,
             output_dim, 1,
             activation_fn=None,
             normalizer_fn=None,
             scope='task_spec_conv')
-      # 6
-      logits = array_ops.squeeze(logits, [1, 2, 3], name='SpatialSqueeze')
-  return logits
+        # b x output_dim
+        pred = array_ops.squeeze(pred, [1, 2, 3], name='SpatialSqueeze')
+
+      
+      
+  return pred
 
 inception_v3.default_image_size = 299
 

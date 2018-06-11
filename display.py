@@ -186,7 +186,9 @@ def display_batch(box, y, feature_need):
 
     for i in range(num):
         ct = box[i]
+        print(y)
         for j in range(feature_need):
+            print(y)
             ct[y[i, 3*j], y[i, 3*j+1], y[i, 3*j+2]]=j+2
         feature_index=[]
         for j in range(feature_need):

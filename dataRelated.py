@@ -2,7 +2,7 @@ import numpy as np
 import SimpleITK as sitk
 import os
 
-from config import DataConfig, ValiDataConfig
+from config import DataConfig, ValiDataConfig, TrainDataConfig
 from collections import OrderedDict
 
 
@@ -227,13 +227,14 @@ class BatchGenerator(object):
 
 
 if __name__ == '__main__':
-    gen = BatchGenerator(ValiDataConfig)
-    while True:
-        box, class_, y = gen.get_batch()
-        mask = np.ones_like(y, dtype=bool)
-        for i, class_num in enumerate(class_.tolist()):
-            if class_num > 1:
-                mask[i, 15:] = False
-        
-        pass
+    gen = BatchGenerator(TrainDataConfig)
+    pass
+    # while True:
+    #     box, class_, y = gen.get_batch()
+    #     mask = np.ones_like(y, dtype=bool)
+    #     for i, class_num in enumerate(class_.tolist()):
+    #         if class_num > 1:
+    #             mask[i, 15:] = False
+    #
+    #     pass
 

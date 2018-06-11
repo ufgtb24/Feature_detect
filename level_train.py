@@ -23,7 +23,7 @@ class DetectNet(object):
         with tf.variable_scope(scope):
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_v3_arg_scope()):
-                self.pred = icp.inception_v3(input_box, output_dim=DataConfig.output_dim,
+                self.pred= icp.inception_v3(input_box, output_dim=DataConfig.output_dim,
                                              is_training=is_training,scope='InceptionV3',
                                              depth_multiplier=1.)
 
@@ -33,11 +33,14 @@ class DetectNet(object):
                     
                     
                     ####################################
-                    f_output_masked = tf.boolean_mask(self.pred, f_mask)
+                    self.f_output_masked = tf.boolean_mask(self.pred, f_mask)
+                    
+                    
 
                     target_masked = tf.boolean_mask(targets, f_mask)
 
-                    self.error = 3 * tf.reduce_mean(tf.square(f_output_masked - target_masked))
+                    self.error = 3 * tf.reduce_mean(tf.square(self.f_output_masked - target_masked))
+                    self.sum=tf.summary.scalar('error',self.error)
                     ####################################
 
             if need_optim:
@@ -83,14 +86,14 @@ if __name__ == '__main__':
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
-        # writer = tf.summary.FileWriter('log/', sess.graph)
+        writer = tf.summary.FileWriter('log/', sess.graph)
 
-        NEED_RESTORE = False
-        NEED_SAVE = False
+        NEED_RESTORE = True
+        NEED_SAVE = True
         NEED_INIT_SAVE = False
 
-        TOTAL_EPHOC=40000
-        test_step = 3
+        TOTAL_EPHOC=100000
+        test_step = 300
         need_early_stop = True
         EARLY_STOP_STEP=3000
 
@@ -122,6 +125,9 @@ if __name__ == '__main__':
 
             _, loss_train = sess.run([detector.train_op, detector.error], feed_dict=feed_dict)
 
+
+            
+            
             if iter % test_step == 0:
                 if NEED_INIT_SAVE and start == False:
                     save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
@@ -142,18 +148,16 @@ if __name__ == '__main__':
                              f_mask: mask,
                              is_training: False}
 
-                loss_test,pred_get = sess.run([detector.error,detector.pred], feed_dict=feed_dict)
+                loss_test,pred_get,summary = sess.run([detector.error,detector.pred,detector.sum], feed_dict=feed_dict)
+                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
+                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                
+                writer.add_summary(summary,iter)
                 if loss_test < winner_loss:
                     winner_loss = loss_test
                     step_from_last_mininum = 0
-                    if NEED_SAVE and loss_test < 500:
-                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
-                # print('\n\n\n')
-                # print(y_batch)
-                # print('#################')
-                # print(pred_get)
-                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d\n"
-                      % (iter, loss_train, loss_test, winner_loss, step_from_last_mininum))
+                if NEED_SAVE and loss_test < 50:
+                    save_path = saver.save(sess, MODEL_PATH + 'model.ckpt')
 
 
 
