@@ -64,11 +64,11 @@ def block8(net, scale=1.0, activation_fn=tf.nn.relu, scope=None, reuse=None):
         with tf.variable_scope('Branch_1'):
             tower_conv1_0 = slim.conv3d(net, 64, 1, scope='Conv2d_0a_1x1')
             tower_conv1_1 = slim.conv3d(tower_conv1_0, 80, [1, 1, 3],
-                                        scope='Conv2d_0b_1x7')
+                                        scope='Conv2d_0b_1')
             tower_conv1_2 = slim.conv3d(tower_conv1_1, 96, [1, 3, 1],
-                                        scope='Conv2d_0c_7x1')
+                                        scope='Conv2d_0c_2')
             tower_conv1_3 = slim.conv3d(tower_conv1_2, 128, [3, 1, 1],
-                                        scope='Conv2d_0c_7x1')
+                                        scope='Conv2d_0c_3')
         mixed = tf.concat(axis=4, values=[tower_conv, tower_conv1_3])
         up = slim.conv3d(mixed, net.get_shape()[4], 1, normalizer_fn=None,
                          activation_fn=None, scope='Conv2d_1x1')
@@ -92,11 +92,11 @@ def block4(net, scale=1.0, activation_fn=tf.nn.relu, scope=None, reuse=None):
         with tf.variable_scope('Branch_1'):
             tower_conv1_0 = slim.conv3d(net, 96, 1, scope='Conv2d_0a_1x1')
             tower_conv1_1 = slim.conv3d(tower_conv1_0, 112, [1, 1, 3],
-                                        scope='Conv2d_0b_1x3')
+                                        scope='Conv2d_0b_1')
             tower_conv1_2 = slim.conv3d(tower_conv1_1, 128, [1, 3, 1],
-                                        scope='Conv2d_0c_3x1')
+                                        scope='Conv2d_0c_2')
             tower_conv1_3 = slim.conv3d(tower_conv1_2, 144, [3, 1, 1],
-                                        scope='Conv2d_0c_3x1')
+                                        scope='Conv2d_0c_3')
         mixed = tf.concat(axis=4, values=[tower_conv, tower_conv1_3])
         up = slim.conv3d(mixed, net.get_shape()[4], 1, normalizer_fn=None,
                          activation_fn=None, scope='Conv2d_1x1')
@@ -113,9 +113,8 @@ def block4(net, scale=1.0, activation_fn=tf.nn.relu, scope=None, reuse=None):
 
 
 def inception_resnet_v2_base(inputs,
-                             final_endpoint='Conv2d_7b_1x1',
                              output_stride=16,
-                             align_feature_maps=False,
+                             align_feature_maps=True,
                              scope=None,
                              activation_fn=tf.nn.relu):
     """Inception model from  http://arxiv.org/abs/1602.07261.
@@ -222,7 +221,7 @@ def inception_resnet_v2_base(inputs,
                     tower_pool = slim.max_pool3d(net, 3, stride=2,
                                                  padding=padding,
                                                  scope='MaxPool_1a_3x3')
-                net = tf.concat([tower_conv, tower_conv1_2, tower_pool], 3)
+                net = tf.concat([tower_conv, tower_conv1_2, tower_pool], 4)
             
             with slim.arg_scope([slim.conv3d], rate=1):
                 # 8 544
@@ -264,11 +263,11 @@ def inception_resnet_v2_base(inputs,
             return net
 
 
-def inception_resnet_v2(inputs, num_classes=1001, is_training=None,
-                        dropout_keep_prob=0.8,
+def inception_resnet_v2(inputs,
+                        output_dim,
+                        is_training=None,
                         reuse=None,
                         scope='InceptionResnetV2',
-                        create_aux_logits=True,
                         activation_fn=tf.nn.relu):
     """Creates the Inception Resnet V2 model.
   
@@ -293,7 +292,6 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=None,
         None).
       end_points: the set of end_points from the inception model.
     """
-    end_points = {}
     
     with tf.variable_scope(scope, 'InceptionResnetV2', [inputs],
                            reuse=reuse) as scope:
@@ -310,13 +308,10 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=None,
                 
                 net = slim.flatten(net)
                 net = slim.dropout(net, keep_prob=0.5,scope='Dropout')
-                end_points['PreLogitsFlatten'] = net
-                logits = slim.fully_connected(net, num_classes, activation_fn=None,
+                pred = slim.fully_connected(net, output_dim, activation_fn=None,
                                               scope='Logits')
-                end_points['Logits'] = logits
-                end_points['Predictions'] = tf.nn.softmax(logits, name='Predictions')
         
-        return logits, end_points
+        return pred
 
 
 

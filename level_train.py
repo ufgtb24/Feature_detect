@@ -1,10 +1,10 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
 import os
-from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig
+from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOG_PATH
 from dataRelated import BatchGenerator
-import inception_v3 as icp
-import numpy as np
+# import inception_v3 as icp
+import inception_resnet_v2 as icp
 
 class DetectNet(object):
     def __init__(self, need_targets=True,is_training_sti=True,clip_grd=True,scope='detector'):
@@ -25,10 +25,9 @@ class DetectNet(object):
             self.is_training = tf.placeholder(tf.bool, name='is_training')
 
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
-            with slim.arg_scope(icp.inception_v3_arg_scope()):
-                pred= icp.inception_v3(box, output_dim=DataConfig.feature_dim,
-                                       is_training=self.is_training, scope='InceptionV3',
-                                       depth_multiplier=1.)
+            with slim.arg_scope(icp.inception_resnet_v2_arg_scope()):
+                pred= icp.inception_resnet_v2(box, output_dim=DataConfig.feature_dim+4,
+                                       is_training=self.is_training, scope='InceptionV3')
                 
 
                 self.class_output=tf.to_float(tf.argmax(pred[:,:4], axis=1))
@@ -87,7 +86,7 @@ if __name__ == '__main__':
     g_list = tf.global_variables()
     bn_moving_vars = [g for g in g_list if 'moving_avg' in g.name]
     bn_moving_vars += [g for g in g_list if 'moving_var' in g.name]
-    #################
+    ################# important  !!!!!!!!!!!!!!!  dont delete
     #if some structure changed compared to the saved model, need to load different vars
     # load_list = [t for t in tf.trainable_variables() if not
     #              t.name.endswith('pred_output/biases:0')
@@ -106,7 +105,7 @@ if __name__ == '__main__':
     NEED_INIT_SAVE = False
 
     TOTAL_EPHOC = 100000
-    test_step = 300
+    test_step = 200
     need_early_stop = True
     EARLY_STOP_STEP = 100
 
@@ -119,7 +118,7 @@ if __name__ == '__main__':
     
     with tf.Session(config=config) as sess:
         
-        writer = tf.summary.FileWriter('log/', sess.graph)
+        writer = tf.summary.FileWriter(LOG_PATH, sess.graph)
         saver = tf.train.Saver(var_list=var_list, max_to_keep=EARLY_STOP_STEP)
         sess.run(tf.global_variables_initializer())
 

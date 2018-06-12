@@ -1,7 +1,7 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/upper/'
-# MODEL_PATH = ROOT_PATH+'model.ckpt'
+MODEL_PATH = 'F:/ProjectData/tmp/model/lower/'
+LOG_PATH='log/lower/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
@@ -60,10 +60,10 @@ TASK_DICT = OrderedDict(
 
 
 class DataConfig(object):
-    data_list = up_set
+    data_list = low_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir = 'F:/ProjectData/tmp/Try/'
+    base_case_dir = 'F:/ProjectData/tmp/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict = TASK_DICT
