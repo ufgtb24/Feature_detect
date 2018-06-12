@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from config import BOX_LEN
 
 MODEL_PATH = 'F:/ProjectData/tmp/model/'
@@ -35,53 +37,53 @@ TASK_DICT_F = {
     },
 }
 
-DATA_DICT = {
-    'up_back': {
+DATA_DICT = OrderedDict([
+    ('up_back',{
         'data_set': up_back,
         'model_path': MODEL_PATH + 'up_back/',
         'task': 'all'
-    },
-    'up_middle': {
+    }),
+    ('up_middle', {
         'data_set': up_middle,
         'model_path': MODEL_PATH + 'up_middle/',
         'task': 'all'
 
-    },
-    'up_canine': {
+    }),
+    ('up_canine',{
         'data_set': up_canine,
         'model_path': MODEL_PATH + 'up_canine/',
         'task': 'facc'
-    },
-    'up_front': {
+    }),
+    ('up_front', {
         'data_set': up_front,
         'model_path': MODEL_PATH + 'up_front/',
         'task': 'facc'
-    },
-    'low_back': {
+    }),
+    ('low_back', {
         'data_set': low_back,
         'model_path': MODEL_PATH + 'low_back/',
         'task': 'all'
 
-    },
-    'low_middle': {
+    }),
+    ('low_middle', {
         'data_set': low_middle,
         'model_path': MODEL_PATH + 'low_middle/',
         'task': 'all',
 
-    },
-    'low_canine': {
+    }),
+    ('low_canine', {
         'data_set': low_canine,
         'model_path': MODEL_PATH + 'low_canine/',
         'task': 'facc'
 
-    },
-    'low_front': {
+    }),
+    ('low_front', {
         'data_set': low_front,
         'model_path': MODEL_PATH + 'low_front/',
         'task': 'facc'
 
-    },
-}
+    }),
+])
 
 
 def get_feature_num(task_dict):
@@ -98,7 +100,7 @@ class DataConfig(object):
     base_case_dir = 'F:/ProjectData/tmp/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
-    task_dict = None
+    task_dict = DATA_DICT
     num_feature_need = None
     output_dim = None
 

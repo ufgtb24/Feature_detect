@@ -26,9 +26,19 @@ class DetectNet(object):
 
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_resnet_v2_arg_scope()):
-                pred= icp.inception_resnet_v2(box, output_dim=DataConfig.feature_dim+4,
-                                       is_training=self.is_training, scope='InceptionV3')
-                
+                #[batch_size,768]
+                net= icp.inception_resnet_v2(box, is_training=self.is_training, scope='InceptionRes2')
+
+                self.output = {}
+                for task, task_content in param.task_dict.items():
+                    conv = self.build_CNN(commen, task_layer_index, task)
+                    fc_size = task_content['fc_size']
+                    fc_output = self.build_FC(conv, fc_size, task)
+                    self.output[task] = fc_output
+
+                pred = slim.fully_connected(net, DataConfig.feature_dim+4, activation_fn=None,
+                                              scope='Logits')
+
 
                 self.class_output=tf.to_float(tf.argmax(pred[:,:4], axis=1))
                 self.features=pred[:,4:]
