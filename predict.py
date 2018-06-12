@@ -1,6 +1,3 @@
-import time
-t0=time.time()
-import os
 import tensorflow as tf
 import numpy as np
 # from crop_data import crop_batch
@@ -14,15 +11,13 @@ from level_train import DetectNet
 if __name__ == '__main__':
 
     
-    NEED_INFERENCE=True
-    NEED_TARGET=True
-    NEED_DISPLAY=True
-    NEED_WRITE_GRAPH=False
+    NEED_INFERENCE=False
+    NEED_TARGET=False
+    NEED_DISPLAY=False
+    NEED_WRITE_GRAPH=True
     
     
     
-    t1=time.time()
-    print('before build time= ',t1-t0)
     
     detector = DetectNet(need_targets=NEED_TARGET,is_training_sti=False)
     # pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
@@ -40,16 +35,12 @@ if __name__ == '__main__':
 
     #############
     saver = tf.train.Saver(var_list)
-    t2=time.time()
-    print('build graph time = ',t2-t1)
 
     with tf.Session() as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         
         sess.run(tf.global_variables_initializer())
-        saver.restore(sess, os.path.join(MODEL_PATH,'model.ckpt'))  # 存在就从模型中恢复变量
-        t3 = time.time()
-        print('init variable time = ', t3 - t2)
+        saver.restore(sess, MODEL_PATH+'model.ckpt-74')  # 存在就从模型中恢复变量
 
         # if NEED_SPLIT:
         #     saver_commen.save(sess, os.path.join(MODEL_PATH,'commen/model.ckpt'))
@@ -91,29 +82,21 @@ if __name__ == '__main__':
         if NEED_INFERENCE:
             if NEED_TARGET:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=True,need_name=True)
-                for iter in range(5):
-                    box_batch,class_batch, y_batch, name_batch = test_batch_gen.get_batch()
-
-                    mask = np.ones_like(y_batch, dtype=bool)
-                    for i, class_num in enumerate(class_batch.tolist()):
-                        if class_num > 1:
-                            mask[i, 15:] = False
-
+                for iter in range(100):
+                    box_batch, y_batch, mask_batch, class_batch, name_batch = test_batch_gen.get_batch()
+                    
                     feed_dict = {detector.input_box: box_batch,
                                  detector.targets: y_batch,
-                                 detector.f_mask: mask,
+                                 detector.f_mask: mask_batch,
                                  detector.is_training: False}
-                    t1 = time.time()
                     f, error = sess.run([pred_end, detector.feature_loss], feed_dict=feed_dict)
-                    t2 = time.time()
-                    print('run sess time = ', t2 - t1)
 
                     f=np.int32(f)
-                    print(error)
+                    print('feature_loss= ',error)
     
                     if NEED_DISPLAY:
                         box_batch = np.squeeze(box_batch, 4)
-                        display_batch(box_batch, f, TestDataConfig.num_feature_need)
+                        display_batch(box_batch, f, mask_batch, TestDataConfig.num_feature_need)
             else:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=False, need_name=True)
                 while True:

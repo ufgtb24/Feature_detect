@@ -11,7 +11,7 @@ class BatchGenerator(object):
                  need_target=True,
                  need_name=False):
         self.usage = data_config.usage
-        
+        self.class_define=data_config.class_define
         if need_target:
             final_task_dict = OrderedDict([])
             for task, task_content in data_config.task_dict.items():
@@ -70,15 +70,6 @@ class BatchGenerator(object):
         case_y = None
         actual_tooth_list = os.listdir(full_case_dir)
         
-        class_define = {
-            'tooth30': 0,
-            'tooth31': 0,
-            'tooth28': 1,
-            'tooth29': 1,
-            'tooth27': 2,
-            'tooth26': 3,
-            'tooth25': 3,
-        }
         
         for tooth in target_tooth_list:
             if tooth not in actual_tooth_list:
@@ -103,7 +94,7 @@ class BatchGenerator(object):
                 
                 tooth_array = np.concatenate(augment_list, axis=1)
                 case_list.append(tooth_array)
-            class_array = class_define[tooth] * np.ones([augment_num])
+            class_array = self.class_define[tooth] * np.ones([augment_num])
             class_list.append(class_array)
         if box_list != []:
             case_box = np.concatenate(box_list, axis=0)

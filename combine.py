@@ -6,15 +6,13 @@ from config import MODEL_PATH
 PB_PATH = 'input_graph.pb'
 
 checkpoint_state_name = "checkpoint_state"
-input_graph_name = "input_graph.pb"
-
 input_graph = os.path.join(MODEL_PATH,PB_PATH)
 input_saver = ""
 input_binary = False
-input_checkpoint = os.path.join(MODEL_PATH,'model.ckpt')
+input_checkpoint = os.path.join(MODEL_PATH,'model.ckpt-74')
 
 # Note that we this normally should be only "output_node"!!!
-output_node_names = "output_node"
+output_node_names = "detector/output_node"
 restore_op_name = "save/restore_all"
 filename_tensor_name = "save/Const:0"
 output_graph = os.path.join(MODEL_PATH,'output_graph.pb')

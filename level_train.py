@@ -1,12 +1,10 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
 import os
-from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, ROOT_PATH
+from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig
 from dataRelated import BatchGenerator
 import inception_v3 as icp
 import numpy as np
-train_batch_gen = BatchGenerator(TrainDataConfig)
-test_batch_gen = BatchGenerator(ValiDataConfig)
 
 class DetectNet(object):
     def __init__(self, need_targets=True,is_training_sti=True,clip_grd=True,scope='detector'):
@@ -80,7 +78,8 @@ if __name__ == '__main__':
 
     detector = DetectNet()
 
-
+    train_batch_gen = BatchGenerator(TrainDataConfig)
+    test_batch_gen = BatchGenerator(ValiDataConfig)
 
     # saver = tf.train.Saver(max_to_keep=1)
     ################
@@ -125,10 +124,10 @@ if __name__ == '__main__':
         sess.run(tf.global_variables_initializer())
 
         if NEED_RESTORE:
-            assert os.path.exists(ROOT_PATH + 'checkpoint')  # 判断模型是否存在
+            assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
             #文件内容必须大于等于模型内容
 
-            model_file = tf.train.latest_checkpoint(ROOT_PATH)
+            model_file = tf.train.latest_checkpoint(MODEL_PATH)
             saver.restore(sess, model_file)  # 存在就从模型中恢复变量
             # saver.restore(sess, MODEL_PATH+'-6')  # 存在就从模型中恢复变量
 
@@ -148,7 +147,7 @@ if __name__ == '__main__':
             
             if iter % test_step == 0:
                 if NEED_INIT_SAVE and start == False:
-                    save_path = saver.save(sess, MODEL_PATH,iter)
+                    save_path = saver.save(sess, MODEL_PATH+'model.ckpt',iter)
                     start = True
                 if  need_early_stop and step_from_last_mininum>EARLY_STOP_STEP:
                     final_error=winner_loss
@@ -178,7 +177,7 @@ if __name__ == '__main__':
                     
                     
                 if NEED_SAVE and test_total_loss < 20:
-                    save_path = saver.save(sess,MODEL_PATH,int(iter/test_step))
+                    save_path = saver.save(sess,MODEL_PATH+'model.ckpt',int(iter/test_step))
                     
 
                 print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d    ||feature_loss =%f   accuracy=%f\n"

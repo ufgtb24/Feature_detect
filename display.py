@@ -176,19 +176,20 @@ def check_availability(dir):
     return error_num
 
 
-def display_batch(box, y, feature_need):
+def display_batch(box, y, mask, feature_need):
     num=box.shape[0]
     # ex, ey, ez = edges(GRID_SIZE)
     # mlab.points3d(ex , ey, ez,
     #               mode="cube",
     #               color=(0, 0, 1),
     #               scale_factor=1)
+    class_batch=y[:,0]
 
+    y=y[:,1:]*mask.astype(int)
     for i in range(num):
         ct = box[i]
-        print(y)
+        print(class_batch[i])
         for j in range(feature_need):
-            print(y)
             ct[y[i, 3*j], y[i, 3*j+1], y[i, 3*j+2]]=j+2
         feature_index=[]
         for j in range(feature_need):
@@ -198,8 +199,8 @@ def display_batch(box, y, feature_need):
         mlab.points3d(x1, x2, x3,
                       mode="cube",
                       color=(0, 1, 0),
-                      scale_factor=1,)
-                      # transparent=True)
+                      scale_factor=1,
+                      transparent=True)
 
         for j in range(feature_need):
             mlab.points3d(feature_index[j][0], feature_index[j][1], feature_index[j][2],
