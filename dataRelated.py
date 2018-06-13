@@ -24,7 +24,7 @@ class BatchGenerator(object):
                 
                 final_task_dict[task] = task_content
             
-        self.class_ftr_dict = data_config.class_ftr_dict
+            self.task_dict = final_task_dict
         self.down_rate = data_config.down_rate
         self.box = None
         self.need_target = need_target
@@ -39,15 +39,10 @@ class BatchGenerator(object):
         self.switch_after_shuffles = data_config.switch_after_shuffles
         self.world_to_cubic = data_config.world_to_cubic
         self.batch_size = data_config.batch_size
-        self.tooth_list = data_config.data_list
+        self.data_list = data_config.data_list
         self.index = 0
         self.index_dir = 0
         self.shuffle_times = 0
-
-        self.box_class_list = [[], [], [], []]
-        self.y_class_list = [[], [], [], []]
-        self.class_box_y_dict={0:None, 1:None, 2:None, 3:None}
-
         if self.load_case_once > 0:
             self.load_case_list(self.get_case_list())
         else:
@@ -67,8 +62,12 @@ class BatchGenerator(object):
         self.index_dir += self.load_case_once
         return case_load
     
-    def load_useful_tooth(self, full_case_dir, target_tooth_list,box_class_set,y_class_set):
+    def load_useful_tooth(self, full_case_dir, target_tooth_list):
         # 读取一个病例中的多颗牙齿
+        box_list = []
+        case_list = []
+        class_list = []
+        case_y = None
         actual_tooth_list = os.listdir(full_case_dir)
         
         
@@ -76,64 +75,82 @@ class BatchGenerator(object):
             if tooth not in actual_tooth_list:
                 continue
             tooth_dir = full_case_dir + tooth + '/'
-            # append [aug_num,box_size]
-            box_class_set[self.class_define[tooth]].append(self.loadmhds(tooth_dir))
-            feature_list=self.class_ftr_dict[self.class_define[tooth]]
+            box_list.append(self.loadmhds(tooth_dir))
+            augment_num = 0
             if self.need_target:
                 augment_list = []
-                for feature in feature_list:
-                    # feature is a dict define the feature
-                    f_array = self.load_y(
-                        tooth_dir + feature['label_file'],
-                        feature['num_feature'],
-                        len(feature['feature_need'])
-                    )
+                for task_content in self.task_dict.values():
+                    if not os.path.exists(tooth_dir + task_content['label_file']):
+                        f_array = np.zeros([augment_num, task_content['num_feature'] * 3])
+                    else:
+                        global augment_num
+                        f_array, augment_num = self.load_y(
+                            tooth_dir + task_content['label_file'],
+                            task_content['num_feature'],
+                            len(task_content['feature_need']),
+                            task_content['index']
+                        )
                     augment_list.append(f_array)
-                # [aug_num,feature_dim]
-                tooth_array = np.concatenate(augment_list, axis=1)
-                y_class_set[self.class_define[tooth]].append(tooth_array)
                 
+                tooth_array = np.concatenate(augment_list, axis=1)
+                case_list.append(tooth_array)
+            class_array = self.class_define[tooth] * np.ones([augment_num])
+            class_list.append(class_array)
+        if box_list != []:
+            case_box = np.concatenate(box_list, axis=0)
+            case_class = np.concatenate(class_list, axis=0)
+            if self.need_target:
+                case_y = np.concatenate(case_list, axis=0)
+            return case_box, case_y, case_class
+        else:
+            return None
+    
     def load_case_list(self, case_load):
         # 读取多个病例
         self.box = None
         
+        box_list = []
+        y_list = []
+        class_list = []
+        name_index_list = []
         if self.need_name:
             self.case_load = np.array(case_load)
         for i, case_name in enumerate(case_load):
             full_case_dir = self.total_case_dir + case_name + '/'
-            
-            
-            #[4,tooth_num_class,array[aug_num_tooth,data_size]]
-            # box_class_set=[   [array1(aug_num_tooth,data_size)] x tooth_num,   [],[],[]]
-            box_class_set=[[],[],[],[]]
-            y_class_set=[[],[],[],[]]
-            
-            self.load_useful_tooth(full_case_dir, self.tooth_list, box_class_set,y_class_set)
-            for i,class_box in enumerate(box_class_set):
-                # [tooth_num_class*aug_num_tooth,data_size]
-                box_class_case=np.concatenate(class_box)
-                #[   [array1(tooth_num_class*aug_num_tooth,data_size)]    x case_num,  [][][]]
-                self.box_class_list[i].append(box_class_case)
-            
-            for i,class_y in enumerate(y_class_set):
-                # [tooth_num_class*aug_num_tooth,data_size]
-                y_class_case=np.concatenate(class_y)
-                #[   [array1(tooth_num_class*aug_num_tooth,data_size)]    x case_num,  [][][]]
-                self.y_class_list[i].append(y_class_case)
-            
+            load_result = self.load_useful_tooth(full_case_dir, self.data_list)
+            if load_result is not None:
+                box, y, class_ = load_result
+            else:
+                continue
+            box_list.append(box)
+            class_list.append(class_)
+            if self.need_name:
+                name_index = np.ones((box.shape[0]), dtype=np.int32) * i
+                name_index_list.append(name_index)
+            if self.need_target:
+                y_list.append(y)
+        
+        if box_list != None:
+            self.box = np.concatenate(box_list, axis=0)
+            self.class_ = np.concatenate(class_list, axis=0)
+            if self.need_name:
+                self.name_index = np.concatenate(name_index_list, axis=0)
+            if self.need_target:
+                self.y = np.concatenate(y_list, axis=0)
+            self.sample_num = self.box.shape[0]
+            assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
     
-    def load_y(self, info_file, num_feature, num_feature_point):
+    def load_y(self, info_file, num_feature, num_feature_need, info_index):
         # print('file_dir = ',info_file,'\n')
         info = np.reshape(np.loadtxt(info_file), [-1, 3 * (num_feature + 1)])
         origin = np.reshape(info[:, :3], [-1, 3])
-        # [batch_size, 3*num_feature_point]
-        origin = np.tile(origin, [1,num_feature_point])
+        origin = np.reshape(np.tile(origin, num_feature_need), [-1, 3])
         
-        # [batch_size, 3*num_feature_point]
-        feature = info[:, 3:]
-        feature = ((feature - origin) * self.world_to_cubic).astype(np.int32)
-        # [batch_size, 3*num_feature_point]
-        return feature
+        info_need = info[:, info_index]
+        feature = np.reshape(info_need, [-1, 3])
+        feature = np.reshape((feature - origin) * self.world_to_cubic, [-1, 3 * num_feature_need]).astype(np.int32)
+        augment_num = feature.shape[0]
+        return feature, augment_num
     
     def load_mhd(self, filename):
         # Reads the image using SimpleITK
@@ -171,25 +188,7 @@ class BatchGenerator(object):
             self.name_index = self.name_index[perm]
         if self.need_target:
             self.y = self.y[perm]
-            
-    def reshape_class_data(self):
-        # [   [array1(tooth_num_class*aug_num_tooth,data_size)]    x case_num,  [][][]]
-        for i,box_class,y_class in enumerate(zip(self.box_class_list, self.y_class_list)):
-            # i is in range(num of case_load_once)
-            # [case_num * tooth_num_class*aug_num_tooth, data_size]
-            concat_box_class=np.concatenate(box_class)
-            # [case_num * tooth_num_class*aug_num_tooth, data_size]
-            concat_y_class =np.concatenate(y_class)
-            class_dict={'box':concat_box_class,'y':concat_y_class}
-            self.class_box_y_dict[i]=class_dict
-        self.box_class_list=None
-        self.y_class_list=None
-        
-        
-    def get_batch(self,class_):
-        box_y_dict=self.class_box_y_dict[class_]
-        
-        
+    
     def get_batch(self):
         if self.index + self.batch_size > self.sample_num:
             self.index = 0

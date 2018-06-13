@@ -105,11 +105,12 @@ if __name__ == '__main__':
     ################
 
     NEED_RESTORE = False
-    NEED_SAVE = False
-    NEED_INIT_SAVE = True
+    NEED_SAVE = True
+    NEED_INIT_SAVE = False
 
     TOTAL_EPHOC = 100000
     test_step = 5
+    save_step = 200
     need_early_stop = True
     EARLY_STOP_STEP = 100
 
@@ -143,7 +144,7 @@ if __name__ == '__main__':
                          detector.labels:class_batch,
                          detector.is_training: True}
 
-            _, train_total_loss = sess.run([detector.train_op, detector.total_loss], feed_dict=feed_dict)
+            _, train_feature_loss = sess.run([detector.train_op, detector.feature_loss], feed_dict=feed_dict)
 
 
             
@@ -166,25 +167,25 @@ if __name__ == '__main__':
                              detector.labels: class_batch,
                              detector.is_training: False}
 
-                feature_loss,accuracy,test_total_loss,summary = sess.run([detector.feature_loss,
+                feature_loss,accuracy,summary = sess.run([detector.feature_loss,
                                                           detector.accuracy,
-                                                          detector.total_loss,
                                                           detector.train_summary], feed_dict=feed_dict)
                 
-                writer.add_summary(summary,int(iter/test_step))
-                if test_total_loss < winner_loss:
-                    winner_loss = test_total_loss
+                if feature_loss < winner_loss:
+                    winner_loss = feature_loss
                     step_from_last_mininum = 0
                     
-                    
-                    
-                    
-                if NEED_SAVE and test_total_loss < 20:
-                    save_path = saver.save(sess,MODEL_PATH+'model.ckpt',int(iter/test_step))
+                print("%d  trainCost=%f   feature_loss =%f   winnerCost=%f   test_step=%d          accuracy=%f\n"
+                      % (iter, train_feature_loss, feature_loss, winner_loss, step_from_last_mininum,accuracy))
+
+                if iter%save_step==0:
+                    print('sample to summary:  test_loss =', feature_loss)
+                    writer.add_summary(summary, int(iter / save_step))
+                    if NEED_SAVE and feature_loss < 20  :
+                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', int(iter / save_step))
+
                     
 
-                print("%d  trainCost=%f   testCost=%f   winnerCost=%f   test_step=%d    ||feature_loss =%f   accuracy=%f\n"
-                      % (iter, train_total_loss, test_total_loss, winner_loss, step_from_last_mininum,feature_loss,accuracy))
 
 
 

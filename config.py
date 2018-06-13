@@ -7,6 +7,7 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 
+
 def get_feature_num():
     num_feature_need = 0
     for content in TASK_DICT.values():
@@ -14,87 +15,42 @@ def get_feature_num():
     return num_feature_need
 
 
-CLASS_DICT_U = {
+CLASS_DICT = {
     'tooth2': 0,
     'tooth3': 0,
-    'tooth4': 1,
-    'tooth5': 1,
-    'tooth6': 2,
-    'tooth7': 3,
-    'tooth8': 3,
-}
-CLASS_DICT_L = {
     'tooth30': 0,
     'tooth31': 0,
+    'tooth4': 1,
+    'tooth5': 1,
     'tooth28': 1,
     'tooth29': 1,
+    'tooth6': 2,
     'tooth27': 2,
+    'tooth7': 3,
+    'tooth8': 3,
     'tooth26': 3,
     'tooth25': 3,
 }
-facc_prop= {
+
+TASK_DICT = OrderedDict(
+    [
+        ('facc',
+         {
              'num_feature': 5,
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt'
          }
-groove_prop= {
+         ),
+        
+        ('groove',
+         {
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'info.txt'
          }
-
-CLASS_FTR_DICT={
-    0:[facc_prop,groove_prop],
-    1:[facc_prop,groove_prop],
-    2:[facc_prop],
-    3:[facc_prop]
-}
-
-
-
-# DATA_DICT = {'up_back':{
-#         'data_set': up_back,
-#         'model_path': MODEL_PATH + 'up_back/',
-#         'task': 'all'
-#     },
-#     'up_middle':{
-#         'data_set': up_middle,
-#         'model_path': MODEL_PATH + 'up_middle/',
-#         'task': 'all'
-#
-#     },
-#     'up_canine':{
-#         'data_set': up_canine,
-#         'model_path': MODEL_PATH + 'up_canine/',
-#         'task': 'facc'
-#     },
-#     'up_front': {
-#         'data_set': up_front,
-#         'model_path': MODEL_PATH + 'up_front/',
-#         'task': 'facc'
-#     }
-# }
-#
-#
-# CLASS_TASK_DICT = OrderedDict(
-#     [
-#         ('facc',
-#          {
-#              'num_feature': 5,
-#              'feature_need': [1, 2, 3, 4, 5],
-#              'label_file': 'FaccControlPts.txt'
-#          }
-#          ),
-#
-#         ('groove',
-#          {
-#              'num_feature': 2,
-#              'feature_need': [1, 2],
-#              'label_file': 'info.txt'
-#          }
-#          )
-#     ]
-# )
+         )
+    ]
+)
 
 
 
@@ -105,11 +61,11 @@ class DataConfig(object):
     base_case_dir = 'F:/ProjectData/tmp/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
-    class_ftr_dict = CLASS_FTR_DICT
+    task_dict = TASK_DICT
     num_feature_need = get_feature_num()
     feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
-    class_define=CLASS_DICT_L
+    class_define=CLASS_DICT
 
 class TrainDataConfig(DataConfig):
     batch_size = 16
