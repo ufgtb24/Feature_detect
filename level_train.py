@@ -26,15 +26,9 @@ class DetectNet(object):
 
             # cnn = CNN(param=Param, phase=self.phase, keep_prob=self.keep_prob, box=self.box)
             with slim.arg_scope(icp.inception_resnet_v2_arg_scope()):
-                #[batch_size,768]
-                net= icp.inception_resnet_v2(box, is_training=self.is_training, scope='InceptionRes2')
-
-                self.output = {}
-                for task, task_content in param.task_dict.items():
-                    conv = self.build_CNN(commen, task_layer_index, task)
-                    fc_size = task_content['fc_size']
-                    fc_output = self.build_FC(conv, fc_size, task)
-                    self.output[task] = fc_output
+                # [batch_size,768]
+                net = icp.inception_resnet_v2(box, is_training=self.is_training, scope='InceptionRes2')
+                
 
                 pred = slim.fully_connected(net, DataConfig.feature_dim+4, activation_fn=None,
                                               scope='Logits')
@@ -111,7 +105,7 @@ if __name__ == '__main__':
     ################
 
     NEED_RESTORE = False
-    NEED_SAVE = True
+    NEED_SAVE = False
     NEED_INIT_SAVE = True
 
     TOTAL_EPHOC = 100000
@@ -122,7 +116,7 @@ if __name__ == '__main__':
     winner_loss = 10 ** 10
     step_from_last_mininum = 0
     start = False
- 
+
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     

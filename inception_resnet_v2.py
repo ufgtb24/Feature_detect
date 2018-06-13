@@ -30,10 +30,11 @@ import tensorflow.contrib.slim as slim
 from my_batch_norm import bn_layer_top
 from myFunc import space_to_depth
 
+
 def passthrough_layer(lowRes, highRes, kernel, depth, size, name):
     with tf.variable_scope(name):
         # 先降维
-        highRes = slim.conv3d(inputs=highRes, num_outputs=depth, kernel_size=kernel, stride = 1)
+        highRes = slim.conv3d(inputs=highRes, num_outputs=depth, kernel_size=kernel, stride=1)
         # space_to_depth https: // www.w3cschool.cn / tensorflow_python / tensorflow_python - rkfq2kf9.html
         # 不损失数据量的“下采样”，将size x size x 1 大小的数据块转换成 1 x 1 x (size*size) 的深度块
         highRes = space_to_depth(highRes, size)
@@ -129,11 +130,11 @@ def inception_resnet_v2_base(inputs,
                              scope=None,
                              activation_fn=tf.nn.relu):
     """Inception model from  http://arxiv.org/abs/1602.07261.
-  
+
     Constructs an Inception Resnet v2 network from inputs to the given final
     endpoint. This method can construct the network up to the final inception
     block Conv2d_7b_1x1.
-  
+
     Args:
       inputs: a tensor of size [batch_size, height, width, channels].
       final_endpoint: specifies the endpoint to construct the network up to. It
@@ -146,12 +147,12 @@ def inception_resnet_v2_base(inputs,
         to SAME padding so that the feature maps are aligned.
       scope: Optional variable_scope.
       activation_fn: Activation function for block scopes.
-  
+
     Returns:
       tensor_out: output tensor corresponding to the final_endpoint.
       end_points: a set of activations for external use, for example summaries or
                   losses.
-  
+
     Raises:
       ValueError: if final_endpoint is not set to one of the predefined values,
         or if the output_stride is not 8 or 16, or if the output_stride is 8 and
@@ -175,7 +176,7 @@ def inception_resnet_v2_base(inputs,
                               scope='Conv2d_2a_3x3')
             # 32 32
             passthrough_32 = slim.max_pool3d(net, 3, stride=2, padding=padding,
-                                  scope='MaxPool_3a_3x3')
+                                             scope='MaxPool_3a_3x3')
             # 32 40
             net = slim.conv3d(passthrough_32, 40, 1, padding=padding,
                               scope='Conv2d_3b_1x1')
@@ -212,13 +213,12 @@ def inception_resnet_v2_base(inputs,
             # 16 160
             net = slim.repeat(net, 5, block16, scale=0.17,
                               activation_fn=activation_fn)
-
+            
             # 16 160+16*8=288
-            net= passthrough_layer(net,passthrough_32,3,16,2,'passThrough_32_16')
+            net = passthrough_layer(net, passthrough_32, 3, 16, 2, 'passThrough_32_16')
             
             # 16 160
-            passthrough_16=slim.conv3d(net,160,1)
-
+            passthrough_16 = slim.conv3d(net, 160, 1)
             
             # 8 544
             with tf.variable_scope('Mixed_6a'):
@@ -240,20 +240,18 @@ def inception_resnet_v2_base(inputs,
                                                  scope='MaxPool_1a_3x3')
                 # 8 544
                 net = tf.concat([tower_conv, tower_conv1_2, tower_pool], 4)
-                
-            
             
             with slim.arg_scope([slim.conv3d], rate=1):
                 # 8 544
                 net = slim.repeat(net, 5, block8, scale=0.10,
                                   activation_fn=activation_fn)
-
+            
             # 8 544+32*8=800
             net = passthrough_layer(net, passthrough_16, 3, 32, 2, 'passThrough_16_8')
-
+            
             # 8 544
             passthrough_8 = slim.conv3d(net, 544, 1)
-
+            
             # 4 1040
             with tf.variable_scope('Mixed_7a'):
                 with tf.variable_scope('Branch_0'):
@@ -283,10 +281,9 @@ def inception_resnet_v2_base(inputs,
             # 4 1040
             net = slim.repeat(net, 4, block4, scale=0.20, activation_fn=activation_fn)
             net = block4(net, activation_fn=None)
-
+            
             # 4 1040+64*8=1552
             net = passthrough_layer(net, passthrough_8, 3, 48, 2, 'passThrough_8_4')
-
             
             # 4 768
             net = slim.conv3d(net, 768, 1, scope='Conv2d_7b_1x1')
@@ -299,7 +296,7 @@ def inception_resnet_v2(inputs,
                         scope='InceptionResnetV2',
                         activation_fn=tf.nn.relu):
     """Creates the Inception Resnet V2 model.
-  
+
     Args:
       inputs: a 4-D tensor of size [batch_size, height, width, 3].
         Dimension batch_size may be undefined. If create_aux_logits is false,
@@ -314,7 +311,7 @@ def inception_resnet_v2(inputs,
       scope: Optional variable_scope.
       create_aux_logits: Whether to include the auxilliary logits.
       activation_fn: Activation function for conv3d.
-  
+
     Returns:
       net: the output of the logits layer (if num_classes is a non-zero integer),
         or the non-dropped-out input to the logits layer (if num_classes is 0 or
@@ -336,23 +333,21 @@ def inception_resnet_v2(inputs,
                                       scope='AvgPool_1a_8x8')
                 
                 net = slim.flatten(net)
-                net = slim.dropout(net, keep_prob=0.5,scope='Dropout')
+                net = slim.dropout(net, keep_prob=0.5, scope='Dropout')
         
         return net
-
-
 
 
 def inception_resnet_v2_arg_scope(weight_decay=0.00004,
                                   activation_fn=tf.nn.relu):
     """Returns the scope with the default parameters for inception_resnet_v2.
-  
+
     Args:
       weight_decay: the weight decay for weights variables.
       batch_norm_decay: decay for the moving average of batch_norm momentums.
       batch_norm_epsilon: small float added to variance to avoid dividing by zero.
       activation_fn: Activation function for conv3d.
-  
+
     Returns:
       a arg_scope with the parameters needed for inception_resnet_v2.
     """
