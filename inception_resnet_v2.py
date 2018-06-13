@@ -294,7 +294,6 @@ def inception_resnet_v2_base(inputs,
 
 
 def inception_resnet_v2(inputs,
-                        output_dim,
                         is_training=None,
                         reuse=None,
                         scope='InceptionResnetV2',
@@ -338,10 +337,8 @@ def inception_resnet_v2(inputs,
                 
                 net = slim.flatten(net)
                 net = slim.dropout(net, keep_prob=0.5,scope='Dropout')
-                pred = slim.fully_connected(net, output_dim, activation_fn=None,
-                                              scope='Logits')
         
-        return pred
+        return net
 
 
 
