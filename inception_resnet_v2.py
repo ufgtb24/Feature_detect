@@ -30,15 +30,15 @@ import tensorflow.contrib.slim as slim
 from my_batch_norm import bn_layer_top
 from myFunc import space_to_depth
 
-
 def passthrough_layer(lowRes, highRes, kernel, depth, size, name):
-    # 先降维
-    highRes = slim.conv3d(highRes, depth, kernel, name)
-    # space_to_depth https: // www.w3cschool.cn / tensorflow_python / tensorflow_python - rkfq2kf9.html
-    # 不损失数据量的“下采样”，将size x size x 1 大小的数据块转换成 1 x 1 x (size*size) 的深度块
-    highRes = space_to_depth(highRes, size)
-    y = tf.concat([lowRes, highRes], axis=4)
-    return y
+    with tf.variable_scope(name):
+        # 先降维
+        highRes = slim.conv3d(inputs=highRes, num_outputs=depth, kernel_size=kernel, stride = 1)
+        # space_to_depth https: // www.w3cschool.cn / tensorflow_python / tensorflow_python - rkfq2kf9.html
+        # 不损失数据量的“下采样”，将size x size x 1 大小的数据块转换成 1 x 1 x (size*size) 的深度块
+        highRes = space_to_depth(highRes, size)
+        y = tf.concat([lowRes, highRes], axis=4)
+        return y
 
 
 def block16(net, scale=1.0, activation_fn=tf.nn.relu, scope=None, reuse=None):
