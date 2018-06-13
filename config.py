@@ -1,7 +1,7 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/lower/'
-LOG_PATH='log/lower/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/pass/'
+LOG_PATH='log/pass/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']

@@ -28,6 +28,17 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 from my_batch_norm import bn_layer_top
+from myFunc import space_to_depth
+
+
+def passthrough_layer(lowRes, highRes, kernel, depth, size, name):
+    # 先降维
+    highRes = slim.conv3d(highRes, depth, kernel, name)
+    # space_to_depth https: // www.w3cschool.cn / tensorflow_python / tensorflow_python - rkfq2kf9.html
+    # 不损失数据量的“下采样”，将size x size x 1 大小的数据块转换成 1 x 1 x (size*size) 的深度块
+    highRes = space_to_depth(highRes, size)
+    y = tf.concat([lowRes, highRes], axis=4)
+    return y
 
 
 def block16(net, scale=1.0, activation_fn=tf.nn.relu, scope=None, reuse=None):
@@ -163,15 +174,15 @@ def inception_resnet_v2_base(inputs,
             net = slim.conv3d(net, 32, 3, padding=padding,
                               scope='Conv2d_2a_3x3')
             # 32 32
-            net = slim.max_pool3d(net, 3, stride=2, padding=padding,
+            passthrough_32 = slim.max_pool3d(net, 3, stride=2, padding=padding,
                                   scope='MaxPool_3a_3x3')
             # 32 40
-            net = slim.conv3d(net, 40, 1, padding=padding,
+            net = slim.conv3d(passthrough_32, 40, 1, padding=padding,
                               scope='Conv2d_3b_1x1')
+            
             # 32 96
             net = slim.conv3d(net, 96, 3, padding=padding,
                               scope='Conv2d_4a_3x3')
-            # 35 x 35 x 192
             # 16 96
             net = slim.max_pool3d(net, 3, stride=2, padding=padding,
                                   scope='MaxPool_5a_3x3')
@@ -201,12 +212,18 @@ def inception_resnet_v2_base(inputs,
             # 16 160
             net = slim.repeat(net, 5, block16, scale=0.17,
                               activation_fn=activation_fn)
+
+            # 16 160+16*8=288
+            net= passthrough_layer(net,passthrough_32,3,16,2,'passThrough_32_16')
+            
+            # 16 160
+            passthrough_16=slim.conv3d(net,160,1)
+
             
             # 8 544
-            
             with tf.variable_scope('Mixed_6a'):
                 with tf.variable_scope('Branch_0'):
-                    tower_conv = slim.conv3d(net, 192, 3, stride=2,
+                    tower_conv = slim.conv3d(passthrough_16, 192, 3, stride=2,
                                              padding=padding,
                                              scope='Conv2d_1a_3x3')
                 with tf.variable_scope('Branch_1'):
@@ -221,17 +238,26 @@ def inception_resnet_v2_base(inputs,
                     tower_pool = slim.max_pool3d(net, 3, stride=2,
                                                  padding=padding,
                                                  scope='MaxPool_1a_3x3')
+                # 8 544
                 net = tf.concat([tower_conv, tower_conv1_2, tower_pool], 4)
+                
+            
             
             with slim.arg_scope([slim.conv3d], rate=1):
                 # 8 544
-                net = slim.repeat(net, 10, block8, scale=0.10,
+                net = slim.repeat(net, 5, block8, scale=0.10,
                                   activation_fn=activation_fn)
-            
+
+            # 8 544+32*8=800
+            net = passthrough_layer(net, passthrough_16, 3, 32, 2, 'passThrough_16_8')
+
+            # 8 544
+            passthrough_8 = slim.conv3d(net, 544, 1)
+
             # 4 1040
             with tf.variable_scope('Mixed_7a'):
                 with tf.variable_scope('Branch_0'):
-                    tower_conv = slim.conv3d(net, 128, 1, scope='Conv2d_0a_1x1')
+                    tower_conv = slim.conv3d(passthrough_8, 128, 1, scope='Conv2d_0a_1x1')
                     tower_conv_1 = slim.conv3d(tower_conv, 192, 3, stride=2,
                                                padding=padding,
                                                scope='Conv2d_1a_3x3')
@@ -257,6 +283,10 @@ def inception_resnet_v2_base(inputs,
             # 4 1040
             net = slim.repeat(net, 4, block4, scale=0.20, activation_fn=activation_fn)
             net = block4(net, activation_fn=None)
+
+            # 4 1040+64*8=1552
+            net = passthrough_layer(net, passthrough_8, 3, 48, 2, 'passThrough_8_4')
+
             
             # 4 768
             net = slim.conv3d(net, 768, 1, scope='Conv2d_7b_1x1')

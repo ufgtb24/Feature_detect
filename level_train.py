@@ -102,17 +102,17 @@ if __name__ == '__main__':
 
     NEED_RESTORE = False
     NEED_SAVE = True
-    NEED_INIT_SAVE = False
+    NEED_INIT_SAVE = True
 
     TOTAL_EPHOC = 100000
-    test_step = 200
+    test_step = 5
     need_early_stop = True
     EARLY_STOP_STEP = 100
 
     winner_loss = 10 ** 10
     step_from_last_mininum = 0
     start = False
-
+ 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     
@@ -127,8 +127,8 @@ if __name__ == '__main__':
             #文件内容必须大于等于模型内容
 
             model_file = tf.train.latest_checkpoint(MODEL_PATH)
-            saver.restore(sess, model_file)  # 存在就从模型中恢复变量
-            # saver.restore(sess, MODEL_PATH+'-6')  # 存在就从模型中恢复变量
+            saver.restore(sess, model_file)  # 从模型中恢复最新变量
+            # saver.restore(sess, MODEL_PATH+'-6')  # 从模型中恢复指定变量
 
         for iter in range(TOTAL_EPHOC):
             box_batch ,y_batch, mask_batch,class_batch = train_batch_gen.get_batch()
