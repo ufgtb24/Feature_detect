@@ -1,11 +1,10 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/pass/'
-LOG_PATH='log/pass/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/up/'
+LOG_PATH='log/log_low5104/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
-
 
 
 def get_feature_num():
@@ -15,22 +14,26 @@ def get_feature_num():
     return num_feature_need
 
 
-CLASS_DICT = {
+CLASS_DICT_U = {
     'tooth2': 0,
-    'tooth3': 0,
+    'tooth3': 1,
+    'tooth4': 2,
+    'tooth5': 3,
+    'tooth6': 4,
+    'tooth7': 5,
+    'tooth8': 6,
+}
+
+CLASS_DICT_L = {
     'tooth30': 0,
     'tooth31': 0,
-    'tooth4': 1,
-    'tooth5': 1,
     'tooth28': 1,
     'tooth29': 1,
-    'tooth6': 2,
     'tooth27': 2,
-    'tooth7': 3,
-    'tooth8': 3,
     'tooth26': 3,
     'tooth25': 3,
 }
+
 
 TASK_DICT = OrderedDict(
     [
@@ -52,10 +55,17 @@ TASK_DICT = OrderedDict(
     ]
 )
 
-
+up_back=['tooth2','tooth3']
+up_middle=['tooth4','tooth5']
+up_canine=['tooth6']
+up_front=['tooth7','tooth8']
+low_back=['tooth30','tooth31']
+low_middle=['tooth28','tooth29']
+low_canine=['tooth27']
+low_front=['tooth25','tooth26']
 
 class DataConfig(object):
-    data_list = low_set
+    data_list = up_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
@@ -65,7 +75,7 @@ class DataConfig(object):
     num_feature_need = get_feature_num()
     feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
-    class_define=CLASS_DICT
+    class_define=CLASS_DICT_U
 
 class TrainDataConfig(DataConfig):
     batch_size = 16

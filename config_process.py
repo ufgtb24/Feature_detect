@@ -100,7 +100,7 @@ class DataConfig(object):
     base_case_dir = 'F:/ProjectData/tmp/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
-    task_dict = DATA_DICT
+    task_dict = None
     num_feature_need = None
     output_dim = None
 

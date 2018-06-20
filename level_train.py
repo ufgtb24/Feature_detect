@@ -49,8 +49,8 @@ class DetectNet(object):
                         self.classify_loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y, logits=pred[:, :4]))
                         
                         self.f_output_masked = tf.boolean_mask(self.features, self.f_mask)
-                        target_masked = tf.boolean_mask(self.targets, self.f_mask)
-                        self.feature_loss = 3 * tf.reduce_mean(tf.square(self.f_output_masked - target_masked))
+                        self.target_masked = tf.boolean_mask(self.targets, self.f_mask)
+                        self.feature_loss = 3 * tf.reduce_mean(tf.square(self.f_output_masked - self.target_masked))
                         
                         correct_prediction = tf.equal(tf.to_int32(self.labels), tf.to_int32(self.class_output))
                         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -92,6 +92,7 @@ if __name__ == '__main__':
     bn_moving_vars += [g for g in g_list if 'moving_var' in g.name]
     ################# important  !!!!!!!!!!!!!!!  dont delete
     #if some structure changed compared to the saved model, need to load different vars
+    # 不能让 Saver retore .data 中不存在的 变量， 所以要缩减任务
     # load_list = [t for t in tf.trainable_variables() if not
     #              t.name.endswith('pred_output/biases:0')
     #              and not t.name.endswith('pred_output/weights:0')]
@@ -106,11 +107,10 @@ if __name__ == '__main__':
 
     NEED_RESTORE = False
     NEED_SAVE = True
-    NEED_INIT_SAVE = False
+    NEED_INIT_SAVE = True
 
     TOTAL_EPHOC = 100000
-    test_step = 5
-    save_step = 200
+    test_step = 200
     need_early_stop = True
     EARLY_STOP_STEP = 100
 
@@ -175,14 +175,12 @@ if __name__ == '__main__':
                     winner_loss = feature_loss
                     step_from_last_mininum = 0
                     
-                print("%d  trainCost=%f   feature_loss =%f   winnerCost=%f   test_step=%d          accuracy=%f\n"
-                      % (iter, train_feature_loss, feature_loss, winner_loss, step_from_last_mininum,accuracy))
+                writer.add_summary(summary, int(iter / test_step))
+                if NEED_SAVE and feature_loss < 20  :
+                    save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', int(iter / test_step))
 
-                if iter%save_step==0:
-                    print('sample to summary:  test_loss =', feature_loss)
-                    writer.add_summary(summary, int(iter / save_step))
-                    if NEED_SAVE and feature_loss < 20  :
-                        save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', int(iter / save_step))
+                print("%d  trainCost=%f   test_loss =%f   winnerCost=%f   test_step=%d          accuracy=%f\n"
+                      % (iter, train_feature_loss, feature_loss, winner_loss, step_from_last_mininum,accuracy))
 
                     
 

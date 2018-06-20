@@ -210,7 +210,7 @@ def inception_resnet_v2_base(inputs,
                 net = tf.concat(
                     [tower_conv, tower_conv1_1, tower_conv2_2, tower_pool_1], 4)
             
-            # 16 160
+            # 16 160     repeat 5
             net = slim.repeat(net, 5, block16, scale=0.17,
                               activation_fn=activation_fn)
             
@@ -242,8 +242,8 @@ def inception_resnet_v2_base(inputs,
                 net = tf.concat([tower_conv, tower_conv1_2, tower_pool], 4)
             
             with slim.arg_scope([slim.conv3d], rate=1):
-                # 8 544
-                net = slim.repeat(net, 5, block8, scale=0.10,
+                # 8 544     repeat 10
+                net = slim.repeat(net, 10, block8, scale=0.10,
                                   activation_fn=activation_fn)
             
             # 8 544+32*8=800
@@ -278,7 +278,7 @@ def inception_resnet_v2_base(inputs,
                 net = tf.concat(
                     [tower_conv_1, tower_conv1_1, tower_conv2_2, tower_pool], 4)
             
-            # 4 1040
+            # 4 1040     repeat 4
             net = slim.repeat(net, 4, block4, scale=0.20, activation_fn=activation_fn)
             net = block4(net, activation_fn=None)
             

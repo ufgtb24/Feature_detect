@@ -12,9 +12,9 @@ if __name__ == '__main__':
 
     
     NEED_INFERENCE=False
-    NEED_TARGET=False
     NEED_DISPLAY=False
     NEED_WRITE_GRAPH=True
+    NEED_TARGET=True # no need to change
     
     
     
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         # writer = tf.summary.FileWriter('log/', sess.graph)
         
         sess.run(tf.global_variables_initializer())
-        saver.restore(sess, MODEL_PATH+'model.ckpt-74')  # 存在就从模型中恢复变量
+        saver.restore(sess, MODEL_PATH+'model.ckpt-269')  # 存在就从模型中恢复变量
 
         # if NEED_SPLIT:
         #     saver_commen.save(sess, os.path.join(MODEL_PATH,'commen/model.ckpt'))
@@ -82,6 +82,12 @@ if __name__ == '__main__':
         if NEED_INFERENCE:
             if NEED_TARGET:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=True,need_name=True)
+                
+                avg=0
+                def get_avg(i,loss):
+                    global avg
+                    avg=i/(i+1)*avg+1/(i+1)*loss
+                
                 for iter in range(100):
                     box_batch, y_batch, mask_batch, class_batch, name_batch = test_batch_gen.get_batch()
                     
@@ -89,14 +95,24 @@ if __name__ == '__main__':
                                  detector.targets: y_batch,
                                  detector.f_mask: mask_batch,
                                  detector.is_training: False}
-                    f, error = sess.run([pred_end, detector.feature_loss], feed_dict=feed_dict)
+                    
+                    f, error , output_mask,target_mask = sess.run([pred_end,
+                                         detector.feature_loss,
+                                         detector.f_output_masked,
+                                        detector.target_masked
+                                         
+                                         ], feed_dict=feed_dict)
+                    
+                    get_avg(iter,error)
 
                     f=np.int32(f)
-                    print('feature_loss= ',error)
+                    print('class ',f[0,0],'    loss  ',error)
     
                     if NEED_DISPLAY:
                         box_batch = np.squeeze(box_batch, 4)
                         display_batch(box_batch, f, mask_batch, TestDataConfig.num_feature_need)
+                        
+                print('avg  ', avg)
             else:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=False, need_name=True)
                 while True:
