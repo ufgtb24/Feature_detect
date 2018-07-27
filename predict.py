@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     
     NEED_INFERENCE=True
-    NEED_DISPLAY=False
+    NEED_DISPLAY=True
     NEED_WRITE_GRAPH=False
     NEED_TARGET=False # no need to change
     
@@ -117,17 +117,18 @@ if __name__ == '__main__':
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=False, need_name=True)
                 while True:
                     box_batch,  name_batch = test_batch_gen.get_batch()
-        
+                    
                     feed_dict = {detector.input_box: box_batch,detector.is_training: False}
         
                     f = sess.run(pred_end, feed_dict=feed_dict)
                     # f=f*12./128.
                     f = np.int32(f)
                     print(f)
-        
+                    mask_batch=np.zeros([box_batch.shape[0],21]).astype(bool)
+                    mask_batch[:,:15]=True
                     if NEED_DISPLAY:
                         box_batch = np.squeeze(box_batch, 4)
-                        display_batch(box_batch, f, TestDataConfig.num_feature_need)
+                        display_batch(box_batch, f, mask_batch,  5)
 
     
         

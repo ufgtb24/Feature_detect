@@ -75,16 +75,16 @@ class BatchGenerator(object):
             if tooth not in actual_tooth_list:
                 continue
             tooth_dir = full_case_dir + tooth + '/'
-            box_list.append(self.loadmhds(tooth_dir))
-            augment_num = 0
+            box_case_tooth=self.loadmhds(tooth_dir)
+            augment_num=box_case_tooth.shape[0]
+            box_list.append(box_case_tooth)
             if self.need_target:
                 augment_list = []
                 for task_content in self.task_dict.values():
                     if not os.path.exists(tooth_dir + task_content['label_file']):
                         f_array = np.zeros([augment_num, task_content['num_feature'] * 3])
                     else:
-                        global augment_num
-                        f_array, augment_num = self.load_y(
+                        f_array = self.load_y(
                             tooth_dir + task_content['label_file'],
                             task_content['num_feature'],
                             len(task_content['feature_need']),
@@ -149,8 +149,7 @@ class BatchGenerator(object):
         info_need = info[:, info_index]
         feature = np.reshape(info_need, [-1, 3])
         feature = np.reshape((feature - origin) * self.world_to_cubic, [-1, 3 * num_feature_need]).astype(np.int32)
-        augment_num = feature.shape[0]
-        return feature, augment_num
+        return feature
     
     def load_mhd(self, filename):
         # Reads the image using SimpleITK

@@ -69,7 +69,7 @@ class DataConfig(object):
     data_list = up_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir = 'F:/ProjectData/tmp/Try'
+    base_case_dir = 'F:/ProjectData/tmp/Try/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict = TASK_DICT
