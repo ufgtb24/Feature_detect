@@ -2,14 +2,15 @@ import os
 
 from tensorflow.python.tools import freeze_graph
 import tensorflow as tf
-from config import MODEL_PATH
+from config import MODEL_PATH, MODEL_NAME
+
 PB_PATH = 'input_graph.pb'
 
 checkpoint_state_name = "checkpoint_state"
 input_graph = os.path.join(MODEL_PATH,PB_PATH)
 input_saver = ""
 input_binary = False
-input_checkpoint = os.path.join(MODEL_PATH,'model.ckpt-269')
+input_checkpoint = os.path.join(MODEL_PATH,MODEL_NAME)
 
 # Note that we this normally should be only "output_node"!!!
 output_node_names = "detector/output_node"

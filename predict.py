@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 # from crop_data import crop_batch
 from combine import  PB_PATH, gen_frozen_graph
-from config import MODEL_PATH, SHAPE_BOX, TestDataConfig, DataConfig
+from config import MODEL_PATH, SHAPE_BOX, TestDataConfig, DataConfig, MODEL_NAME
 from dataRelated import BatchGenerator
 from display import  display_batch
 from level_train import DetectNet
@@ -11,10 +11,10 @@ from level_train import DetectNet
 if __name__ == '__main__':
 
     
-    NEED_INFERENCE=False
+    NEED_INFERENCE=True
     NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=True
-    NEED_TARGET=True # no need to change
+    NEED_WRITE_GRAPH=False
+    NEED_TARGET=False # no need to change
     
     
     
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         # writer = tf.summary.FileWriter('log/', sess.graph)
         
         sess.run(tf.global_variables_initializer())
-        saver.restore(sess, MODEL_PATH+'model.ckpt-269')  # 存在就从模型中恢复变量
+        saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 存在就从模型中恢复变量
 
         # if NEED_SPLIT:
         #     saver_commen.save(sess, os.path.join(MODEL_PATH,'commen/model.ckpt'))
@@ -88,7 +88,7 @@ if __name__ == '__main__':
                     global avg
                     avg=i/(i+1)*avg+1/(i+1)*loss
                 
-                for iter in range(100):
+                for iter in range(500):
                     box_batch, y_batch, mask_batch, class_batch, name_batch = test_batch_gen.get_batch()
                     
                     feed_dict = {detector.input_box: box_batch,
@@ -106,7 +106,7 @@ if __name__ == '__main__':
                     get_avg(iter,error)
 
                     f=np.int32(f)
-                    print('class ',f[0,0],'    loss  ',error)
+                    print('class ',f[0,0],'    loss  ',error,'    name: ',name_batch[0])
     
                     if NEED_DISPLAY:
                         box_batch = np.squeeze(box_batch, 4)

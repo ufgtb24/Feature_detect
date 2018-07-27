@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
 import os
-from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOG_PATH
+from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOG_PATH, MODEL_NAME
 from dataRelated import BatchGenerator
 # import inception_v3 as icp
 import inception_resnet_v2 as icp
@@ -105,13 +105,14 @@ if __name__ == '__main__':
 
     ################
 
-    NEED_RESTORE = False
+    NEED_RESTORE = True
     NEED_SAVE = True
-    NEED_INIT_SAVE = True
+    NEED_INIT_SAVE = False
 
     TOTAL_EPHOC = 100000
     test_step = 200
-    need_early_stop = True
+    save_step=2000
+    need_early_stop = False
     EARLY_STOP_STEP = 100
 
     winner_loss = 10 ** 10
@@ -124,16 +125,16 @@ if __name__ == '__main__':
     with tf.Session(config=config) as sess:
         
         writer = tf.summary.FileWriter(LOG_PATH, sess.graph)
-        saver = tf.train.Saver(var_list=var_list, max_to_keep=EARLY_STOP_STEP)
+        saver = tf.train.Saver(var_list=var_list, max_to_keep=100)
         sess.run(tf.global_variables_initializer())
 
         if NEED_RESTORE:
-            assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
+            # assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
             #文件内容必须大于等于模型内容
 
-            model_file = tf.train.latest_checkpoint(MODEL_PATH)
-            saver.restore(sess, model_file)  # 从模型中恢复最新变量
-            # saver.restore(sess, MODEL_PATH+'-6')  # 从模型中恢复指定变量
+            # model_file = tf.train.latest_checkpoint(MODEL_PATH)
+            # saver.restore(sess, model_file)  # 从模型中恢复最新变量
+            saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
 
         for iter in range(TOTAL_EPHOC):
             box_batch ,y_batch, mask_batch,class_batch = train_batch_gen.get_batch()

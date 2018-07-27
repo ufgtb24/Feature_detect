@@ -285,8 +285,8 @@ def inception_resnet_v2_base(inputs,
             # 4 1040+64*8=1552
             net = passthrough_layer(net, passthrough_8, 3, 48, 2, 'passThrough_8_4')
             
-            # 4 768
-            net = slim.conv3d(net, 768, 1, scope='Conv2d_7b_1x1')
+            # 4 768  1040
+            net = slim.conv3d(net, 1040, 1, scope='Conv2d_7b_1x1')
             return net
 
 

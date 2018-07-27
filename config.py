@@ -1,7 +1,8 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/up/'
-LOG_PATH='log/log_low5104/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
+MODEL_NAME='model.ckpt-60'
+LOG_PATH='F:/ProjectData/tmp/model/up5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
@@ -16,12 +17,12 @@ def get_feature_num():
 
 CLASS_DICT_U = {
     'tooth2': 0,
-    'tooth3': 1,
-    'tooth4': 2,
-    'tooth5': 3,
-    'tooth6': 4,
-    'tooth7': 5,
-    'tooth8': 6,
+    'tooth3': 0,
+    'tooth4': 1,
+    'tooth5': 1,
+    'tooth6': 2,
+    'tooth7': 3,
+    'tooth8': 3,
 }
 
 CLASS_DICT_L = {
@@ -68,7 +69,7 @@ class DataConfig(object):
     data_list = up_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir = 'F:/ProjectData/tmp/'
+    base_case_dir = 'F:/ProjectData/tmp/Try'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict = TASK_DICT
@@ -94,7 +95,7 @@ class ValiDataConfig(DataConfig):
 
 
 class TestDataConfig(DataConfig):
-    batch_size = 1
+    batch_size = 7
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
     load_case_once = 1  # 每次读的病例数
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
