@@ -95,7 +95,7 @@ class ValiDataConfig(DataConfig):
 
 
 class TestDataConfig(DataConfig):
-    batch_size = 7
+    batch_size = 14
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
     load_case_once = 1  # 每次读的病例数
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
