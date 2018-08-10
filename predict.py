@@ -37,8 +37,11 @@ if __name__ == '__main__':
     
         #############
         saver = tf.train.Saver(var_list)
+        
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
 
-    with tf.Session() as sess:
+    with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         if NEED_PB:
             g=load_graph(sess,"E://TensorFlowCplusplus//feature_detect//x64//Release//up_graph.pb")

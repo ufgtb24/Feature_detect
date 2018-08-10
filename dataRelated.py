@@ -66,8 +66,10 @@ class BatchGenerator(object):
         # 读取一个病例中的多颗牙齿
         box_list = []
         case_list = []
+        mask_list=[]
         class_list = []
         case_y = None
+        case_mask=None
         actual_tooth_list = os.listdir(full_case_dir)
         
         
@@ -80,9 +82,12 @@ class BatchGenerator(object):
             box_list.append(box_case_tooth)
             if self.need_target:
                 augment_list = []
+                augment_mask_list = []
+                
                 for task_content in self.task_dict.values():
                     if not os.path.exists(tooth_dir + task_content['label_file']):
                         f_array = np.zeros([augment_num, task_content['num_feature'] * 3])
+                        mask_array=np.zeros_like(f_array).astype(np.bool)
                     else:
                         f_array = self.load_y(
                             tooth_dir + task_content['label_file'],
@@ -90,10 +95,16 @@ class BatchGenerator(object):
                             len(task_content['feature_need']),
                             task_content['index']
                         )
+                        mask_array=np.ones_like(f_array).astype(np.bool)
+
                     augment_list.append(f_array)
+                    augment_mask_list.append(mask_array)
                 
                 tooth_array = np.concatenate(augment_list, axis=1)
+                tooth_mask_array = np.concatenate(augment_mask_list, axis=1)
                 case_list.append(tooth_array)
+                mask_list.append(tooth_mask_array)
+                
             class_array = self.class_define[tooth] * np.ones([augment_num])
             class_list.append(class_array)
         if box_list != []:
@@ -101,7 +112,9 @@ class BatchGenerator(object):
             case_class = np.concatenate(class_list, axis=0)
             if self.need_target:
                 case_y = np.concatenate(case_list, axis=0)
-            return case_box, case_y, case_class
+                case_mask = np.concatenate(mask_list, axis=0)
+                
+            return case_box, case_y, case_mask,case_class
         else:
             return None
     
@@ -111,6 +124,7 @@ class BatchGenerator(object):
         
         box_list = []
         y_list = []
+        mask_list = []
         class_list = []
         name_index_list = []
         if self.need_name:
@@ -119,7 +133,7 @@ class BatchGenerator(object):
             full_case_dir = self.total_case_dir + case_name + '/'
             load_result = self.load_useful_tooth(full_case_dir, self.data_list)
             if load_result is not None:
-                box, y, class_ = load_result
+                box, y,mask, class_ = load_result
             else:
                 continue
             box_list.append(box)
@@ -129,6 +143,7 @@ class BatchGenerator(object):
                 name_index_list.append(name_index)
             if self.need_target:
                 y_list.append(y)
+                mask_list.append(mask)
         
         if box_list != None:
             self.box = np.concatenate(box_list, axis=0)
@@ -137,6 +152,7 @@ class BatchGenerator(object):
                 self.name_index = np.concatenate(name_index_list, axis=0)
             if self.need_target:
                 self.y = np.concatenate(y_list, axis=0)
+                self.mask = np.concatenate(mask_list, axis=0)
             self.sample_num = self.box.shape[0]
             assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
     
@@ -203,12 +219,8 @@ class BatchGenerator(object):
         
         if self.need_target:
             y_batch = self.y[self.index:   self.index + self.batch_size]
-            mask_batch = np.ones_like(y_batch, dtype=bool)
+            mask_batch = self.mask[self.index:   self.index + self.batch_size]
             class_batch = self.class_[self.index:   self.index + self.batch_size]
-            for i, class_num in enumerate(class_batch.tolist()):
-                if class_num > 1:
-                    mask_batch[i, 15:] = False
-
             target_list=[y_batch,mask_batch,class_batch]
             return_list+=target_list
             

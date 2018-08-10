@@ -6,7 +6,7 @@ LOG_PATH='F:/ProjectData/tmp/model/up5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
-
+# up_front=['tooth6', 'tooth7', 'tooth8']
 
 def get_feature_num():
     num_feature_need = 0
@@ -38,6 +38,14 @@ CLASS_DICT_L = {
 
 TASK_DICT = OrderedDict(
     [
+        ('edge',
+         {
+             'num_feature': 2,
+             'feature_need': [1, 2],
+             'label_file': 'edge.txt'
+         }
+         ),
+        
         ('facc',
          {
              'num_feature': 5,
@@ -59,14 +67,14 @@ TASK_DICT = OrderedDict(
 up_back=['tooth2','tooth3']
 up_middle=['tooth4','tooth5']
 up_canine=['tooth6']
-up_front=['tooth7','tooth8']
+up_front=['tooth6', 'tooth7', 'tooth8']
 low_back=['tooth30','tooth31']
 low_middle=['tooth28','tooth29']
 low_canine=['tooth27']
-low_front=['tooth25','tooth26']
+low_front=['tooth25','tooth26','tooth27']
 
 class DataConfig(object):
-    data_list = up_set
+    data_list = low_front
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/Try/'
@@ -76,7 +84,7 @@ class DataConfig(object):
     num_feature_need = get_feature_num()
     feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
-    class_define=CLASS_DICT_U
+    class_define=CLASS_DICT_L
 
 class TrainDataConfig(DataConfig):
     batch_size = 16

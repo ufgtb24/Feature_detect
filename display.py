@@ -183,14 +183,22 @@ def display_batch(box, y, mask, feature_need):
     #               mode="cube",
     #               color=(0, 0, 1),
     #               scale_factor=1)
-    class_batch=y[:,0]
-
-    y=y[:,1:]*mask.astype(int)
+    # class_batch=y[:,0]
+    # y=y[:,mask]
+    # y=y[:,1:]*mask.astype(int)
+    y=y.astype(int)
     for i in range(num):
         ct = box[i]
-        print(class_batch[i])
+        single_y=y[i,mask[i]]
+        single_mask=np.where(mask[i])[0]
+        feature_need = int(single_mask.shape[0]/3)
+        # print(class_batch[i])
         for j in range(feature_need):
-            ct[y[i, 3*j], y[i, 3*j+1], y[i, 3*j+2]]=j+2
+            try:
+                ct[single_y[3*j], single_y[3*j+1], single_y[3*j+2]]=j+2
+            except:
+                print('out bound')
+                continue
         feature_index=[]
         for j in range(feature_need):
             feature_index.append(np.where(ct == j+2))
@@ -200,14 +208,14 @@ def display_batch(box, y, mask, feature_need):
                       mode="cube",
                       color=(0, 1, 0),
                       scale_factor=1,
-                      transparent=True)
+                      transparent=False)
 
         for j in range(feature_need):
             mlab.points3d(feature_index[j][0], feature_index[j][1], feature_index[j][2],
                           mode="cube",
                           color=(1, 0, 0),
                           scale_factor=1,
-                          transparent=True)
+                          transparent=False)
         mlab.show()
 
 
@@ -295,11 +303,11 @@ if __name__ == '__main__':
     
     train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
     for i in range(1000):
-        box_batch, y_batch,name=train_batch_gen.get_batch()
+        box_batch, y_batch,mask_batch,class_batch,name=train_batch_gen.get_batch()
         box_batch=np.squeeze(box_batch,4)
         if i%30==0:
             print(name)
-            display_batch(box_batch,y_batch,TestDataConfig.num_feature_need)
+            display_batch(box_batch,y_batch,mask_batch,TestDataConfig.num_feature_need)
         
         
 
