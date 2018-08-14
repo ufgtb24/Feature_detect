@@ -11,7 +11,6 @@ class BatchGenerator(object):
                  need_target=True,
                  need_name=False):
         self.usage = data_config.usage
-        self.class_define=data_config.class_define
         if need_target:
             final_task_dict = OrderedDict([])
             for task, task_content in data_config.task_dict.items():
@@ -67,7 +66,6 @@ class BatchGenerator(object):
         box_list = []
         case_list = []
         mask_list=[]
-        class_list = []
         case_y = None
         case_mask=None
         actual_tooth_list = os.listdir(full_case_dir)
@@ -105,16 +103,13 @@ class BatchGenerator(object):
                 case_list.append(tooth_array)
                 mask_list.append(tooth_mask_array)
                 
-            class_array = self.class_define[tooth] * np.ones([augment_num])
-            class_list.append(class_array)
         if box_list != []:
             case_box = np.concatenate(box_list, axis=0)
-            case_class = np.concatenate(class_list, axis=0)
             if self.need_target:
                 case_y = np.concatenate(case_list, axis=0)
                 case_mask = np.concatenate(mask_list, axis=0)
                 
-            return case_box, case_y, case_mask,case_class
+            return case_box, case_y, case_mask
         else:
             return None
     
@@ -125,7 +120,6 @@ class BatchGenerator(object):
         box_list = []
         y_list = []
         mask_list = []
-        class_list = []
         name_index_list = []
         if self.need_name:
             self.case_load = np.array(case_load)
@@ -133,11 +127,10 @@ class BatchGenerator(object):
             full_case_dir = self.total_case_dir + case_name + '/'
             load_result = self.load_useful_tooth(full_case_dir, self.data_list)
             if load_result is not None:
-                box, y,mask, class_ = load_result
+                box, y,mask = load_result
             else:
                 continue
             box_list.append(box)
-            class_list.append(class_)
             if self.need_name:
                 name_index = np.ones((box.shape[0]), dtype=np.int32) * i
                 name_index_list.append(name_index)
@@ -147,7 +140,6 @@ class BatchGenerator(object):
         
         if box_list != None:
             self.box = np.concatenate(box_list, axis=0)
-            self.class_ = np.concatenate(class_list, axis=0)
             if self.need_name:
                 self.name_index = np.concatenate(name_index_list, axis=0)
             if self.need_target:
@@ -198,7 +190,6 @@ class BatchGenerator(object):
         perm = np.arange(self.sample_num)
         np.random.shuffle(perm)  # 打乱
         self.box = self.box[perm]
-        self.class_ = self.class_[perm]
         if self.need_name:
             self.name_index = self.name_index[perm]
         if self.need_target:
@@ -220,8 +211,7 @@ class BatchGenerator(object):
         if self.need_target:
             y_batch = self.y[self.index:   self.index + self.batch_size]
             mask_batch = self.mask[self.index:   self.index + self.batch_size]
-            class_batch = self.class_[self.index:   self.index + self.batch_size]
-            target_list=[y_batch,mask_batch,class_batch]
+            target_list=[y_batch,mask_batch]
             return_list+=target_list
             
         if self.need_name:

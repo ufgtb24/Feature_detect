@@ -31,7 +31,7 @@ def check_availability(dir):
 '''
 
 # label file line number check
-'''
+
 def check_availability(dir):
     Tooth_dir=os.listdir(dir)
     error_num=0
@@ -42,19 +42,24 @@ def check_availability(dir):
         for tooth in tooth_list:
             facc_dir=full_case_dir+'/'+tooth+'/FaccControlPts.txt'
             groove_dir=full_case_dir+'/'+tooth+'/info.txt'
+            edge_dir=full_case_dir+'/'+tooth+'/edge.txt'
             if os.path.exists(facc_dir):
-                if len(open(facc_dir, 'rU').readlines())!=27:
-                    print(case_name)
+                if len(open(facc_dir, 'rU').readlines())!=81:
+                    print(case_name,'  lack  facc ')
+                    
             if os.path.exists(groove_dir):
-                if len(open(groove_dir, 'rU').readlines())!=27:
-                    print(case_name)
+                if len(open(groove_dir, 'rU').readlines())!=81:
+                    print(case_name,'  lack  groove ')
+
+            if os.path.exists(edge_dir):
+                if len(open(edge_dir, 'rU').readlines())!=81:
+                    print(case_name,'  lack  edge ')
 
 
             # if 'tooth'+str(i) not in data_list:
             #     print(case_name)
 
     return error_num
-'''
 
 # file name check
 '''
@@ -75,7 +80,7 @@ def check_availability(dir):
 
     return error_num
 '''
-
+'''
 # label file line number check
 def check_availability(dir):
     Tooth_dir=os.listdir(dir)
@@ -99,6 +104,6 @@ def check_availability(dir):
             #     print(case_name)
 
     return error_num
-
+'''
 if __name__ == '__main__':
-    check_availability('F:/ProjectData/tmp/Train/')
+    check_availability('F:/ProjectData/tmp/Validate_edge/')

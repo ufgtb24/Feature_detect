@@ -176,7 +176,7 @@ def check_availability(dir):
     return error_num
 
 
-def display_batch(box, y, mask, feature_need):
+def display_batch(box, y, mask):
     num=box.shape[0]
     # ex, ey, ez = edges(GRID_SIZE)
     # mlab.points3d(ex , ey, ez,

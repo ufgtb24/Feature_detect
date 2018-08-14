@@ -15,7 +15,7 @@ if __name__ == '__main__':
     NEED_DISPLAY=True
     NEED_WRITE_GRAPH=False
     NEED_TARGET=False # no need to change
-    NEED_PB=True
+    NEED_PB=False
     
 
     if not NEED_PB:
@@ -135,11 +135,11 @@ if __name__ == '__main__':
                     # f=f*12./128.
                     f = np.int32(f)
                     print(f)
-                    mask_batch=np.zeros([box_batch.shape[0],21]).astype(bool)
-                    mask_batch[:,:15]=True
+                    mask_batch=np.zeros([box_batch.shape[0],27]).astype(bool)
+                    mask_batch[:,6:21]=True
                     if NEED_DISPLAY:
                         box_batch = np.squeeze(box_batch, 4)
-                        display_batch(box_batch, f, mask_batch,  5)
+                        display_batch(box_batch, f, mask_batch)
 
     
         

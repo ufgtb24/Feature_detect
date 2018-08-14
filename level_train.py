@@ -30,38 +30,24 @@ class DetectNet(object):
                 net = icp.inception_resnet_v2(box, is_training=self.is_training, scope='InceptionRes2')
                 
 
-                pred = slim.fully_connected(net, DataConfig.feature_dim+4, activation_fn=None,
+                pred = slim.fully_connected(net, DataConfig.feature_dim, activation_fn=None,
                                               scope='Logits')
 
-
-                self.class_output=tf.to_float(tf.argmax(pred[:,:4], axis=1))
-                self.features=pred[:,4:]
-                self.total_output=tf.concat([tf.reshape(self.class_output,[-1,1]),self.features],axis=1,name='output_node')
+                self.total_output=tf.identity(pred,name='output_node')
                 
                 if need_targets:
                     with tf.variable_scope('error'):
                         self.targets = tf.placeholder(tf.float32, shape=[None, DataConfig.feature_dim],
                                                  name="targets")
                         self.f_mask = tf.placeholder(tf.bool, shape=(None, DataConfig.feature_dim))
-                        self.labels = tf.placeholder(tf.int32, shape=(None,))
-
-                        Y = tf.one_hot(self.labels, depth=4, axis=1, dtype=tf.float32)
-                        self.classify_loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y, logits=pred[:, :4]))
-                        
-                        self.f_output_masked = tf.boolean_mask(self.features, self.f_mask)
+                        self.f_output_masked = tf.boolean_mask(self.total_output, self.f_mask)
                         self.target_masked = tf.boolean_mask(self.targets, self.f_mask)
-                        self.feature_loss = 3 * tf.reduce_mean(tf.square(self.f_output_masked - self.target_masked))
+                        self.total_loss = 3 * tf.reduce_mean(tf.square(self.f_output_masked - self.target_masked))
                         
-                        correct_prediction = tf.equal(tf.to_int32(self.labels), tf.to_int32(self.class_output))
-                        self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-                        
-
                     ####################################
                         if is_training_sti:
-                            self.total_loss = self.feature_loss + 10*self.classify_loss
                             train_summary = []
-                            train_summary.append(tf.summary.scalar('feature_error', self.feature_loss))
-                            train_summary.append(tf.summary.scalar('accuracy', self.accuracy))
+                            train_summary.append(tf.summary.scalar('feature_error', self.total_loss))
                             self.train_summary = tf.summary.merge(train_summary)
     
                             with tf.variable_scope('optimizer'):
@@ -90,20 +76,20 @@ if __name__ == '__main__':
     g_list = tf.global_variables()
     bn_moving_vars = [g for g in g_list if 'moving_avg' in g.name]
     bn_moving_vars += [g for g in g_list if 'moving_var' in g.name]
+    
     ################# important  !!!!!!!!!!!!!!!  dont delete
     #if some structure changed compared to the saved model, need to load different vars
     # 不能让 Saver retore .data 中不存在的 变量， 所以要缩减任务
-    # load_list = [t for t in tf.trainable_variables() if not
-    #              t.name.endswith('pred_output/biases:0')
-    #              and not t.name.endswith('pred_output/weights:0')]
-    #
-    # var_list=load_list+bn_moving_vars
-    # loader = tf.train.Saver(var_list=var_list, max_to_keep=1)
+    load_list = [t for t in tf.trainable_variables() if not
+                 t.name.startswith('detector/Logits')]
+                 # and not t.name.endswith('pred_output/weights:0')]
+
+    var_list=load_list+bn_moving_vars
+    loader = tf.train.Saver(var_list=var_list, max_to_keep=1)
 
     ##################
+    
     var_list = tf.trainable_variables()+bn_moving_vars
-
-    ################
 
     NEED_RESTORE = True
     NEED_SAVE = True
@@ -111,7 +97,7 @@ if __name__ == '__main__':
 
     TOTAL_EPHOC = 100000
     test_step = 200
-    save_step=2000
+    save_step=1000
     need_early_stop = False
     EARLY_STOP_STEP = 100
 
@@ -125,7 +111,7 @@ if __name__ == '__main__':
     with tf.Session(config=config) as sess:
         
         writer = tf.summary.FileWriter(LOG_PATH, sess.graph)
-        saver = tf.train.Saver(var_list=var_list, max_to_keep=100)
+        saver = tf.train.Saver(var_list=var_list, max_to_keep=10)
         sess.run(tf.global_variables_initializer())
 
         if NEED_RESTORE:
@@ -134,18 +120,17 @@ if __name__ == '__main__':
 
             # model_file = tf.train.latest_checkpoint(MODEL_PATH)
             # saver.restore(sess, model_file)  # 从模型中恢复最新变量
-            saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
+            loader.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
 
         for iter in range(TOTAL_EPHOC):
-            box_batch ,y_batch, mask_batch,class_batch = train_batch_gen.get_batch()
+            box_batch ,y_batch, mask_batch = train_batch_gen.get_batch()
             
             feed_dict = {detector.input_box: box_batch,
                          detector.targets: y_batch,
                          detector.f_mask:mask_batch,
-                         detector.labels:class_batch,
                          detector.is_training: True}
 
-            _, train_feature_loss = sess.run([detector.train_op, detector.feature_loss], feed_dict=feed_dict)
+            _, train_feature_loss = sess.run([detector.train_op, detector.total_loss], feed_dict=feed_dict)
 
 
             
@@ -159,17 +144,15 @@ if __name__ == '__main__':
                     break
                 step_from_last_mininum += 1
                 
-                box_batch, y_batch, mask_batch, class_batch = test_batch_gen.get_batch()
+                box_batch, y_batch, mask_batch = test_batch_gen.get_batch()
 
 
                 feed_dict = {detector.input_box: box_batch,
                              detector.targets: y_batch,
                              detector.f_mask: mask_batch,
-                             detector.labels: class_batch,
                              detector.is_training: False}
 
-                feature_loss,accuracy,summary = sess.run([detector.feature_loss,
-                                                          detector.accuracy,
+                feature_loss,summary = sess.run([detector.total_loss,
                                                           detector.train_summary], feed_dict=feed_dict)
                 
                 if feature_loss < winner_loss:
@@ -177,11 +160,11 @@ if __name__ == '__main__':
                     step_from_last_mininum = 0
                     
                 writer.add_summary(summary, int(iter / test_step))
-                if NEED_SAVE and feature_loss < 20  :
-                    save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', int(iter / test_step))
+                if NEED_SAVE and iter%save_step==0  :
+                    save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', int(iter / save_step))
 
-                print("%d  trainCost=%f   test_loss =%f   winnerCost=%f   test_step=%d          accuracy=%f\n"
-                      % (iter, train_feature_loss, feature_loss, winner_loss, step_from_last_mininum,accuracy))
+                print("%d  trainCost=%f   test_loss =%f   winnerCost=%f   test_step=%d\n"
+                      % (iter, train_feature_loss, feature_loss, winner_loss, step_from_last_mininum))
 
                     
 
