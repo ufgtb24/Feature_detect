@@ -56,13 +56,14 @@ class BatchGenerator(object):
         array = np.array(self.total_case_list)
         array = array[perm]
         self.total_case_list = list(array)
-
+        
+        
     def get_case_list(self):
         all_cases_loaded=False
         if self.load_case_once==0:
             all_cases_loaded = True
             self.shuffle_root_dir()
-            case_load=self.total_case_list
+            case_load = self.total_case_list
         else:
             if self.index_dir + self.load_case_once > self.total_case_num:
                 all_cases_loaded=True
@@ -73,8 +74,11 @@ class BatchGenerator(object):
             self.index_dir += self.load_case_once
         return case_load,all_cases_loaded
 
-    def needSample(self,x,label):
-        return x<self.sample_prob[label]
+    def needSample(self,x,task):
+        return x<self.sample_prob[task]
+    
+    # def update_sample_prop(self):
+    #     self.sample_prob
 
     def load_useful_tooth(self, full_case_dir, target_tooth_list):
         # 读取一个病例中的多颗牙齿
@@ -99,7 +103,7 @@ class BatchGenerator(object):
                 sample_any=False
                 for task,task_content in self.task_dict.items():
                     sample_this= os.path.exists(tooth_dir + task_content['label_file']) and \
-                                self.needSample(x,task_content['label_file'])
+                                self.needSample(x,task)
                     
                     if sample_this:
                         sample_any=True
@@ -266,11 +270,11 @@ class BatchGenerator(object):
     
     def get_data_static(self):
         total=sum(self.data_count_dict.values())
-        if total>2**63:
+        if total>=2**64:
             for k in self.data_count_dict:
                 self.data_count_dict[k]=0
-        proportion_dict={k:v/total for k,v in self.data_count_dict.items()}
-        return proportion_dict
+        self.proportion_dict={k:v/total for k,v in self.data_count_dict.items()}
+        return self.proportion_dict
         
         
         

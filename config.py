@@ -13,11 +13,6 @@ def get_feature_num():
     return num_feature_need
 
 
-SAMPLE_PROB={
-        'edge.txt': 1,
-        'FaccControlPts.txt': 0.3,
-        'info.txt': 0.5,
-    }
 
 # LOSS_WEIGHT=np.array([1]*6+[0.3]*15+[0.5]*6)
 
@@ -29,7 +24,8 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'edge.txt',
-             'loss_weight':1
+             'loss_weight':1,
+             'sample_propotion':1
          }
          ),
         
@@ -38,7 +34,9 @@ TASK_DICT = OrderedDict(
              'num_feature': 5,
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt',
-             'loss_weight': 0.3
+             'loss_weight': 1,
+             'sample_propotion': 0.2
+    
          }
          ),
         
@@ -47,15 +45,18 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'info.txt',
-             'loss_weight': 0.5
+             'loss_weight': 1,
+             'sample_propotion': 0.5
          }
          )
     ]
 )
 LOSS_WEIGHT=[]
-for content in TASK_DICT.values():
+SAMPLE_PROP={}
+for key,content in TASK_DICT.items():
     LOSS_WEIGHT.extend([content['loss_weight']]*(content['num_feature']*3))
-# LOSS_WEIGHT=[[content['loss_weight']]*(content['num_feature']*3) for content in TASK_DICT.values()]
+    SAMPLE_PROP[key]=content['sample_propotion']
+    
 
 up_edge=['tooth6', 'tooth7', 'tooth8']
 low_edge=['tooth25','tooth26','tooth27']
@@ -74,7 +75,7 @@ class DataConfig(object):
     num_feature_need = get_feature_num()
     feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
-    sample_prob=SAMPLE_PROB
+    sample_prob=SAMPLE_PROP
 
 class TrainDataConfig(DataConfig):
     batch_size = 16
