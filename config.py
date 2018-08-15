@@ -1,11 +1,9 @@
 from collections import OrderedDict
 BOX_LEN=128
 MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
-MODEL_NAME='model.ckpt-140'
+MODEL_NAME='model.ckpt-166'
 LOG_PATH='F:/ProjectData/tmp/model/up5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
-up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
-low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
 def get_feature_num():
@@ -15,13 +13,22 @@ def get_feature_num():
     return num_feature_need
 
 
+SAMPLE_PROB={
+        'edge.txt': 1,
+        'FaccControlPts.txt': 0.3,
+        'info.txt': 0.5,
+    }
+
+# LOSS_WEIGHT=np.array([1]*6+[0.3]*15+[0.5]*6)
+
 TASK_DICT = OrderedDict(
     [
         ('edge',
          {
              'num_feature': 2,
              'feature_need': [1, 2],
-             'label_file': 'edge.txt'
+             'label_file': 'edge.txt',
+             'loss_weight':1
          }
          ),
         
@@ -29,7 +36,8 @@ TASK_DICT = OrderedDict(
          {
              'num_feature': 5,
              'feature_need': [1, 2, 3, 4, 5],
-             'label_file': 'FaccControlPts.txt'
+             'label_file': 'FaccControlPts.txt',
+             'loss_weight': 0.3
          }
          ),
         
@@ -37,28 +45,25 @@ TASK_DICT = OrderedDict(
          {
              'num_feature': 2,
              'feature_need': [1, 2],
-             'label_file': 'info.txt'
+             'label_file': 'info.txt',
+             'loss_weight': 0.5
          }
          )
     ]
 )
-
-loss_weight=[2]*6+[1]*21
-
-up_back=['tooth2','tooth3']
-up_middle=['tooth4','tooth5']
-up_canine=['tooth6']
-up_front=['tooth7', 'tooth8']
-low_back=['tooth30','tooth31']
-low_middle=['tooth28','tooth29']
-low_canine=['tooth27']
-low_front=['tooth25','tooth26']
+LOSS_WEIGHT=[]
+for content in TASK_DICT.values():
+    LOSS_WEIGHT.extend([content['loss_weight']]*(content['num_feature']*3))
+# LOSS_WEIGHT=[[content['loss_weight']]*(content['num_feature']*3) for content in TASK_DICT.values()]
 
 up_edge=['tooth6', 'tooth7', 'tooth8']
 low_edge=['tooth25','tooth26','tooth27']
 
+up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
+low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
+
 class DataConfig(object):
-    data_list = up_edge
+    data_list = up_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
@@ -68,6 +73,7 @@ class DataConfig(object):
     num_feature_need = get_feature_num()
     feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
+    sample_prob=SAMPLE_PROB
 
 class TrainDataConfig(DataConfig):
     batch_size = 16

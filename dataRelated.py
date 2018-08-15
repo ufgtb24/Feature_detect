@@ -24,6 +24,7 @@ class BatchGenerator(object):
                 final_task_dict[task] = task_content
             
             self.task_dict = final_task_dict
+        self.sample_prob=data_config.sample_prob
         self.down_rate = data_config.down_rate
         self.box = None
         self.need_target = need_target
@@ -38,16 +39,15 @@ class BatchGenerator(object):
         self.switch_after_shuffles = data_config.switch_after_shuffles
         self.world_to_cubic = data_config.world_to_cubic
         self.batch_size = data_config.batch_size
-        self.data_list = data_config.data_list
+        self.target_tooth_list = data_config.data_list
         self.index = 0
         self.index_dir = 0
-        self.shuffle_times = 0
         if self.load_case_once > 0:
-            self.load_case_list(self.get_case_list())
+            self.load_case_sure(self.get_case_list())
         else:
-            self.load_case_list(self.total_case_list)
+            self.load_case_sure(self.total_case_list)
         self.suffle()
-    
+
     def get_case_list(self):
         if self.index_dir + self.load_case_once > self.total_case_num:
             self.index_dir = 0
@@ -60,7 +60,10 @@ class BatchGenerator(object):
         case_load = self.total_case_list[self.index_dir:self.index_dir + self.load_case_once]
         self.index_dir += self.load_case_once
         return case_load
-    
+
+    def needSample(self,x,label):
+        return x<self.sample_prob[label]
+
     def load_useful_tooth(self, full_case_dir, target_tooth_list):
         # 读取一个病例中的多颗牙齿
         box_list = []
@@ -69,24 +72,25 @@ class BatchGenerator(object):
         case_y = None
         case_mask=None
         actual_tooth_list = os.listdir(full_case_dir)
-        
+            
         
         for tooth in target_tooth_list:
             if tooth not in actual_tooth_list:
                 continue
             tooth_dir = full_case_dir + tooth + '/'
-            box_case_tooth=self.loadmhds(tooth_dir)
-            augment_num=box_case_tooth.shape[0]
-            box_list.append(box_case_tooth)
+            augment_num=self.get_augment_num(tooth_dir)
+            
             if self.need_target:
                 augment_list = []
                 augment_mask_list = []
-                
+                x=np.random.rand()
+                sample_any=False
                 for task_content in self.task_dict.values():
-                    if not os.path.exists(tooth_dir + task_content['label_file']):
-                        f_array = np.zeros([augment_num, task_content['num_feature'] * 3])
-                        mask_array=np.zeros_like(f_array).astype(np.bool)
-                    else:
+                    sample_this= os.path.exists(tooth_dir + task_content['label_file']) and \
+                                self.needSample(x,task_content['label_file'])
+                    
+                    if sample_this:
+                        sample_any=True
                         f_array = self.load_y(
                             tooth_dir + task_content['label_file'],
                             task_content['num_feature'],
@@ -94,15 +98,26 @@ class BatchGenerator(object):
                             task_content['index']
                         )
                         mask_array=np.ones_like(f_array).astype(np.bool)
+                    else:
+                        f_array = np.zeros([augment_num, task_content['num_feature'] * 3])
+                        mask_array=np.zeros_like(f_array).astype(np.bool)
+                        
 
                     augment_list.append(f_array)
                     augment_mask_list.append(mask_array)
                 
-                tooth_array = np.concatenate(augment_list, axis=1)
-                tooth_mask_array = np.concatenate(augment_mask_list, axis=1)
-                case_list.append(tooth_array)
-                mask_list.append(tooth_mask_array)
-                
+                if sample_any:
+                    tooth_array = np.concatenate(augment_list, axis=1)
+                    tooth_mask_array = np.concatenate(augment_mask_list, axis=1)
+                    case_list.append(tooth_array)
+                    mask_list.append(tooth_mask_array)
+                    box_case_tooth = self.loadmhds(tooth_dir)
+                    box_list.append(box_case_tooth)
+
+            else:
+                box_case_tooth = self.loadmhds(tooth_dir)
+                box_list.append(box_case_tooth)
+
         if box_list != []:
             case_box = np.concatenate(box_list, axis=0)
             if self.need_target:
@@ -112,8 +127,13 @@ class BatchGenerator(object):
             return case_box, case_y, case_mask
         else:
             return None
-    
-    def load_case_list(self, case_load):
+        
+    def load_case_sure(self,case_load):
+        filled=False
+        while(not filled):
+            filled=self.load_cases(case_load)
+            
+    def load_cases(self, case_load):
         # 读取多个病例
         self.box = None
         
@@ -125,10 +145,11 @@ class BatchGenerator(object):
             self.case_load = np.array(case_load)
         for i, case_name in enumerate(case_load):
             full_case_dir = self.total_case_dir + case_name + '/'
-            load_result = self.load_useful_tooth(full_case_dir, self.data_list)
+            load_result = self.load_useful_tooth(full_case_dir, self.target_tooth_list)
             if load_result is not None:
                 box, y,mask = load_result
             else:
+                print('load empty case')
                 continue
             box_list.append(box)
             if self.need_name:
@@ -138,7 +159,7 @@ class BatchGenerator(object):
                 y_list.append(y)
                 mask_list.append(mask)
         
-        if box_list != None:
+        if box_list != []:
             self.box = np.concatenate(box_list, axis=0)
             if self.need_name:
                 self.name_index = np.concatenate(name_index_list, axis=0)
@@ -147,6 +168,10 @@ class BatchGenerator(object):
                 self.mask = np.concatenate(mask_list, axis=0)
             self.sample_num = self.box.shape[0]
             assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
+            return True
+        else:
+            print('box_list is empty')
+            return False
     
     def load_y(self, info_file, num_feature, num_feature_need, info_index):
         # print('file_dir = ',info_file,'\n')
@@ -168,6 +193,8 @@ class BatchGenerator(object):
             ct_scan=ct_scan[::self.down_rate, ::self.down_rate,::self.down_rate]
 
         return ct_scan
+    def get_augment_num(self,collection_path):
+        return len([name for name in os.listdir(collection_path) if os.path.splitext(name)[1] == '.mhd'])
     
     def loadmhds(self, collection_path):
         '''
@@ -194,15 +221,13 @@ class BatchGenerator(object):
             self.name_index = self.name_index[perm]
         if self.need_target:
             self.y = self.y[perm]
-    
+            self.mask = self.mask[perm]
+
     def get_batch(self):
         if self.index + self.batch_size > self.sample_num:
             self.index = 0
-            self.shuffle_times += 1
-            if self.load_case_once > 0 and self.shuffle_times >= self.switch_after_shuffles:
-                print('load data for ' + self.usage)
-                self.load_case_list(self.get_case_list())
-                self.shuffle_times = 0
+            if self.load_case_once > 0:
+                self.load_case_sure(self.get_case_list())
             self.suffle()
         
         box_batch = np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(), 4)
@@ -225,7 +250,10 @@ class BatchGenerator(object):
 
 if __name__ == '__main__':
     gen = BatchGenerator(TrainDataConfig)
-    pass
+    for i in range(10**5):
+        gen.get_batch()
+        if i%100==0:
+            print(i)
     # while True:
     #     box, class_, y = gen.get_batch()
     #     mask = np.ones_like(y, dtype=bool)

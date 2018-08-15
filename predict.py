@@ -23,7 +23,6 @@ if __name__ == '__main__':
             NEED_TARGET=False
         detector = DetectNet(need_targets=NEED_TARGET,is_training_sti=False)
         # pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
-        pred_end = detector.total_output
         
         #############
         var_list = tf.trainable_variables()
@@ -95,17 +94,16 @@ if __name__ == '__main__':
                     avg=i/(i+1)*avg+1/(i+1)*loss
                 
                 for iter in range(500):
-                    box_batch, y_batch, mask_batch, class_batch, name_batch = test_batch_gen.get_batch()
+                    box_batch, y_batch, mask_batch, name_batch = test_batch_gen.get_batch()
                     
                     feed_dict = {detector.input_box: box_batch,
                                  detector.targets: y_batch,
                                  detector.f_mask: mask_batch,
                                  detector.is_training: False}
                     
-                    f, error , output_mask,target_mask = sess.run([pred_end,
-                                         detector.feature_loss,
-                                         detector.f_output_masked,
-                                        detector.target_masked
+                    f, error , output_mask = sess.run([detector.output,
+                                         detector.weight_loss,
+                                         detector.f_mask,
                                          
                                          ], feed_dict=feed_dict)
                     
@@ -116,7 +114,7 @@ if __name__ == '__main__':
     
                     if NEED_DISPLAY:
                         box_batch = np.squeeze(box_batch, 4)
-                        display_batch(box_batch, f, mask_batch, TestDataConfig.num_feature_need)
+                        display_batch(box_batch, f, mask_batch)
                         
                 print('avg  ', avg)
             else:
@@ -131,7 +129,7 @@ if __name__ == '__main__':
                     else:
                         feed_dict = {detector.input_box: box_batch,detector.is_training: False}
         
-                    f = sess.run(pred_end, feed_dict=feed_dict)
+                    f = sess.run(detector.output, feed_dict=feed_dict)
                     # f=f*12./128.
                     f = np.int32(f)
                     print(f)
