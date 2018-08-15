@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import SimpleITK as sitk
 import os
@@ -12,9 +14,10 @@ class BatchGenerator(object):
                  need_name=False):
         self.usage = data_config.usage
         if need_target:
+            data_count_dict=OrderedDict([])
             final_task_dict = OrderedDict([])
             for task, task_content in data_config.task_dict.items():
-                
+                data_count_dict[task]=0
                 index = []
                 for f in task_content['feature_need']:
                     index += (3 * f + np.array([0, 1, 2])).tolist()
@@ -24,6 +27,7 @@ class BatchGenerator(object):
                 final_task_dict[task] = task_content
             
             self.task_dict = final_task_dict
+            self.data_count_dict=data_count_dict
         self.sample_prob=data_config.sample_prob
         self.down_rate = data_config.down_rate
         self.box = None
@@ -42,24 +46,32 @@ class BatchGenerator(object):
         self.target_tooth_list = data_config.data_list
         self.index = 0
         self.index_dir = 0
-        if self.load_case_once > 0:
-            self.load_case_sure(self.get_case_list())
-        else:
-            self.load_case_sure(self.total_case_list)
+        self.shuffle_root_dir()
+        self.load_cases()
         self.suffle()
+        
+    def shuffle_root_dir(self):
+        perm = np.arange(self.total_case_num)
+        np.random.shuffle(perm)  # 打乱
+        array = np.array(self.total_case_list)
+        array = array[perm]
+        self.total_case_list = list(array)
 
     def get_case_list(self):
-        if self.index_dir + self.load_case_once > self.total_case_num:
-            self.index_dir = 0
-            perm = np.arange(self.total_case_num)
-            np.random.shuffle(perm)  # 打乱
-            array = np.array(self.total_case_list)
-            array = array[perm]
-            self.total_case_list = list(array)
-        
-        case_load = self.total_case_list[self.index_dir:self.index_dir + self.load_case_once]
-        self.index_dir += self.load_case_once
-        return case_load
+        all_cases_loaded=False
+        if self.load_case_once==0:
+            all_cases_loaded = True
+            self.shuffle_root_dir()
+            case_load=self.total_case_list
+        else:
+            if self.index_dir + self.load_case_once > self.total_case_num:
+                all_cases_loaded=True
+                self.index_dir = 0
+                self.shuffle_root_dir()
+
+            case_load = self.total_case_list[self.index_dir:self.index_dir + self.load_case_once]
+            self.index_dir += self.load_case_once
+        return case_load,all_cases_loaded
 
     def needSample(self,x,label):
         return x<self.sample_prob[label]
@@ -85,12 +97,13 @@ class BatchGenerator(object):
                 augment_mask_list = []
                 x=np.random.rand()
                 sample_any=False
-                for task_content in self.task_dict.values():
+                for task,task_content in self.task_dict.items():
                     sample_this= os.path.exists(tooth_dir + task_content['label_file']) and \
                                 self.needSample(x,task_content['label_file'])
                     
                     if sample_this:
                         sample_any=True
+                        self.data_count_dict[task]+=augment_num
                         f_array = self.load_y(
                             tooth_dir + task_content['label_file'],
                             task_content['num_feature'],
@@ -128,12 +141,16 @@ class BatchGenerator(object):
         else:
             return None
         
-    def load_case_sure(self,case_load):
+    def load_cases(self):
         filled=False
         while(not filled):
-            filled=self.load_cases(case_load)
-            
-    def load_cases(self, case_load):
+            case_load,all_cases_loaded=self.get_case_list()
+            filled=self.try_load_cases(case_load)
+            if all_cases_loaded and not filled:
+                logging.error('already check all data, but with nothing readed !!!!!')
+                return
+
+    def try_load_cases(self, case_load):
         # 读取多个病例
         self.box = None
         
@@ -149,7 +166,7 @@ class BatchGenerator(object):
             if load_result is not None:
                 box, y,mask = load_result
             else:
-                print('load empty case')
+                # print('load empty case')
                 continue
             box_list.append(box)
             if self.need_name:
@@ -170,7 +187,7 @@ class BatchGenerator(object):
             assert self.batch_size <= self.sample_num, 'batch_size should be smaller than sample_num'
             return True
         else:
-            print('box_list is empty')
+            # print('box_list is empty')
             return False
     
     def load_y(self, info_file, num_feature, num_feature_need, info_index):
@@ -227,7 +244,7 @@ class BatchGenerator(object):
         if self.index + self.batch_size > self.sample_num:
             self.index = 0
             if self.load_case_once > 0:
-                self.load_case_sure(self.get_case_list())
+                self.load_cases()
             self.suffle()
         
         box_batch = np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(), 4)
@@ -246,13 +263,27 @@ class BatchGenerator(object):
         self.index += self.batch_size
 
         return return_list
+    
+    def get_data_static(self):
+        total=sum(self.data_count_dict.values())
+        if total>2**63:
+            for k in self.data_count_dict:
+                self.data_count_dict[k]=0
+        proportion_dict={k:v/total for k,v in self.data_count_dict.items()}
+        return proportion_dict
+        
+        
+        
+        
 
 
 if __name__ == '__main__':
     gen = BatchGenerator(TrainDataConfig)
     for i in range(10**5):
         gen.get_batch()
-        if i%100==0:
+        if i%10==0:
+            for k,v in gen.get_data_static().items():
+                print(k,'  ',v)
             print(i)
     # while True:
     #     box, class_, y = gen.get_batch()

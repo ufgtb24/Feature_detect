@@ -21,6 +21,7 @@ SAMPLE_PROB={
 
 # LOSS_WEIGHT=np.array([1]*6+[0.3]*15+[0.5]*6)
 
+# python 3.5 之前的 以字符串为索引的 dict 是无序的，以数字为索引的有序
 TASK_DICT = OrderedDict(
     [
         ('edge',

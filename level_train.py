@@ -131,7 +131,6 @@ if __name__ == '__main__':
 
         for iter in range(TOTAL_EPHOC):
             box_batch ,y_batch, mask_batch = train_batch_gen.get_batch()
-            
             feed_dict = {detector.input_box: box_batch,
                          detector.targets: y_batch,
                          detector.f_mask:mask_batch,
@@ -169,6 +168,9 @@ if __name__ == '__main__':
                              detector.f_mask: mask_batch,
                              detector.is_training: False}
 
+                prop_dict = train_batch_gen.get_data_static()
+                for k,v in prop_dict.items():
+                    print("%s: %f  "%(k,v))
                 test_eloss, test_wloss,summary = sess.run([detector.equal_loss,
                                                            detector.weight_loss,
                                                 detector.train_summary], feed_dict=feed_dict)
