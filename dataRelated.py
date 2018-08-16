@@ -13,6 +13,7 @@ class BatchGenerator(object):
                  need_target=True,
                  need_name=False):
         self.usage = data_config.usage
+        self.success_read=False
         if need_target:
             data_count_dict=OrderedDict([])
             final_task_dict = OrderedDict([])
@@ -150,9 +151,10 @@ class BatchGenerator(object):
         while(not filled):
             case_load,all_cases_loaded=self.get_case_list()
             filled=self.try_load_cases(case_load)
-            if all_cases_loaded and not filled:
+            if all_cases_loaded and not filled and not self.success_read:
                 logging.error('already check all data, but with nothing readed !!!!!')
                 return
+        self.success_read=True
 
     def try_load_cases(self, case_load):
         # 读取多个病例
@@ -284,7 +286,9 @@ class BatchGenerator(object):
 if __name__ == '__main__':
     gen = BatchGenerator(TrainDataConfig)
     for i in range(10**5):
-        gen.get_batch()
+        box_batch, y_batch, mask_batch=gen.get_batch()
+        
+        
         if i%10==0:
             for k,v in gen.get_data_static().items():
                 print(k,'  ',v)

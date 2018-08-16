@@ -209,11 +209,11 @@ def display_batch(box, y, mask):
                       color=(0, 1, 0),
                       scale_factor=1,
                       transparent=False)
-
+        colors=[(1,0,0),(0,0,1),(0,0,0),(0.5,0.5,0.5)]
         for j in range(feature_need):
             mlab.points3d(feature_index[j][0], feature_index[j][1], feature_index[j][2],
                           mode="cube",
-                          color=(1, 0, 0),
+                          color=colors[j],
                           scale_factor=1,
                           transparent=False)
         mlab.show()
@@ -303,11 +303,9 @@ if __name__ == '__main__':
     
     train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
     for i in range(1000):
-        box_batch, y_batch,mask_batch,class_batch,name=train_batch_gen.get_batch()
+        box_batch, y_batch,mask_batch,name=train_batch_gen.get_batch()
         box_batch=np.squeeze(box_batch,4)
-        if i%30==0:
-            print(name)
-            display_batch(box_batch,y_batch,mask_batch,TestDataConfig.num_feature_need)
+        display_batch(box_batch, y_batch, mask_batch)
         
         
 

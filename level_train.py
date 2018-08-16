@@ -47,9 +47,25 @@ class DetectNet(object):
                         
                         
                         self.loss_matrix= tf.square(self.output - self.targets)
-                        self.weight_loss_matrix=self.loss_matrix * LOSS_WEIGHT
-                        self.weight_loss = 3 * tf.reduce_mean(tf.boolean_mask(self.weight_loss_matrix, self.f_mask))
+
+                        self.eloss_m=self.loss_matrix[:,:6]
+                        self.floss_m=self.loss_matrix[:,6:21]
+                        self.gloss_m=self.loss_matrix[:,21:]
+                        
+                        self.emask=self.f_mask[:,:6]
+                        self.fmask=self.f_mask[:,6:21]
+                        self.gmask=self.f_mask[:,21:]
+                        
+                        self.eloss=3 * tf.reduce_mean(tf.boolean_mask(self.eloss_m, self.emask))
+                        self.floss=3 * tf.reduce_mean(tf.boolean_mask(self.floss_m, self.fmask))
+                        self.gloss=3 * tf.reduce_mean(tf.boolean_mask(self.gloss_m, self.gmask))
+                        
                         self.equal_loss=3 * tf.reduce_mean(tf.boolean_mask(self.loss_matrix, self.f_mask))
+
+                        self.weight_loss_matrix=self.loss_matrix * LOSS_WEIGHT
+
+           
+                        self.weight_loss = 3 * tf.reduce_mean(tf.boolean_mask(self.weight_loss_matrix, self.f_mask))
                     ####################################
                         if is_training_sti:
                             train_summary = []
@@ -70,10 +86,10 @@ class DetectNet(object):
 if __name__ == '__main__':
 
     final_error=0
-    train_batch_gen = BatchGenerator(TrainDataConfig)
-    test_batch_gen = BatchGenerator(ValiDataConfig)
 
     detector = DetectNet()
+    train_batch_gen = BatchGenerator(TrainDataConfig)
+    test_batch_gen = BatchGenerator(ValiDataConfig)
 
 
     # saver = tf.train.Saver(max_to_keep=1)
@@ -84,21 +100,21 @@ if __name__ == '__main__':
     bn_moving_vars += [g for g in g_list if 'moving_var' in g.name]
     
     ################# important  !!!!!!!!!!!!!!!  dont delete
-    # if some structure changed compared to the saved model, need to load different vars
-    # 不能让 Saver retore .data 中不存在的 变量， 所以要缩减任务
-    load_list = [t for t in tf.trainable_variables() if not
-                 t.name.startswith('detector/Logits')]
-                 # and not t.name.endswith('pred_output/weights:0')]
-
-    var_list=load_list+bn_moving_vars
-    loader = tf.train.Saver(var_list=var_list, max_to_keep=1)
+    # # if some structure changed compared to the saved model, need to load different vars
+    # # 不能让 Saver retore .data 中不存在的 变量， 所以要缩减任务
+    # load_list = [t for t in tf.trainable_variables() if not
+    #              t.name.startswith('detector/Logits')]
+    #              # and not t.name.endswith('pred_output/weights:0')]
+    #
+    # var_list=load_list+bn_moving_vars
+    # loader = tf.train.Saver(var_list=var_list, max_to_keep=1)
 
     ##################
     
     var_list = tf.trainable_variables()+bn_moving_vars
 
-    NEED_RESTORE = False
-    NEED_SAVE = True
+    NEED_RESTORE = True
+    NEED_SAVE = False
     NEED_INIT_SAVE = False
 
     TOTAL_EPHOC = 100000
@@ -124,9 +140,9 @@ if __name__ == '__main__':
             # assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
             #文件内容必须大于等于模型内容
 
-            # model_file = tf.train.latest_checkpoint(MODEL_PATH)
-            # saver.restore(sess, model_file)  # 从模型中恢复最新变量
-            loader.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
+            model_file = tf.train.latest_checkpoint(MODEL_PATH)
+            saver.restore(sess, model_file)  # 从模型中恢复最新变量
+            # saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
 
         for iter in range(TOTAL_EPHOC):
             box_batch ,y_batch, mask_batch = train_batch_gen.get_batch()
@@ -135,19 +151,21 @@ if __name__ == '__main__':
                          detector.f_mask:mask_batch,
                          detector.is_training: True}
 
-            _, train_eloss,train_wloss = sess.run([detector.train_op, detector.equal_loss,detector.weight_loss], feed_dict=feed_dict)
+            # _, train_eloss,train_wloss = sess.run([detector.train_op, detector.equal_loss,detector.weight_loss], feed_dict=feed_dict)
             
-            # _,outputs,targets,f_mask,loss_matrix,weight_loss_matrix,wloss,eloss \
-            #     = sess.run([
-            #     detector.train_op,
-            #                 detector.output,
-            #                detector.targets,
-            #                detector.f_mask,
-            #                detector.loss_matrix,
-            #                detector.weight_loss_matrix,
-            #                detector.weight_loss,
-            #                detector.equal_loss
-            #                ], feed_dict=feed_dict)
+            _,outputs,targets,f_mask,loss_matrix,train_eloss, edge_loss,facc_loss,gro_loss\
+                = sess.run([
+                            detector.train_op,
+                            detector.output,
+                           detector.targets,
+                           detector.f_mask,
+                           detector.loss_matrix,
+                           detector.equal_loss,
+                detector.eloss,
+                detector.floss,
+                detector.gloss,
+                           ], feed_dict=feed_dict)
+            print('edge_loss =%f   facc_loss=%f    gro_loss=%f'%(edge_loss,facc_loss,gro_loss))
 
             
             
@@ -167,8 +185,7 @@ if __name__ == '__main__':
                              detector.f_mask: mask_batch,
                              detector.is_training: False}
 
-                test_eloss, test_wloss,summary = sess.run([detector.equal_loss,
-                                                           detector.weight_loss,
+                test_eloss,summary = sess.run([detector.equal_loss,
                                                 detector.train_summary], feed_dict=feed_dict)
                 
                 if test_eloss < winner_loss:
@@ -179,8 +196,8 @@ if __name__ == '__main__':
                 if NEED_SAVE and iter%save_step==0  :
                     save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', int(iter / save_step))
 
-                print("%d  trainCost=%f   test_loss =%f   winnerCost=%f   test_step=%d    train_wloss=%f    test_wloss=%f\n"
-                      % (iter, train_eloss, test_eloss, winner_loss, step_from_last_mininum,train_wloss,test_wloss))
+                print("%d  trainCost=%f   test_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f\n"
+                      % (iter, train_eloss, test_eloss, winner_loss, step_from_last_mininum, edge_loss,facc_loss,gro_loss))
                 
                 prop_dict = train_batch_gen.get_data_static()
                 for k,v in prop_dict.items():

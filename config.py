@@ -35,7 +35,7 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt',
              'loss_weight': 1,
-             'sample_propotion': 0.2
+             'sample_propotion': 0
     
          }
          ),
@@ -46,7 +46,7 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2],
              'label_file': 'info.txt',
              'loss_weight': 1,
-             'sample_propotion': 0.5
+             'sample_propotion': 0
          }
          )
     ]
