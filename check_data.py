@@ -1,7 +1,8 @@
 import os
-import numpy as np
 
 # label file column number check
+from display import load_y
+
 '''
 def check_availability(dir):
     Tooth_dir=os.listdir(dir)
@@ -31,7 +32,7 @@ def check_availability(dir):
 '''
 
 # label file line number check
-
+'''
 def check_availability(dir):
     Tooth_dir=os.listdir(dir)
     error_num=0
@@ -60,6 +61,82 @@ def check_availability(dir):
             #     print(case_name)
 
     return error_num
+'''
+# label file line number identical check
+def check_availability(dir):
+    Tooth_dir=os.listdir(dir)
+    error_num=0
+
+    for case_name in Tooth_dir:
+        full_case_dir = dir  + case_name
+        # tooth_list=os.listdir(full_case_dir)
+        tooth_list=['tooth6','tooth7','tooth8']
+        valide=True
+        for tooth in tooth_list:
+            # global valide
+            valide=True
+            edge_dir=full_case_dir+'/'+tooth+'/edge.txt'
+            if os.path.exists(edge_dir):
+                y,non_zero= load_y(edge_dir, 2)
+                valide=non_zero
+                for i in range(y.shape[0]):
+                    if y[i][0]<y[i,3] :
+                        valide = False
+            if not valide:
+                print(case_name,'   ',tooth)
+                
+        if not valide:
+            error_num += 1
+
+    print(error_num)
+            
+    
+                
+            
+
+
+            # if 'tooth'+str(i) not in data_list:
+            #     print(case_name)
+
+    return error_num
+
+
+
+# # label file line number identical check
+# def check_availability(dir):
+#     Tooth_dir=os.listdir(dir)
+#     error_num=0
+#
+#     for case_name in Tooth_dir:
+#         full_case_dir = dir  + case_name
+#         tooth_list=os.listdir(full_case_dir)
+#         for tooth in tooth_list:
+#             valide=True
+#             facc_dir=full_case_dir+'/'+tooth+'/FaccControlPts.txt'
+#             groove_dir=full_case_dir+'/'+tooth+'/info.txt'
+#             edge_dir=full_case_dir+'/'+tooth+'/edge.txt'
+#             f_num=g_num=e_num=0
+#             if os.path.exists(facc_dir):
+#                 f_num=len(open(facc_dir, 'rU').readlines())
+#             if os.path.exists(groove_dir):
+#                 g_num =len(open(groove_dir, 'rU').readlines())
+#             if os.path.exists(edge_dir):
+#                 e_num =len(open(edge_dir, 'rU').readlines())
+#             files_num=[f_num,g_num,e_num]
+#             max_num=max(files_num)
+#             for file_num in files_num:
+#                 if file_num !=max_num and file_num!=0:
+#                     valide=False
+#             if valide==False:
+#                 print(case_name+'  '+tooth)
+#
+#
+#
+#             # if 'tooth'+str(i) not in data_list:
+#             #     print(case_name)
+#
+#     return error_num
+
 
 # file name check
 '''
@@ -80,30 +157,7 @@ def check_availability(dir):
 
     return error_num
 '''
-'''
-# label file line number check
-def check_availability(dir):
-    Tooth_dir=os.listdir(dir)
-    error_num=0
-
-    for case_name in Tooth_dir:
-        full_case_dir = dir  + case_name
-        tooth_list=os.listdir(full_case_dir)
-        for tooth in tooth_list:
-            facc_dir=full_case_dir+'/'+tooth+'/FaccControlPts.txt'
-            groove_dir=full_case_dir+'/'+tooth+'/info.txt'
-            line_num=0
-            if os.path.exists(facc_dir):
-                line_num=len(open(facc_dir, 'rU').readlines())
-            if os.path.exists(groove_dir):
-                if len(open(groove_dir, 'rU').readlines())!=line_num:
-                    print(case_name)
 
 
-            # if 'tooth'+str(i) not in data_list:
-            #     print(case_name)
-
-    return error_num
-'''
 if __name__ == '__main__':
-    check_availability('F:/ProjectData/tmp/Validate_edge/')
+    check_availability('F:/ProjectData/tmp/Train/')

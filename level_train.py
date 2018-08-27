@@ -1,13 +1,10 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
-from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOG_PATH, MODEL_NAME, LOSS_WEIGHT
+from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, MODEL_NAME, LOSS_WEIGHT
 from dataRelated import BatchGenerator
 # import inception_v3 as icp
 import inception_resnet_v2 as icp
-
-
-
-
+from display import display_batch
 
 
 class DetectNet(object):
@@ -36,7 +33,7 @@ class DetectNet(object):
 
                 pred = slim.fully_connected(net, DataConfig.feature_dim, activation_fn=None,
                                               scope='Logits')
-
+                print('DataConfig.feature_dim: ',DataConfig.feature_dim)
                 self.output=tf.identity(pred, name='output_node')
                 
                 if need_targets:
@@ -69,7 +66,11 @@ class DetectNet(object):
                     ####################################
                         if is_training_sti:
                             train_summary = []
-                            train_summary.append(tf.summary.scalar('feature_error', self.weight_loss))
+                            train_summary.append(tf.summary.scalar('feature_error', self.equal_loss))
+                            train_summary.append(tf.summary.scalar('edge_error', self.eloss))
+                            train_summary.append(tf.summary.scalar('facc_error', self.floss))
+                            train_summary.append(tf.summary.scalar('groove_error', self.gloss))
+                            
                             self.train_summary = tf.summary.merge(train_summary)
     
                             with tf.variable_scope('optimizer'):
@@ -114,12 +115,12 @@ if __name__ == '__main__':
     var_list = tf.trainable_variables()+bn_moving_vars
 
     NEED_RESTORE = True
-    NEED_SAVE = False
+    NEED_SAVE = True
     NEED_INIT_SAVE = False
 
     TOTAL_EPHOC = 100000
-    test_step = 10
-    save_step=1000
+    test_step = 100
+    save_step=5000
     need_early_stop = False
     EARLY_STOP_STEP = 100
 
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     
     with tf.Session(config=config) as sess:
         
-        writer = tf.summary.FileWriter(LOG_PATH, sess.graph)
+        writer = tf.summary.FileWriter(MODEL_PATH, sess.graph)
         saver = tf.train.Saver(var_list=var_list, max_to_keep=10)
         sess.run(tf.global_variables_initializer())
 
@@ -142,33 +143,29 @@ if __name__ == '__main__':
 
             model_file = tf.train.latest_checkpoint(MODEL_PATH)
             saver.restore(sess, model_file)  # 从模型中恢复最新变量
-            # saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
+            # loader.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
 
-        for iter in range(TOTAL_EPHOC):
+        for iter in range(1,TOTAL_EPHOC):
             box_batch ,y_batch, mask_batch = train_batch_gen.get_batch()
+            
+            # display_batch(box_batch, y_batch, mask_batch)
             feed_dict = {detector.input_box: box_batch,
                          detector.targets: y_batch,
                          detector.f_mask:mask_batch,
                          detector.is_training: True}
-
+            
             # _, train_eloss,train_wloss = sess.run([detector.train_op, detector.equal_loss,detector.weight_loss], feed_dict=feed_dict)
             
-            _,outputs,targets,f_mask,loss_matrix,train_eloss, edge_loss,facc_loss,gro_loss\
+            _,outputs,loss_matrix,train_eloss\
                 = sess.run([
                             detector.train_op,
                             detector.output,
-                           detector.targets,
-                           detector.f_mask,
                            detector.loss_matrix,
                            detector.equal_loss,
-                detector.eloss,
-                detector.floss,
-                detector.gloss,
                            ], feed_dict=feed_dict)
-            print('edge_loss =%f   facc_loss=%f    gro_loss=%f'%(edge_loss,facc_loss,gro_loss))
+            # print('edge_loss =%f   facc_loss=%f    gro_loss=%f'%(edge_loss,facc_loss,gro_loss))
 
-            
-            
+
             if iter % test_step == 0:
                 if NEED_INIT_SAVE and start == False:
                     save_path = saver.save(sess, MODEL_PATH+'model.ckpt',iter)
@@ -185,8 +182,11 @@ if __name__ == '__main__':
                              detector.f_mask: mask_batch,
                              detector.is_training: False}
 
-                test_eloss,summary = sess.run([detector.equal_loss,
-                                                detector.train_summary], feed_dict=feed_dict)
+                test_eloss, edge_loss,facc_loss,gro_loss,summary = sess.run([detector.equal_loss,
+                                            detector.eloss,
+                                            detector.floss,
+                                            detector.gloss,
+                                             detector.train_summary], feed_dict=feed_dict)
                 
                 if test_eloss < winner_loss:
                     winner_loss = test_eloss

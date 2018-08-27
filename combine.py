@@ -10,7 +10,7 @@ checkpoint_state_name = "checkpoint_state"
 input_graph = os.path.join(MODEL_PATH,PB_PATH)
 input_saver = ""
 input_binary = False
-input_checkpoint = os.path.join(MODEL_PATH,MODEL_NAME)
+# input_checkpoint = os.path.join(MODEL_PATH,MODEL_NAME)
 
 # Note that we this normally should be only "output_node"!!!
 output_node_names = "detector/output_node"
@@ -22,7 +22,7 @@ initializer_nodes=[]
 variable_names_whitelist=""
 variable_names_blacklist=""
 
-def gen_frozen_graph():
+def gen_frozen_graph(input_checkpoint):
     freeze_graph.freeze_graph(input_graph,
                               input_saver,
                               input_binary,

@@ -72,16 +72,16 @@ def loadpickle(path):
     return data
 
 
-def load_y(info_file, world_to_cubic):
-    info = np.reshape(np.loadtxt(info_file), [-1, 18])
+def load_y(info_file,feature_num):
+    info = np.reshape(np.loadtxt(info_file), [-1, 3*(feature_num+1)])
     origin = info[:, :3]
 
-    origin = np.tile(origin, np.array([5]))
+    origin = np.tile(origin, np.array([feature_num]))
     target = info[:, 3:]
     valide=True
     if 0 in target:
         valide=False
-    target = ((target - origin) * world_to_cubic).astype(int)
+    target = ((target - origin) * 128/12.).astype(int)
     return target,valide
 
 
@@ -118,34 +118,47 @@ def loadmhd(collection_path):
     return box
 
 
-def show_single(dir):
-    ct = load_itk(os.path.join(dir, 'toothlabel5_1_1_1.mhd'))
-    info_file = os.path.join(dir, 'info.txt')
+def show_single(dir,req_index):
+    cur=0
+    show_name=None
+    for fileName in os.listdir(dir):
+        if os.path.splitext(fileName)[1] == '.mhd':
+            if req_index==cur:
+                show_name=fileName
+            cur+=1
+            
+    ct = load_itk(os.path.join(dir, show_name))
+    info_file = os.path.join(dir, 'edge.txt')
 
-    feature = load_y(info_file, BOX_LEN / WORLD_SIZE)
-
-    ct[feature[0, 0], feature[0, 1], feature[0, 2]] = 2
-    ct[feature[0, 3], feature[0, 4], feature[0, 5]] = 2
-
-    fz, fy, fx = np.where(ct == 2)
+    feature,non_zero = load_y(info_file,2)
+    
+    x1, x2, x3 = np.where(ct == 1)
+    mlab.points3d(x1, x2, x3,
+                  mode="cube",
+                  color=(0, 1, 0),
+                  scale_factor=1,
+                  transparent=True)
+    
     ex, ey, ez = edges(BOX_LEN)
-    x, y, z = np.where(ct == 1)
 
-    mlab.points3d(ex, ey, ez,
+    mlab.points3d(ex+100, ey, ez,
                   mode="cube",
                   color=(0, 0, 1),
                   scale_factor=1)
 
-    mlab.points3d(x, y, z,
-                  mode="cube",
-                  color=(0, 1, 0),
-                  scale_factor=1, )
-    # transparent=True)
+    
+    colors = [(1, 0, 0), (0, 0, 1), (0, 0, 0), (0.5, 0.5, 0.5)]
 
-    mlab.points3d(fx, fy, fz,
+    mlab.points3d(feature[req_index,0], feature[req_index,1], feature[req_index,2],
                   mode="cube",
-                  color=(1, 0, 0),
-                  scale_factor=1)
+                  color=colors[0],
+                  scale_factor=1,
+                  transparent=False)
+    mlab.points3d(feature[req_index,3], feature[req_index,4], feature[req_index,5],
+                  mode="cube",
+                  color=colors[1],
+                  scale_factor=1,
+                  transparent=False)
 
     mlab.show()
 
@@ -177,15 +190,14 @@ def check_availability(dir):
 
 
 def display_batch(box, y, mask):
+    box = np.squeeze(box, 4)
     num=box.shape[0]
-    # ex, ey, ez = edges(GRID_SIZE)
-    # mlab.points3d(ex , ey, ez,
+    # ex, ey, ez = edges(BOX_LEN)
+    # mlab.points3d(ex , ey, ez+100,
     #               mode="cube",
     #               color=(0, 0, 1),
     #               scale_factor=1)
-    # class_batch=y[:,0]
-    # y=y[:,mask]
-    # y=y[:,1:]*mask.astype(int)
+
     y=y.astype(int)
     for i in range(num):
         ct = box[i]
@@ -193,16 +205,6 @@ def display_batch(box, y, mask):
         single_mask=np.where(mask[i])[0]
         feature_need = int(single_mask.shape[0]/3)
         # print(class_batch[i])
-        for j in range(feature_need):
-            try:
-                ct[single_y[3*j], single_y[3*j+1], single_y[3*j+2]]=j+2
-            except:
-                print('out bound')
-                continue
-        feature_index=[]
-        for j in range(feature_need):
-            feature_index.append(np.where(ct == j+2))
-        
         x1, x2, x3 = np.where(ct == 1)
         mlab.points3d(x1, x2, x3,
                       mode="cube",
@@ -210,10 +212,19 @@ def display_batch(box, y, mask):
                       scale_factor=1,
                       transparent=False)
         colors=[(1,0,0),(0,0,1),(0,0,0),(0.5,0.5,0.5)]
+        
         for j in range(feature_need):
-            mlab.points3d(feature_index[j][0], feature_index[j][1], feature_index[j][2],
+            # try:
+            #     ct[single_y[3*j], single_y[3*j+1], single_y[3*j+2]]=j+2
+            # except:
+            #     print('out bound')
+            #     continue
+            # feature_index.append(np.where(ct == j+2))
+            
+            print('%d  %d  %d  '%(single_y[3*j], single_y[3*j+1], single_y[3*j+2]))
+            mlab.points3d(single_y[3*j], single_y[3*j+1], single_y[3*j+2],
                           mode="cube",
-                          color=colors[j],
+                          color=(1,0,0),
                           scale_factor=1,
                           transparent=False)
         mlab.show()
@@ -304,9 +315,6 @@ if __name__ == '__main__':
     train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
     for i in range(1000):
         box_batch, y_batch,mask_batch,name=train_batch_gen.get_batch()
-        box_batch=np.squeeze(box_batch,4)
         display_batch(box_batch, y_batch, mask_batch)
-        
-        
 
-    # traverse_origin('F:/ProjectData/tmp/Train/0224$MC286Final\\tooth20')
+    # show_single('F:/ProjectData/tmp/Train/1213 11294836_mirror\\tooth8',6)

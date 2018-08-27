@@ -10,13 +10,11 @@ from level_train import DetectNet
 
 if __name__ == '__main__':
 
-    
     NEED_INFERENCE=True
     NEED_DISPLAY=True
     NEED_WRITE_GRAPH=False
-    NEED_TARGET=False # no need to change
+    NEED_TARGET=True # no need to change
     NEED_PB=False
-    
 
     if not NEED_PB:
         if NEED_WRITE_GRAPH:
@@ -49,7 +47,11 @@ if __name__ == '__main__':
 
         else:
             sess.run(tf.global_variables_initializer())
-            saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 存在就从模型中恢复变量
+            model_file = tf.train.latest_checkpoint(MODEL_PATH)
+            saver.restore(sess, model_file)  # 从模型中恢复最新变量
+            # saver.restore(sess, MODEL_PATH + MODEL_NAME)
+
+            # saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 存在就从模型中恢复变量
 
             
             if NEED_WRITE_GRAPH:
@@ -82,7 +84,7 @@ if __name__ == '__main__':
                 tf.train.write_graph(gd, MODEL_PATH, PB_PATH, as_text=True)
                 # load the serialized file, convert the current graph variables to constants, embed the converted
                 # constants into the loaded structure
-                gen_frozen_graph()
+                gen_frozen_graph(model_file)
 
         if NEED_INFERENCE:
             if NEED_TARGET:
@@ -108,12 +110,14 @@ if __name__ == '__main__':
                                          ], feed_dict=feed_dict)
                     
                     get_avg(iter,error)
-
-                    f=np.int32(f)
+                    
+                    # #将target 和 result 同框显示
+                    # f=np.concatenate([y_batch,f],axis=1)
+                    # mask_batch=np.concatenate([mask_batch,mask_batch],axis=1)
+                    
                     print('class ',f[0,0],'    loss  ',error,'    name: ',name_batch[0])
     
                     if NEED_DISPLAY:
-                        box_batch = np.squeeze(box_batch, 4)
                         display_batch(box_batch, f, mask_batch)
                         
                 print('avg  ', avg)
@@ -121,7 +125,7 @@ if __name__ == '__main__':
                 
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=False, need_name=True)
                 while True:
-                    box_batch,  name_batch = test_batch_gen.get_batch()
+                    box_batch, name_batch = test_batch_gen.get_batch()
 
                     if NEED_PB:
                         pred_end = sess.graph.get_tensor_by_name('import/detector/output_node:0')
@@ -136,7 +140,6 @@ if __name__ == '__main__':
                     mask_batch=np.zeros([box_batch.shape[0],27]).astype(bool)
                     mask_batch[:,6:21]=True
                     if NEED_DISPLAY:
-                        box_batch = np.squeeze(box_batch, 4)
                         display_batch(box_batch, f, mask_batch)
 
     
