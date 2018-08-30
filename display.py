@@ -188,7 +188,6 @@ def check_availability(dir):
 
     return error_num
 
-
 def display_batch(box, y, mask):
     box = np.squeeze(box, 4)
     num=box.shape[0]
@@ -211,7 +210,7 @@ def display_batch(box, y, mask):
                       color=(0, 1, 0),
                       scale_factor=1,
                       transparent=False)
-        colors=[(1,0,0),(0,0,1),(0,0,0),(0.5,0.5,0.5)]
+        colors=[(1,0,0),(0,0,1)]+[(0,0,0)]*10
         
         for j in range(feature_need):
             # try:
@@ -221,10 +220,10 @@ def display_batch(box, y, mask):
             #     continue
             # feature_index.append(np.where(ct == j+2))
             
-            print('%d  %d  %d  '%(single_y[3*j], single_y[3*j+1], single_y[3*j+2]))
+            # print('%d  %d  %d  '%(single_y[3*j], single_y[3*j+1], single_y[3*j+2]))
             mlab.points3d(single_y[3*j], single_y[3*j+1], single_y[3*j+2],
                           mode="cube",
-                          color=(1,0,0),
+                          color=colors[j],
                           scale_factor=1,
                           transparent=False)
         mlab.show()

@@ -1,10 +1,11 @@
+import os
 import tensorflow as tf
 from tensorflow.contrib import slim
-from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, MODEL_NAME, LOSS_WEIGHT
+from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOSS_WEIGHT
 from dataRelated import BatchGenerator
 # import inception_v3 as icp
 import inception_resnet_v2 as icp
-from display import display_batch
+from datetime import datetime
 
 
 class DetectNet(object):
@@ -113,10 +114,11 @@ if __name__ == '__main__':
     ##################
     
     var_list = tf.trainable_variables()+bn_moving_vars
+    load_var_list=var_list
 
-    NEED_RESTORE = True
-    NEED_SAVE = True
     NEED_INIT_SAVE = False
+    
+
 
     TOTAL_EPHOC = 100000
     test_step = 100
@@ -128,22 +130,44 @@ if __name__ == '__main__':
     step_from_last_mininum = 0
     start = False
 
+    dir_load= 'start/'  # where to restore the model
+    dir_save= None   # where to save the model
+
+    
+    
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    
+
     with tf.Session(config=config) as sess:
         
-        writer = tf.summary.FileWriter(MODEL_PATH, sess.graph)
+        loader = tf.train.Saver(var_list=load_var_list, max_to_keep=10)
         saver = tf.train.Saver(var_list=var_list, max_to_keep=10)
         sess.run(tf.global_variables_initializer())
+        
+        load_checkpoints_dir=None
+        if dir_load is not None:
+            load_checkpoints_dir= MODEL_PATH + dir_load
+        elif dir_save is not  None:
+            load_checkpoints_dir= MODEL_PATH + dir_save
+            
+        if load_checkpoints_dir is not None:
+            model_file = tf.train.latest_checkpoint(load_checkpoints_dir)
+            loader.restore(sess, model_file)  # 从模型中恢复最新变量
 
-        if NEED_RESTORE:
-            # assert os.path.exists(MODEL_PATH + 'checkpoint')  # 判断模型是否存在
-            #文件内容必须大于等于模型内容
+        if dir_save is None:
+            dir_save = datetime.now().strftime("%Y%m%d-%H%M")
+            save_checkpoints_dir = MODEL_PATH + dir_save + '/'
 
-            model_file = tf.train.latest_checkpoint(MODEL_PATH)
-            saver.restore(sess, model_file)  # 从模型中恢复最新变量
-            # loader.restore(sess, MODEL_PATH+MODEL_NAME)  # 从模型中恢复指定变量
+            try:
+                os.makedirs(save_checkpoints_dir)
+            except os.error:
+                pass
+        else:
+            save_checkpoints_dir = MODEL_PATH + dir_save + '/'
+
+        
+
+        writer = tf.summary.FileWriter(save_checkpoints_dir, sess.graph)
 
         for iter in range(1,TOTAL_EPHOC):
             box_batch ,y_batch, mask_batch = train_batch_gen.get_batch()
@@ -193,8 +217,8 @@ if __name__ == '__main__':
                     step_from_last_mininum = 0
                     
                 writer.add_summary(summary, int(iter / test_step))
-                if NEED_SAVE and iter%save_step==0  :
-                    save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', int(iter / save_step))
+                if iter%save_step==0  :
+                    save_path = saver.save(sess, save_checkpoints_dir + 'model.ckpt', int(iter / save_step))
 
                 print("%d  trainCost=%f   test_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f\n"
                       % (iter, train_eloss, test_eloss, winner_loss, step_from_last_mininum, edge_loss,facc_loss,gro_loss))

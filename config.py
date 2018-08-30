@@ -1,7 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
-MODEL_NAME='model.ckpt-166'
+MODEL_PATH = 'F:/ProjectData/tmp/model/low5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
@@ -23,7 +22,7 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'edge.txt',
-             'loss_weight':1,
+             'loss_weight':0.5,
              'sample_propotion':1
          }
          ),
@@ -33,8 +32,8 @@ TASK_DICT = OrderedDict(
              'num_feature': 5,
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt',
-             'loss_weight': 1,
-             'sample_propotion': 1
+             'loss_weight': 4,
+             'sample_propotion': 1  # 0.5
 
          }
          ),
@@ -44,7 +43,7 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'info.txt',
-             'loss_weight': 1,
+             'loss_weight': 8,
              'sample_propotion': 1
          }
          )
@@ -73,10 +72,10 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 class DataConfig(object):
-    data_list = up_edge
+    data_list = low_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir = 'F:/ProjectData/tmp/'
+    base_case_dir = 'F:/ProjectData/tmp/Try/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict = TASK_DICT
@@ -103,7 +102,7 @@ class ValiDataConfig(DataConfig):
 
 class TestDataConfig(DataConfig):
     batch_size = 1
-    total_case_dir = DataConfig.base_case_dir + 'Validate/'
+    total_case_dir = DataConfig.base_case_dir + 'Validate_new/'
     load_case_once = 1  # 每次读的病例数
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
     usage = '_Test'

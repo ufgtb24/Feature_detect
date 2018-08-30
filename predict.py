@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 # from crop_data import crop_batch
 from combine import PB_PATH, gen_frozen_graph, load_graph
-from config import MODEL_PATH, SHAPE_BOX, TestDataConfig, DataConfig, MODEL_NAME
+from config import MODEL_PATH, SHAPE_BOX, TestDataConfig, DataConfig
 from dataRelated import BatchGenerator
 from display import  display_batch
 from level_train import DetectNet
@@ -10,10 +10,10 @@ from level_train import DetectNet
 
 if __name__ == '__main__':
 
-    NEED_INFERENCE=True
-    NEED_DISPLAY=True
-    NEED_WRITE_GRAPH=False
-    NEED_TARGET=True # no need to change
+    NEED_INFERENCE=False
+    NEED_DISPLAY=False
+    NEED_WRITE_GRAPH=True
+    NEED_TARGET=False # no need to change
     NEED_PB=False
 
     if not NEED_PB:
@@ -90,10 +90,10 @@ if __name__ == '__main__':
             if NEED_TARGET:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=True,need_name=True)
                 
-                avg=0
-                def get_avg(i,loss):
-                    global avg
-                    avg=i/(i+1)*avg+1/(i+1)*loss
+                avg=[0]*5
+                def get_avg(i,loss_list):
+                    for i,loss in enumerate(loss_list):
+                        avg[i]=i/(i+1)*avg[i]+1/(i+1)*loss
                 
                 for iter in range(500):
                     box_batch, y_batch, mask_batch, name_batch = test_batch_gen.get_batch()
@@ -103,19 +103,27 @@ if __name__ == '__main__':
                                  detector.f_mask: mask_batch,
                                  detector.is_training: False}
                     
-                    f, error , output_mask = sess.run([detector.output,
-                                         detector.weight_loss,
+                    f, edge_loss ,facc_loss ,groove_loss , output_mask = \
+                        sess.run([detector.output,
+                                         detector.eloss,
+                                         detector.floss,
+                                         detector.gloss,
                                          detector.f_mask,
                                          
                                          ], feed_dict=feed_dict)
                     
-                    get_avg(iter,error)
+                    get_avg(iter,[edge_loss,facc_loss ,groove_loss ])
                     
                     # #将target 和 result 同框显示
                     # f=np.concatenate([y_batch,f],axis=1)
                     # mask_batch=np.concatenate([mask_batch,mask_batch],axis=1)
                     
-                    print('class ',f[0,0],'    loss  ',error,'    name: ',name_batch[0])
+                    print('edge_loss= ',edge_loss,'    facc_loss= ',facc_loss,'   groove_loss= ',groove_loss,
+                          '    name: ',name_batch[0])
+                    if edge_loss>100:
+                        display_batch(box_batch, f, mask_batch)
+                        display_batch(box_batch, y_batch, mask_batch)
+
     
                     if NEED_DISPLAY:
                         display_batch(box_batch, f, mask_batch)
@@ -134,11 +142,13 @@ if __name__ == '__main__':
                         feed_dict = {detector.input_box: box_batch,detector.is_training: False}
         
                     f = sess.run(detector.output, feed_dict=feed_dict)
+                    # print('feature\n  ',f,'    name: ',name_batch[0])
+
                     # f=f*12./128.
                     f = np.int32(f)
                     print(f)
-                    mask_batch=np.zeros([box_batch.shape[0],27]).astype(bool)
-                    mask_batch[:,6:21]=True
+                    mask_batch=np.ones([box_batch.shape[0],27]).astype(bool)
+                    # mask_batch[:,6:21]=True
                     if NEED_DISPLAY:
                         display_batch(box_batch, f, mask_batch)
 
