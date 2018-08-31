@@ -2,12 +2,9 @@ import os
 
 from tensorflow.python.tools import freeze_graph
 import tensorflow as tf
-from config import MODEL_PATH, MODEL_NAME
 
 PB_PATH = 'input_graph.pb'
 
-checkpoint_state_name = "checkpoint_state"
-input_graph = os.path.join(MODEL_PATH,PB_PATH)
 input_saver = ""
 input_binary = False
 # input_checkpoint = os.path.join(MODEL_PATH,MODEL_NAME)
@@ -16,26 +13,26 @@ input_binary = False
 output_node_names = "detector/output_node"
 restore_op_name = "save/restore_all"
 filename_tensor_name = "save/Const:0"
-output_graph = os.path.join(MODEL_PATH,'output_graph.pb')
 clear_devices = False
 initializer_nodes=[]
 variable_names_whitelist=""
 variable_names_blacklist=""
 
-def gen_frozen_graph(input_checkpoint):
-    freeze_graph.freeze_graph(input_graph,
+def gen_frozen_graph(var_file, ckpt_dir):
+    freeze_graph.freeze_graph(os.path.join(ckpt_dir, PB_PATH),
                               input_saver,
                               input_binary,
-                              input_checkpoint,
+                              var_file,
                               output_node_names,
                               restore_op_name,
                               filename_tensor_name,
-                              output_graph,
+                              os.path.join(ckpt_dir, 'output_graph.pb'),
                               clear_devices,
                               initializer_nodes,
                               variable_names_whitelist,
                               variable_names_blacklist
                               )
+    os.remove(os.path.join(ckpt_dir, PB_PATH))
 
 
 # def load_graph(frozen_graph_filename):

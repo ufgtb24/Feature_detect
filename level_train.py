@@ -130,8 +130,8 @@ if __name__ == '__main__':
     step_from_last_mininum = 0
     start = False
 
-    dir_load= 'start/'  # where to restore the model
-    dir_save= None   # where to save the model
+    dir_load= None  # where to restore the model
+    dir_save= '20180830-1857'   # where to save the model
 
     
     

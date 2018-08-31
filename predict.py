@@ -2,17 +2,17 @@ import tensorflow as tf
 import numpy as np
 # from crop_data import crop_batch
 from combine import PB_PATH, gen_frozen_graph, load_graph
-from config import MODEL_PATH, SHAPE_BOX, TestDataConfig, DataConfig
+from config import MODEL_PATH, TestDataConfig
 from dataRelated import BatchGenerator
 from display import  display_batch
 from level_train import DetectNet
-
+dir_load = '20180830-1857/'  # where to restore the model
 
 if __name__ == '__main__':
 
-    NEED_INFERENCE=False
-    NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=True
+    NEED_INFERENCE=True
+    NEED_DISPLAY=True
+    NEED_WRITE_GRAPH=False
     NEED_TARGET=False # no need to change
     NEED_PB=False
 
@@ -46,9 +46,11 @@ if __name__ == '__main__':
             pass
 
         else:
+            load_checkpoints_dir= MODEL_PATH + dir_load
+
             sess.run(tf.global_variables_initializer())
-            model_file = tf.train.latest_checkpoint(MODEL_PATH)
-            saver.restore(sess, model_file)  # 从模型中恢复最新变量
+            var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
+            saver.restore(sess, var_file)  # 从模型中恢复最新变量
             # saver.restore(sess, MODEL_PATH + MODEL_NAME)
 
             # saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 存在就从模型中恢复变量
@@ -81,10 +83,10 @@ if __name__ == '__main__':
     
                 # black_list=','.join(bn_moving_vars)
                 # serialize the graph_def to a dist file
-                tf.train.write_graph(gd, MODEL_PATH, PB_PATH, as_text=True)
+                tf.train.write_graph(gd, load_checkpoints_dir, PB_PATH, as_text=True)
                 # load the serialized file, convert the current graph variables to constants, embed the converted
                 # constants into the loaded structure
-                gen_frozen_graph(model_file)
+                gen_frozen_graph(var_file, load_checkpoints_dir)
 
         if NEED_INFERENCE:
             if NEED_TARGET:

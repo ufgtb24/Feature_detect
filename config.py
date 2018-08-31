@@ -1,6 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/low5104_3/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
@@ -44,7 +44,7 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2],
              'label_file': 'info.txt',
              'loss_weight': 8,
-             'sample_propotion': 1
+             'sample_propotion': 1  #0.8
          }
          )
     ]
@@ -72,7 +72,7 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 class DataConfig(object):
-    data_list = low_set
+    data_list = up_edge
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/Try/'
