@@ -6,6 +6,7 @@ from dataRelated import BatchGenerator
 # import inception_v3 as icp
 import inception_resnet_v2 as icp
 from datetime import datetime
+import numpy as np
 
 
 class DetectNet(object):
@@ -66,13 +67,14 @@ class DetectNet(object):
                         self.weight_loss = 3 * tf.reduce_mean(tf.boolean_mask(self.weight_loss_matrix, self.f_mask))
                     ####################################
                         if is_training_sti:
-                            train_summary = []
-                            train_summary.append(tf.summary.scalar('feature_error', self.equal_loss))
-                            train_summary.append(tf.summary.scalar('edge_error', self.eloss))
-                            train_summary.append(tf.summary.scalar('facc_error', self.floss))
-                            train_summary.append(tf.summary.scalar('groove_error', self.gloss))
+                            # train_summary = []
+                            # train_summary.append(tf.summary.scalar('feature_error', self.equal_loss))
+                            # train_summary.append(tf.summary.scalar('edge_error', self.eloss))
+                            # train_summary.append(tf.summary.scalar('facc_error', self.floss))
+                            # train_summary.append(tf.summary.scalar('groove_error', self.gloss))
+                            #
+                            # self.train_summary = tf.summary.merge(train_summary)
                             
-                            self.train_summary = tf.summary.merge(train_summary)
     
                             with tf.variable_scope('optimizer'):
                                 # Ensures that we execute the update_ops before performing the train_step
@@ -85,11 +87,23 @@ class DetectNet(object):
                                 else:
                                     self.train_op = optimizer.minimize(self.weight_loss)
 
+def summary(avg_loss):
+    train_summary = []
+    train_summary.append(tf.summary.scalar('feature_error', avg_loss[0]))
+    train_summary.append(tf.summary.scalar('edge_error', avg_loss[1]))
+    train_summary.append(tf.summary.scalar('facc_error', avg_loss[2]))
+    train_summary.append(tf.summary.scalar('groove_error', avg_loss[3]))
+    return tf.summary.merge(train_summary)
+
 if __name__ == '__main__':
 
     final_error=0
 
     detector = DetectNet()
+    avg_loss_node=tf.placeholder(tf.float32,[4])
+    sum_node=summary(avg_loss_node)
+
+    
     train_batch_gen = BatchGenerator(TrainDataConfig)
     test_batch_gen = BatchGenerator(ValiDataConfig)
 
@@ -200,29 +214,59 @@ if __name__ == '__main__':
                     final_error=winner_loss
                     break
                 step_from_last_mininum += 1
-                box_batch, y_batch, mask_batch = test_batch_gen.get_batch()
+                epoch_restart=[False]
+                f_loss_epoch={}
+                f_num_epoch = {}
 
-                feed_dict = {detector.input_box: box_batch,
-                             detector.targets: y_batch,
-                             detector.f_mask: mask_batch,
-                             detector.is_training: False}
+                while(not epoch_restart[0]):
+                    box_batch, y_batch, mask_batch = test_batch_gen.get_batch(epoch_restart)
+                    data_count_batch=test_batch_gen.data_count_dict
 
-                test_eloss, edge_loss,facc_loss,gro_loss,summary = sess.run([detector.equal_loss,
-                                            detector.eloss,
-                                            detector.floss,
-                                            detector.gloss,
-                                             detector.train_summary], feed_dict=feed_dict)
+    
+                    feed_dict = {detector.input_box: box_batch,
+                                 detector.targets: y_batch,
+                                 detector.f_mask: mask_batch,
+                                 detector.is_training: False}
+                    
+                    f_loss_batch = {}
+                    f_loss_batch['edge'], f_loss_batch['facc'], f_loss_batch['groove'] \
+                        = sess.run(
+                                    [
+                                    detector.eloss,
+                                    detector.floss,
+                                    detector.gloss
+                                     ],
+                        feed_dict=feed_dict)
+                    
+                    for k in test_batch_gen.data_count_dict:
+                        f_loss_epoch[k]+= f_loss_batch[k] * data_count_batch[k]
+                        f_num_epoch[k]+=data_count_batch[k]
+                        data_count_batch[k] = 0
+                        
+                total=sum(f_num_epoch.values())
+                integ_loss=0
+                for k in f_loss_epoch:
+                    f_loss_epoch[k]=f_loss_epoch[k]/f_num_epoch[k]
+                    integ_loss+=f_num_epoch[k]/total
+
+                avg_loss=[integ_loss]+[v for v in f_loss_epoch.values()]
+                feed_dict = {avg_loss_node:np.array(avg_loss)}
+
+                summary=sess.run(sum_node,feed_dict=feed_dict)
+
                 
-                if test_eloss < winner_loss:
-                    winner_loss = test_eloss
+                writer.add_summary(summary, int(iter / test_step))
+                
+                if integ_loss < winner_loss:
+                    winner_loss = integ_loss
                     step_from_last_mininum = 0
                     
-                writer.add_summary(summary, int(iter / test_step))
                 if iter%save_step==0  :
                     save_path = saver.save(sess, save_checkpoints_dir + 'model.ckpt', int(iter / save_step))
 
-                print("%d  trainCost=%f   test_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f\n"
-                      % (iter, train_eloss, test_eloss, winner_loss, step_from_last_mininum, edge_loss,facc_loss,gro_loss))
+                print("%d  trainCost=%f   integ_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f\n"
+                      % (iter, train_eloss, integ_loss, winner_loss, step_from_last_mininum,
+                         f_loss_epoch['edge'],f_loss_epoch['facc'],f_loss_epoch['groove']))
                 
                 prop_dict = train_batch_gen.get_data_static()
                 for k,v in prop_dict.items():

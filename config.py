@@ -52,9 +52,12 @@ TASK_DICT = OrderedDict(
 
 LOSS_WEIGHT=[]
 SAMPLE_PROP={}
+EQUAL_PROP={}
+
 for key,content in TASK_DICT.items():
     LOSS_WEIGHT.extend([content['loss_weight']]*(content['num_feature']*3))
     SAMPLE_PROP[key]=content['sample_propotion']
+    EQUAL_PROP[key]=1
     
     
 up_back=['tooth2','tooth3']
@@ -83,13 +86,13 @@ class DataConfig(object):
     num_feature_need = get_feature_num()
     feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
-    sample_prob=SAMPLE_PROP
 
 class TrainDataConfig(DataConfig):
     batch_size = 16
     total_case_dir = DataConfig.base_case_dir + 'Train/'
     load_case_once = 4  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    sample_prob=SAMPLE_PROP
     usage = '_Train'
 
 
@@ -97,7 +100,9 @@ class ValiDataConfig(DataConfig):
     batch_size = 16
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
     load_case_once = 4  # 每次读的病例数
+    sample_prob=EQUAL_PROP
     switch_after_shuffles = 10 ** 10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
+    
     usage = '_Validate'
 
 

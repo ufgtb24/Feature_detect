@@ -13,7 +13,7 @@ class BatchGenerator(object):
                  need_target=True,
                  need_name=False):
         self.usage = data_config.usage
-        self.success_read=False
+        self.already_find=False
         if need_target:
             data_count_dict=OrderedDict([])
             final_task_dict = OrderedDict([])
@@ -61,20 +61,20 @@ class BatchGenerator(object):
         
         
     def get_case_list(self):
-        all_cases_loaded=False
+        epoch_restart=False
         if self.load_case_once==0:
-            all_cases_loaded = True
+            epoch_restart = True
             self.shuffle_root_dir()
             case_load = self.total_case_list
         else:
             if self.index_dir + self.load_case_once > self.total_case_num:
-                all_cases_loaded=True
+                epoch_restart=True
                 self.index_dir = 0
                 self.shuffle_root_dir()
 
             case_load = self.total_case_list[self.index_dir:self.index_dir + self.load_case_once]
             self.index_dir += self.load_case_once
-        return case_load,all_cases_loaded
+        return case_load,epoch_restart
 
     def needSample(self,x,task):
         return x<self.sample_prob[task]
@@ -150,12 +150,15 @@ class BatchGenerator(object):
     def load_cases(self):
         filled=False
         while(not filled):
-            case_load,all_cases_loaded=self.get_case_list()
+            case_load,epoch_restart=self.get_case_list()
             filled=self.try_load_cases(case_load)
-            if all_cases_loaded and not filled and not self.success_read:
+            if filled:
+                self.already_find = True
+                return epoch_restart
+            elif epoch_restart and not self.already_find:
                 logging.error('already check all data, but with nothing readed !!!!!')
-                return
-        self.success_read=True
+                return None
+        
 
     def try_load_cases(self, case_load):
         # 读取多个病例
@@ -247,11 +250,12 @@ class BatchGenerator(object):
             self.y = self.y[perm]
             self.mask = self.mask[perm]
 
-    def get_batch(self):
+    def get_batch(self,epoch_restart=None):
+        epoch_restart[0]=False
         if self.index + self.batch_size > self.sample_num:
             self.index = 0
             if self.load_case_once > 0:
-                self.load_cases()
+                epoch_restart[0]=self.load_cases()
             self.suffle()
         
         box_batch = np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(), 4)
@@ -268,7 +272,7 @@ class BatchGenerator(object):
             return_list+=[self.case_load[name_index_batch]]
 
         self.index += self.batch_size
-
+        
         return return_list
     
     def get_data_static(self):
