@@ -57,6 +57,7 @@ class BatchGenerator(object):
         array = np.array(self.total_case_list)
         array = array[perm]
         self.total_case_list = list(array)
+        pass
         
         
     def get_case_list(self):

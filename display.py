@@ -211,7 +211,7 @@ def display_batch(box, y, mask):
                       scale_factor=1,
                       transparent=False)
         colors=[(1,0,0),(0,0,1)]+[(0,0,0)]*10
-        
+        # 上牙是左蓝右红，下牙是左红右蓝
         for j in range(feature_need):
             # try:
             #     ct[single_y[3*j], single_y[3*j+1], single_y[3*j+2]]=j+2

@@ -6,13 +6,12 @@ from config import MODEL_PATH, TestDataConfig
 from dataRelated import BatchGenerator
 from display import  display_batch
 from level_train import DetectNet
-dir_load = '20180830-1857/'  # where to restore the model
-
+import os
 if __name__ == '__main__':
 
-    NEED_INFERENCE=True
-    NEED_DISPLAY=True
-    NEED_WRITE_GRAPH=False
+    NEED_INFERENCE=False
+    NEED_DISPLAY=False
+    NEED_WRITE_GRAPH=True
     NEED_TARGET=False # no need to change
     NEED_PB=False
 
@@ -35,9 +34,11 @@ if __name__ == '__main__':
         #############
         saver = tf.train.Saver(var_list)
         
+        
+        
+        
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-
     with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         if NEED_PB:
@@ -46,14 +47,16 @@ if __name__ == '__main__':
             pass
 
         else:
+            dir_load = '20180902-1136'  # where to restore the model
             load_checkpoints_dir= MODEL_PATH + dir_load
 
             sess.run(tf.global_variables_initializer())
-            var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
+            
+            # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-8')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
-            # saver.restore(sess, MODEL_PATH + MODEL_NAME)
+            
 
-            # saver.restore(sess, MODEL_PATH+MODEL_NAME)  # 存在就从模型中恢复变量
 
             
             if NEED_WRITE_GRAPH:

@@ -130,8 +130,8 @@ if __name__ == '__main__':
     step_from_last_mininum = 0
     start = False
 
-    dir_load= None  # where to restore the model
-    dir_save= '20180830-1857'   # where to save the model
+    dir_load= 'start/'  # where to restore the model
+    dir_save= None  # where to save the model
 
     
     
@@ -140,8 +140,8 @@ if __name__ == '__main__':
 
     with tf.Session(config=config) as sess:
         
-        loader = tf.train.Saver(var_list=load_var_list, max_to_keep=10)
-        saver = tf.train.Saver(var_list=var_list, max_to_keep=10)
+        loader = tf.train.Saver(var_list=load_var_list)
+        saver = tf.train.Saver(var_list=var_list, max_to_keep=20)
         sess.run(tf.global_variables_initializer())
         
         load_checkpoints_dir=None
@@ -151,8 +151,10 @@ if __name__ == '__main__':
             load_checkpoints_dir= MODEL_PATH + dir_save
             
         if load_checkpoints_dir is not None:
-            model_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            loader.restore(sess, model_file)  # 从模型中恢复最新变量
+            # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-7')
+
+            loader.restore(sess, var_file)  # 从模型中恢复最新变量
 
         if dir_save is None:
             dir_save = datetime.now().strftime("%Y%m%d-%H%M")
@@ -199,7 +201,6 @@ if __name__ == '__main__':
                     break
                 step_from_last_mininum += 1
                 box_batch, y_batch, mask_batch = test_batch_gen.get_batch()
-
 
                 feed_dict = {detector.input_box: box_batch,
                              detector.targets: y_batch,
