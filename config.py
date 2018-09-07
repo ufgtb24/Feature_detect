@@ -76,7 +76,7 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 class DataConfig(object):
-    data_list = up_set
+    data_list = low_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
@@ -99,7 +99,7 @@ class TrainDataConfig(DataConfig):
 class ValiDataConfig(DataConfig):
     batch_size = 16
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
-    load_case_once = 4  # 每次读的病例数
+    load_case_once = 10  # 每次读的病例数
     sample_prob=EQUAL_PROP
     switch_after_shuffles = 10 ** 10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     

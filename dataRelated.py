@@ -250,30 +250,30 @@ class BatchGenerator(object):
             self.y = self.y[perm]
             self.mask = self.mask[perm]
 
-    def get_batch(self,epoch_restart=None):
-        epoch_restart[0]=False
+    def get_batch(self):
+        return_dict={}
+        epoch_restart=False
         if self.index + self.batch_size > self.sample_num:
             self.index = 0
             if self.load_case_once > 0:
-                epoch_restart[0]=self.load_cases()
+                epoch_restart=self.load_cases()
             self.suffle()
-        
+        return_dict['epoch_restart']=epoch_restart
         box_batch = np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(), 4)
-        return_list = [box_batch]
+        return_dict['box'] = box_batch
         
         if self.need_target:
             y_batch = self.y[self.index:   self.index + self.batch_size]
             mask_batch = self.mask[self.index:   self.index + self.batch_size]
-            target_list=[y_batch,mask_batch]
-            return_list+=target_list
+            return_dict['y'],return_dict['mask']=y_batch,mask_batch
             
         if self.need_name:
             name_index_batch = self.name_index[self.index:   self.index + self.batch_size]
-            return_list+=[self.case_load[name_index_batch]]
+            return_dict['name']=self.case_load[name_index_batch]
 
         self.index += self.batch_size
         
-        return return_list
+        return return_dict
     
     def get_data_static(self):
         total=sum(self.data_count_dict.values())

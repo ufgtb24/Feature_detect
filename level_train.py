@@ -7,8 +7,8 @@ from dataRelated import BatchGenerator
 import inception_resnet_v2 as icp
 from datetime import datetime
 import numpy as np
-
-
+import math
+co_path=os.path.join
 class DetectNet(object):
     def __init__(self, need_targets=True,is_training_sti=True,clip_grd=True,scope='detector'):
         '''
@@ -135,16 +135,16 @@ if __name__ == '__main__':
 
 
     TOTAL_EPHOC = 100000
-    test_step = 100
-    save_step=5000
+    test_step = 1
+    save_step=500000
     need_early_stop = False
-    EARLY_STOP_STEP = 100
+    EARLY_STOP_STEP = 1
 
     winner_loss = 10 ** 10
     step_from_last_mininum = 0
     start = False
 
-    dir_load= 'start/'  # where to restore the model
+    dir_load= '20180902-1136/'  # where to restore the model
     dir_save= None  # where to save the model
 
     
@@ -186,12 +186,12 @@ if __name__ == '__main__':
         writer = tf.summary.FileWriter(save_checkpoints_dir, sess.graph)
 
         for iter in range(1,TOTAL_EPHOC):
-            box_batch ,y_batch, mask_batch = train_batch_gen.get_batch()
+            return_dict = train_batch_gen.get_batch()
             
             # display_batch(box_batch, y_batch, mask_batch)
-            feed_dict = {detector.input_box: box_batch,
-                         detector.targets: y_batch,
-                         detector.f_mask:mask_batch,
+            feed_dict = {detector.input_box: return_dict['box'],
+                         detector.targets: return_dict['y'],
+                         detector.f_mask:return_dict['mask'],
                          detector.is_training: True}
             
             # _, train_eloss,train_wloss = sess.run([detector.train_op, detector.equal_loss,detector.weight_loss], feed_dict=feed_dict)
@@ -214,18 +214,30 @@ if __name__ == '__main__':
                     final_error=winner_loss
                     break
                 step_from_last_mininum += 1
-                epoch_restart=[False]
-                f_loss_epoch={}
-                f_num_epoch = {}
+                epoch_restart=False
 
-                while(not epoch_restart[0]):
-                    box_batch, y_batch, mask_batch = test_batch_gen.get_batch(epoch_restart)
-                    data_count_batch=test_batch_gen.data_count_dict
+                f_loss_epoch={'edge':0,'facc':0, 'groove':0}
+                f_num_epoch={'edge':0,'facc':0, 'groove':0}
 
+
+                def count_f_num(mask):
+                    count_dict = {}
+                    count_dict['edge'] = np.sum(mask[:, :6]) / 3
+                    count_dict['facc'] = np.sum(mask[:, 6:21]) / 3
+                    count_dict['groove'] = np.sum(mask[:, 21:]) / 3
+                    return count_dict
+
+
+                while(not epoch_restart):
+                    return_dict= test_batch_gen.get_batch()
+                    epoch_restart=return_dict['epoch_restart']
+                    
+                    
+                    
     
-                    feed_dict = {detector.input_box: box_batch,
-                                 detector.targets: y_batch,
-                                 detector.f_mask: mask_batch,
+                    feed_dict = {detector.input_box: return_dict['box'],
+                                 detector.targets: return_dict['y'],
+                                 detector.f_mask: return_dict['mask'],
                                  detector.is_training: False}
                     
                     f_loss_batch = {}
@@ -238,10 +250,11 @@ if __name__ == '__main__':
                                      ],
                         feed_dict=feed_dict)
                     
-                    for k in test_batch_gen.data_count_dict:
-                        f_loss_epoch[k]+= f_loss_batch[k] * data_count_batch[k]
-                        f_num_epoch[k]+=data_count_batch[k]
-                        data_count_batch[k] = 0
+                    data_count_batch=count_f_num(return_dict['mask'])
+                    for k in data_count_batch:
+                        if data_count_batch[k]!=0:
+                            f_loss_epoch[k]+= f_loss_batch[k] * data_count_batch[k]
+                            f_num_epoch[k]+=data_count_batch[k]
                         
                 total=sum(f_num_epoch.values())
                 integ_loss=0
