@@ -3,7 +3,7 @@ import os
 # label file column number check
 import shutil
 
-from display import load_y
+# from display import load_y
 
 '''
 def check_availability(dir):
@@ -155,7 +155,15 @@ def delete(dir):
                 shutil.rmtree(full_case_dir+'/'+tooth)
                 
 
-pass
+def duplicated(validate,train):
+    vali_list=os.listdir(validate)
+    train_list=os.listdir(train)
+
+    for case_name in vali_list:
+        if case_name in train_list:
+            print(case_name)
+
+
 
 # file name check
 pass
@@ -179,4 +187,5 @@ pass
 
 if __name__ == '__main__':
     # check_availability('F:/ProjectData/tmp/Tooth0904/Tooth/')
-    delete('F:\\ProjectData\\tmp\\Train\\')
+    delete('F:\\ProjectData\\tmp\\Validate\\')
+    # duplicated('F:\\ProjectData\\tmp\\Validate\\','F:\\ProjectData\\tmp\\Train\\')

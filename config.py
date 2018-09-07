@@ -22,8 +22,10 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'edge.txt',
-             'loss_weight':0.5,
-             'sample_propotion':1
+             'loss_weight':1,
+             'samp_prop':1,
+             'va_samp_prop': 1  # 0.8
+    
          }
          ),
         
@@ -32,9 +34,10 @@ TASK_DICT = OrderedDict(
              'num_feature': 5,
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt',
-             'loss_weight': 4,
-             'sample_propotion': 0.3  # 0.5
-
+             'loss_weight': 2,
+             'samp_prop': 0.3,  # 0.5
+             'va_samp_prop': 0.4  # 0.8
+    
          }
          ),
 
@@ -43,21 +46,23 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'info.txt',
-             'loss_weight': 8,
-             'sample_propotion': 1  #0.8
+             'loss_weight': 2,
+             'samp_prop': 0.8,  #0.8
+             'va_samp_prop': 1  #0.8
+             
          }
          )
     ]
 )
 
 LOSS_WEIGHT=[]
-SAMPLE_PROP={}
-EQUAL_PROP={}
+SAMP_PROP={}
+VA_SAMP_PROP={}
 
 for key,content in TASK_DICT.items():
     LOSS_WEIGHT.extend([content['loss_weight']]*(content['num_feature']*3))
-    SAMPLE_PROP[key]=content['sample_propotion']
-    EQUAL_PROP[key]=1
+    SAMP_PROP[key]=content['samp_prop']
+    VA_SAMP_PROP[key]=content['va_samp_prop']
     
     
 up_back=['tooth2','tooth3']
@@ -79,7 +84,7 @@ class DataConfig(object):
     data_list = low_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir = 'F:/ProjectData/tmp/'
+    base_case_dir = 'F:/ProjectData/tmp/Try/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict = TASK_DICT
@@ -92,15 +97,15 @@ class TrainDataConfig(DataConfig):
     total_case_dir = DataConfig.base_case_dir + 'Train/'
     load_case_once = 4  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
-    sample_prob=SAMPLE_PROP
+    sample_prob=SAMP_PROP
     usage = '_Train'
 
 
 class ValiDataConfig(DataConfig):
-    batch_size = 16
+    batch_size = 64
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
-    load_case_once = 10  # 每次读的病例数
-    sample_prob=EQUAL_PROP
+    load_case_once = 10 # 每次读的病例数
+    sample_prob=VA_SAMP_PROP
     switch_after_shuffles = 10 ** 10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     
     usage = '_Validate'
@@ -108,9 +113,12 @@ class ValiDataConfig(DataConfig):
 
 class TestDataConfig(DataConfig):
     batch_size = 1
-    total_case_dir = DataConfig.base_case_dir + 'Validate_new/'
+    total_case_dir = DataConfig.base_case_dir + 'Validate/'
     load_case_once = 1  # 每次读的病例数
+    sample_prob=VA_SAMP_PROP
+
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
+    
     usage = '_Test'
 
 

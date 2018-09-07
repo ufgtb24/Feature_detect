@@ -2,17 +2,17 @@ import tensorflow as tf
 import numpy as np
 # from crop_data import crop_batch
 from combine import PB_PATH, gen_frozen_graph, load_graph
-from config import MODEL_PATH, TestDataConfig
+from config import MODEL_PATH, TestDataConfig, ValiDataConfig
 from dataRelated import BatchGenerator
 from display import  display_batch
 from level_train import DetectNet
 import os
 if __name__ == '__main__':
 
-    NEED_INFERENCE=False
+    NEED_INFERENCE=True
     NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=True
-    NEED_TARGET=False # no need to change
+    NEED_WRITE_GRAPH=False
+    NEED_TARGET=True # no need to change
     NEED_PB=False
 
     if not NEED_PB:
@@ -47,11 +47,11 @@ if __name__ == '__main__':
             pass
 
         else:
-            dir_load = '20180902-1136'  # where to restore the model
-            load_checkpoints_dir= MODEL_PATH + dir_load
 
             sess.run(tf.global_variables_initializer())
             
+            dir_load = '20180902-1136'  # where to restore the model
+            load_checkpoints_dir= MODEL_PATH + dir_load
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
             var_file= os.path.join(load_checkpoints_dir,'model.ckpt-8')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
@@ -95,17 +95,18 @@ if __name__ == '__main__':
             if NEED_TARGET:
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=True,need_name=True)
                 
-                avg=[0]*5
-                def get_avg(i,loss_list):
-                    for i,loss in enumerate(loss_list):
-                        avg[i]=i/(i+1)*avg[i]+1/(i+1)*loss
+                # avg=[0]*5
+                # def get_avg(i,loss_list):
+                #     for i,loss in enumerate(loss_list):
+                #         avg[i]=i/(i+1)*avg[i]+1/(i+1)*loss
                 
-                for iter in range(500):
-                    box_batch, y_batch, mask_batch, name_batch = test_batch_gen.get_batch()
-                    
-                    feed_dict = {detector.input_box: box_batch,
-                                 detector.targets: y_batch,
-                                 detector.f_mask: mask_batch,
+                load_all=False
+                while (not load_all):
+                    result = test_batch_gen.get_batch()
+                    load_all=result['epoch_restart']
+                    feed_dict = {detector.input_box: result['box'],
+                                 detector.targets: result['y'],
+                                 detector.f_mask: result['mask'],
                                  detector.is_training: False}
                     
                     f, edge_loss ,facc_loss ,groove_loss , output_mask = \
@@ -117,45 +118,51 @@ if __name__ == '__main__':
                                          
                                          ], feed_dict=feed_dict)
                     
-                    get_avg(iter,[edge_loss,facc_loss ,groove_loss ])
+                    # get_avg(iter,[edge_loss,facc_loss ,groove_loss ])
                     
                     # #将target 和 result 同框显示
-                    # f=np.concatenate([y_batch,f],axis=1)
-                    # mask_batch=np.concatenate([mask_batch,mask_batch],axis=1)
+                    # f=np.concatenate([result['y'],f],axis=1)
+                    # result['mask']=np.concatenate([result['mask'],result['mask']],axis=1)
                     
-                    print('edge_loss= ',edge_loss,'    facc_loss= ',facc_loss,'   groove_loss= ',groove_loss,
-                          '    name: ',name_batch[0])
-                    if edge_loss>100:
-                        display_batch(box_batch, f, mask_batch)
-                        display_batch(box_batch, y_batch, mask_batch)
+                    # print('edge_loss= ',edge_loss,'    facc_loss= ',facc_loss,'   groove_loss= ',groove_loss,
+                    #       '    name: ',result['name'][0])
+                    
+                    
+                    if edge_loss>1000:
+                        print(edge_loss)
+                        print(result['name'][0])
+                        display_batch(result['box'], f, result['mask'])
+                        display_batch(result['box'], result['y'], result['mask'])
+                        
 
     
                     if NEED_DISPLAY:
-                        display_batch(box_batch, f, mask_batch)
+                        display_batch(result['box'], f, result['mask'])
                         
-                print('avg  ', avg)
+                # print('avg  ', avg)
             else:
                 
-                test_batch_gen = BatchGenerator(TestDataConfig, need_target=False, need_name=True)
+                test_batch_gen = BatchGenerator(ValiDataConfig, need_target=True, need_name=True)
                 while True:
-                    box_batch, name_batch = test_batch_gen.get_batch()
+                    result = test_batch_gen.get_batch()
 
                     if NEED_PB:
                         pred_end = sess.graph.get_tensor_by_name('import/detector/output_node:0')
-                        feed_dict = {'import/detector/input_box:0': box_batch, 'import/detector/is_training:0': False}
+                        feed_dict = {'import/detector/input_box:0': result['box'], 'import/detector/is_training:0': False}
                     else:
-                        feed_dict = {detector.input_box: box_batch,detector.is_training: False}
+                        feed_dict = {detector.input_box: result['box'],detector.is_training: False}
+                        pred_end=detector.output
         
-                    f = sess.run(detector.output, feed_dict=feed_dict)
+                    f = sess.run(pred_end, feed_dict=feed_dict)
                     # print('feature\n  ',f,'    name: ',name_batch[0])
 
                     # f=f*12./128.
                     f = np.int32(f)
                     print(f)
-                    mask_batch=np.ones([box_batch.shape[0],27]).astype(bool)
-                    # mask_batch[:,6:21]=True
+                    # result['mask'][:,6:21]=True
                     if NEED_DISPLAY:
-                        display_batch(box_batch, f, mask_batch)
+                        result['mask']=np.ones([result['box'].shape[0],27]).astype(bool)
+                        display_batch(result['box'], f, result['mask'])
 
     
         

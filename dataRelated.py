@@ -148,6 +148,7 @@ class BatchGenerator(object):
             return None
         
     def load_cases(self):
+        print('loading data from disk......')
         filled=False
         while(not filled):
             case_load,epoch_restart=self.get_case_list()
@@ -187,7 +188,7 @@ class BatchGenerator(object):
                 mask_list.append(mask)
         
         if box_list != []:
-            self.box = np.concatenate(box_list, axis=0)
+            self.box = np.concatenate(box_list, axis=0) #瞬间消耗内存
             if self.need_name:
                 self.name_index = np.concatenate(name_index_list, axis=0)
             if self.need_target:
@@ -243,7 +244,7 @@ class BatchGenerator(object):
     def suffle(self):
         perm = np.arange(self.sample_num)
         np.random.shuffle(perm)  # 打乱
-        self.box = self.box[perm]
+        self.box = self.box[perm]  # 瞬间消耗内存
         if self.need_name:
             self.name_index = self.name_index[perm]
         if self.need_target:
@@ -289,15 +290,20 @@ class BatchGenerator(object):
 
 
 if __name__ == '__main__':
-    gen = BatchGenerator(TrainDataConfig)
-    for i in range(10**5):
-        box_batch, y_batch, mask_batch=gen.get_batch()
-        
-        
-        if i%10==0:
-            for k,v in gen.get_data_static().items():
-                print(k,'  ',v)
-            print(i)
+    def count_augment():
+        gen = BatchGenerator(ValiDataConfig)
+        for i in range(10 ** 5):
+            return_dict = gen.get_batch()
+            if return_dict['epoch_restart']:
+                break
+            
+            if i % 10 == 0:
+                for k, v in gen.data_count_dict.items():
+                    print(k, '  ', v)
+                print(i)
+        print(gen.data_count_dict)
+    
+    count_augment()
     # while True:
     #     box, class_, y = gen.get_batch()
     #     mask = np.ones_like(y, dtype=bool)

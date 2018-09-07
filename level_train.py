@@ -136,9 +136,11 @@ if __name__ == '__main__':
 
     TOTAL_EPHOC = 100000
     test_step = 1
+    test_batch_num=10
     save_step=500000
     need_early_stop = False
-    EARLY_STOP_STEP = 1
+    EARLY_STOP_STEP = 20
+    
 
     winner_loss = 10 ** 10
     step_from_last_mininum = 0
@@ -227,8 +229,10 @@ if __name__ == '__main__':
                     count_dict['groove'] = np.sum(mask[:, 21:]) / 3
                     return count_dict
 
-
-                while(not epoch_restart):
+                test_batch_iter=0
+                while(test_batch_iter<test_batch_num):
+                    print('test_batch_iter =  %d '%(test_batch_iter))
+                    test_batch_iter+=1
                     return_dict= test_batch_gen.get_batch()
                     epoch_restart=return_dict['epoch_restart']
                     
@@ -257,10 +261,11 @@ if __name__ == '__main__':
                             f_num_epoch[k]+=data_count_batch[k]
                         
                 total=sum(f_num_epoch.values())
-                integ_loss=0
+                # integ_loss=0
                 for k in f_loss_epoch:
                     f_loss_epoch[k]=f_loss_epoch[k]/f_num_epoch[k]
-                    integ_loss+=f_num_epoch[k]/total
+                    # integ_loss+=f_loss_epoch[k]*f_num_epoch[k]/total
+                integ_loss=(f_loss_epoch['edge']+f_loss_epoch['facc']+f_loss_epoch['groove'])/3.
 
                 avg_loss=[integ_loss]+[v for v in f_loss_epoch.values()]
                 feed_dict = {avg_loss_node:np.array(avg_loss)}
@@ -282,9 +287,16 @@ if __name__ == '__main__':
                          f_loss_epoch['edge'],f_loss_epoch['facc'],f_loss_epoch['groove']))
                 
                 prop_dict = train_batch_gen.get_data_static()
+                print('\n##################  train prop')
                 for k,v in prop_dict.items():
                     print("%s: %f  "%(k,v))
+                
+                print('##################  test prop')
+                prop_dict = test_batch_gen.get_data_static()
+                for k, v in prop_dict.items():
+                    print("%s: %f  " % (k, v))
                 print('\n')
+
 
 
 
