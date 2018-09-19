@@ -7,7 +7,6 @@ from dataRelated import BatchGenerator
 import inception_resnet_v2 as icp
 from datetime import datetime
 import numpy as np
-import math
 co_path=os.path.join
 class DetectNet(object):
     def __init__(self, need_targets=True,is_training_sti=True,clip_grd=True,scope='detector'):
@@ -89,10 +88,11 @@ class DetectNet(object):
 
 def summary(avg_loss):
     train_summary = []
-    train_summary.append(tf.summary.scalar('feature_error', avg_loss[0]))
-    train_summary.append(tf.summary.scalar('edge_error', avg_loss[1]))
-    train_summary.append(tf.summary.scalar('facc_error', avg_loss[2]))
-    train_summary.append(tf.summary.scalar('groove_error', avg_loss[3]))
+    train_summary.append(tf.summary.scalar('edge_error', avg_loss[0]))
+    train_summary.append(tf.summary.scalar('facc_error', avg_loss[1]))
+    train_summary.append(tf.summary.scalar('groove_error', avg_loss[2]))
+    train_summary.append(tf.summary.scalar('integ_error', avg_loss[3]))
+    train_summary.append(tf.summary.scalar('train_error', avg_loss[4]))
     return tf.summary.merge(train_summary)
 
 if __name__ == '__main__':
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     final_error=0
 
     detector = DetectNet()
-    avg_loss_node=tf.placeholder(tf.float32,[4])
+    avg_loss_node=tf.placeholder(tf.float32,[5])
     sum_node=summary(avg_loss_node)
 
     
@@ -135,9 +135,9 @@ if __name__ == '__main__':
 
 
     TOTAL_EPHOC = 100000
-    test_step = 1
-    test_batch_num=10
-    save_step=500000
+    test_step = 200
+    test_batch_num=20
+    # save_step=5000
     need_early_stop = False
     EARLY_STOP_STEP = 20
     
@@ -145,12 +145,9 @@ if __name__ == '__main__':
     winner_loss = 10 ** 10
     step_from_last_mininum = 0
     start = False
+    epoch_num=0
 
-    dir_load= '20180902-1136/'  # where to restore the model
-    dir_save= None  # where to save the model
 
-    
-    
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 
@@ -161,6 +158,10 @@ if __name__ == '__main__':
         sess.run(tf.global_variables_initializer())
         
         load_checkpoints_dir=None
+        
+        dir_load = '20180904-2006'  # where to restore the model
+        dir_save = None  # where to save the model
+        
         if dir_load is not None:
             load_checkpoints_dir= MODEL_PATH + dir_load
         elif dir_save is not  None:
@@ -168,7 +169,7 @@ if __name__ == '__main__':
             
         if load_checkpoints_dir is not None:
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-7')
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-14')
 
             loader.restore(sess, var_file)  # 从模型中恢复最新变量
 
@@ -197,6 +198,8 @@ if __name__ == '__main__':
                          detector.is_training: True}
             
             # _, train_eloss,train_wloss = sess.run([detector.train_op, detector.equal_loss,detector.weight_loss], feed_dict=feed_dict)
+            if return_dict['epoch_restart']:
+                epoch_num+=1
             
             _,outputs,loss_matrix,train_eloss\
                 = sess.run([
@@ -216,10 +219,9 @@ if __name__ == '__main__':
                     final_error=winner_loss
                     break
                 step_from_last_mininum += 1
-                epoch_restart=False
 
-                f_loss_epoch={'edge':0,'facc':0, 'groove':0}
-                f_num_epoch={'edge':0,'facc':0, 'groove':0}
+                f_loss={'edge':0, 'facc':0, 'groove':0}
+                f_num={'edge':0, 'facc':0, 'groove':0}
 
 
                 def count_f_num(mask):
@@ -231,10 +233,8 @@ if __name__ == '__main__':
 
                 test_batch_iter=0
                 while(test_batch_iter<test_batch_num):
-                    print('test_batch_iter =  %d '%(test_batch_iter))
                     test_batch_iter+=1
                     return_dict= test_batch_gen.get_batch()
-                    epoch_restart=return_dict['epoch_restart']
                     
                     
                     
@@ -257,17 +257,26 @@ if __name__ == '__main__':
                     data_count_batch=count_f_num(return_dict['mask'])
                     for k in data_count_batch:
                         if data_count_batch[k]!=0:
-                            f_loss_epoch[k]+= f_loss_batch[k] * data_count_batch[k]
-                            f_num_epoch[k]+=data_count_batch[k]
+                            f_loss[k]+= f_loss_batch[k] * data_count_batch[k]
+                            f_num[k]+=data_count_batch[k]
                         
-                total=sum(f_num_epoch.values())
+                total=sum(f_num.values())
                 # integ_loss=0
-                for k in f_loss_epoch:
-                    f_loss_epoch[k]=f_loss_epoch[k]/f_num_epoch[k]
+                for k in f_loss:
+                    if f_num[k]!=0:
+                        f_loss[k] = f_loss[k] / f_num[k]
+                    else:
+                        f_loss[k]=np.nan
+                        print('f_num of  %s = 0'%(k))
+                        print('f_loss is : %f '%(f_loss))
+                        with open('zero_num.txt','a') as f:
+                            f.write('f_num of  %s = 0'%(k))
+                        
+                        
                     # integ_loss+=f_loss_epoch[k]*f_num_epoch[k]/total
-                integ_loss=(f_loss_epoch['edge']+f_loss_epoch['facc']+f_loss_epoch['groove'])/3.
+                integ_loss= (f_loss['edge']/2 + f_loss['facc'] + f_loss['groove']) / 3.
 
-                avg_loss=[integ_loss]+[v for v in f_loss_epoch.values()]
+                avg_loss=[v for v in f_loss.values()]+[integ_loss,train_eloss]
                 feed_dict = {avg_loss_node:np.array(avg_loss)}
 
                 summary=sess.run(sum_node,feed_dict=feed_dict)
@@ -275,16 +284,16 @@ if __name__ == '__main__':
                 
                 writer.add_summary(summary, int(iter / test_step))
                 
-                if integ_loss < winner_loss:
-                    winner_loss = integ_loss
-                    step_from_last_mininum = 0
-                    
-                if iter%save_step==0  :
-                    save_path = saver.save(sess, save_checkpoints_dir + 'model.ckpt', int(iter / save_step))
+                if integ_loss<30 and integ_loss < winner_loss+2:
+                    if integ_loss < winner_loss:
+                        winner_loss = integ_loss
+                        step_from_last_mininum = 0
+                # if iter % save_step == 0:
+                    save_path = saver.save(sess, save_checkpoints_dir + 'model.ckpt', int(iter / test_step))
 
-                print("%d  trainCost=%f   integ_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f\n"
+                print("%d  trainCost=%f   integ_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f   epoch =%d\n"
                       % (iter, train_eloss, integ_loss, winner_loss, step_from_last_mininum,
-                         f_loss_epoch['edge'],f_loss_epoch['facc'],f_loss_epoch['groove']))
+                         f_loss['edge'], f_loss['facc'], f_loss['groove'],epoch_num))
                 
                 prop_dict = train_batch_gen.get_data_static()
                 print('\n##################  train prop')

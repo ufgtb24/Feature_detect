@@ -141,8 +141,53 @@ def check_availability(dir):
             if valide==False:
                 print(case_name+'  '+tooth)
                 
+# # label text identical line check
+pass
+def check_identical_line(dir):
+    Tooth_dir=os.listdir(dir)
+    
+    def check_unique(file_path):
+        res_line=[]
+        index=[]
+        unique=True
+        with open(file_path) as f:
+            for i,line in enumerate(f.readlines()):
+                if line in res_line:
+                    unique=False
+                    print('line %d and line %d is duplicated'%(index[res_line.index(line)]+1,i+1))
+                else:
+                    res_line.append(line)
+                    index.append(i)
+        return unique
+    dup_num=0
+    for case_name in Tooth_dir:
+        full_case_dir = dir  + case_name
+        tooth_list=os.listdir(full_case_dir)
+        valid=True
+        for tooth in tooth_list:
+            facc_dir=full_case_dir+'/'+tooth+'/FaccControlPts.txt'
+            groove_dir=full_case_dir+'/'+tooth+'/info.txt'
+            edge_dir=full_case_dir+'/'+tooth+'/edge.txt'
+            if os.path.exists(facc_dir):
+                if not check_unique(facc_dir):
+                    print('%s %s has duplicated facc\n'%(case_name,tooth))
+                    valid=False
+            if os.path.exists(groove_dir):
+                if not check_unique(groove_dir):
+                    print('%s %s has duplicated groove\n' % (case_name, tooth))
+                    valid=False
 
-# # label file line number identical and validate check
+            if os.path.exists(edge_dir):
+                if not check_unique(edge_dir):
+                    print('%s %s has duplicated edge\n'%(case_name,tooth))
+                    valid=False
+        if not valid:
+            dup_num+=1
+    print('dup_num = ',dup_num)
+    
+                
+
+# # delete never used data
 pass
 def delete(dir):
     Tooth_dir=os.listdir(dir)
@@ -154,8 +199,9 @@ def delete(dir):
             if int(tooth[5:])>8 and int(tooth[5:])<25:
                 shutil.rmtree(full_case_dir+'/'+tooth)
                 
-
-def duplicated(validate,train):
+# # two dataset has identical case
+pass
+def check_same_case(validate,train):
     vali_list=os.listdir(validate)
     train_list=os.listdir(train)
 
@@ -184,8 +230,61 @@ pass
 #
 #     return error_num
 
+def check_unique(file_path):
+    res_line = []
+    index = []
+    unique = True
+    dup_num=0
+    with open(file_path) as f:
+        for i, line in enumerate(f.readlines()):
+            if line in res_line:
+                dup_num+=1
+                unique = False
+                print('line %d and line %d is duplicated' % (index[res_line.index(line)] + 1, i + 1))
+            else:
+                res_line.append(line)
+                index.append(i)
+    print(len(res_line))
+    return unique
+
+def filter_axis_rotate(tooth_dir,axis):
+    
+    facc_dir = tooth_dir + 'FaccControlPts.txt'
+    groove_dir = tooth_dir + 'info.txt'
+    edge_dir = tooth_dir + 'edge.txt'
+    index_list=[]
+    pos=[-5,-3,-1]
+    pos.remove(pos[axis])
+    mhd_list=[name for name in  os.listdir(tooth_dir) if os.path.splitext(name)[1] == '.mhd']
+    for i,fileName in enumerate(mhd_list):
+        if int(os.path.splitext(fileName)[0][pos[0]])==2 and \
+            int(os.path.splitext(fileName)[0][pos[1]]) == 2:
+            index_list.append(i)
+        else:
+            os.remove(os.path.join(tooth_dir,fileName))
+            os.remove(os.path.join(tooth_dir,os.path.splitext(fileName)[0]+'.zraw'))
+    def delete_lines(file_path,need_list):
+        line_list=[]
+        with open(file_path) as f:
+            for i, line in enumerate(f.readlines()):
+                if i in need_list:
+                    line_list.append(line)
+        os.remove(file_path)
+        with open(file_path,'w')as new_f:
+            for line in line_list:
+                new_f.write(line)
+
+    if os.path.exists(facc_dir):
+        delete_lines(facc_dir,index_list)
+    if os.path.exists(groove_dir):
+        delete_lines(groove_dir,index_list)
+    if os.path.exists(edge_dir):
+        delete_lines(edge_dir,index_list)
+
 
 if __name__ == '__main__':
-    # check_availability('F:/ProjectData/tmp/Tooth0904/Tooth/')
-    delete('F:\\ProjectData\\tmp\\Validate\\')
+    # check_identical_line('F:\\ProjectData\\tmp\\Try\\Tooth_m\\')
+    check_unique('F:\\ProjectData\\tmp\\Try\\Tooth_m\\Ty Test\\tooth6\\FaccControlPts.txt')
+    # filter_axis_rotate('F:\\ProjectData\\tmp\\Try\\Tooth_m\\Ty Test\\tooth6/',1)
+    # delete('F:\\ProjectData\\tmp\\Validate\\')
     # duplicated('F:\\ProjectData\\tmp\\Validate\\','F:\\ProjectData\\tmp\\Train\\')

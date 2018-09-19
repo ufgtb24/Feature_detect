@@ -4,7 +4,7 @@ from mayavi import mlab
 import pickle
 import os
 
-from config import DataConfig, TrainDataConfig, TestDataConfig, BOX_LEN
+from config import DataConfig, TrainDataConfig, TestDataConfig, BOX_LEN, ValiDataConfig
 from dataRelated import BatchGenerator
 
 '''
@@ -188,17 +188,20 @@ def check_availability(dir):
 
     return error_num
 
-def display_batch(box, y, mask):
+def display_batch(box, y, mask,name=None):
     box = np.squeeze(box, 4)
     num=box.shape[0]
-    # ex, ey, ez = edges(BOX_LEN)
-    # mlab.points3d(ex , ey, ez+100,
-    #               mode="cube",
-    #               color=(0, 0, 1),
-    #               scale_factor=1)
+    ex, ey, ez = edges(BOX_LEN)
 
     y=y.astype(int)
     for i in range(num):
+        # mlab.points3d(ex , ey, ez,
+        #               mode="cube",
+        #               color=(0, 0, 1),
+        #               scale_factor=1)
+    
+        if name is not None:
+            print(name[i])
         ct = box[i]
         single_y=y[i,mask[i]]
         single_mask=np.where(mask[i])[0]
@@ -209,7 +212,7 @@ def display_batch(box, y, mask):
                       mode="cube",
                       color=(0, 1, 0),
                       scale_factor=1,
-                      transparent=True)
+                      transparent=False)
         colors=[(1,0,0),(0,0,1)]+[(0,0,0)]*10
         # 上牙是左蓝右红，下牙是左红右蓝
         for j in range(feature_need):
@@ -230,48 +233,39 @@ def display_batch(box, y, mask):
 
 
 
-def traverse_origin(dir):
+def traverse_dir(dir):
     # 读取世界坐标
     box = loadmhd(dir)
     info_file = os.path.join(dir, 'FaccControlPts.txt')
+    feature_need=5
     # feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
-    feature ,_= load_y(info_file, BOX_LEN / WORLD_SIZE)
-    num = feature.shape[0]
+    y ,_= load_y(info_file, feature_need)
+    num = y.shape[0]
+    
+    ex, ey, ez = edges(BOX_LEN)
 
     for i in range(num):
-        ct = box[i]
-
-        ct[feature[i, 0], feature[i, 1], feature[i, 2]] = 2
-        ct[feature[i, 3], feature[i, 4], feature[i, 5]] = 3
-
-        fx1, fy1, fz1 = np.where(ct == 2)
-        fx2, fy2, fz2 = np.where(ct == 3)
-        ex, ey, ez = edges(BOX_LEN)
-        x, y, z = np.where(ct == 1)
-
-        mlab.points3d(x, y, z,
-                      mode="cube",
-                      color=(0, 1, 0),
-                      scale_factor=1,
-                      transparent=True)
-
-        mlab.points3d(ex+100, ey, ez,
+        mlab.points3d(ex , ey-100, ez,
                       mode="cube",
                       color=(0, 0, 1),
                       scale_factor=1)
-
-        mlab.points3d(fx1, fy1, fz1,
+        ct = box[i]
+        single_y = y[i]
+        # print(class_batch[i])
+        x1, x2, x3 = np.where(ct == 1)
+        mlab.points3d(x1, x2, x3,
                       mode="cube",
-                      color=(1, 0, 0),
+                      color=(0, 1, 0),
                       scale_factor=1,
-                      transparent=True)
-
-        mlab.points3d(fx2, fy2, fz2,
-                      mode="cube",
-                      color=(0, 0, 1),
-                      scale_factor=1,
-                      transparent=True)
-
+                      transparent=False)
+        colors = [(1, 0, 0), (0, 0, 1)] + [(0, 0, 0)] * 10
+        # 上牙是左蓝右红，下牙是左红右蓝
+        for j in range(feature_need):
+            mlab.points3d(single_y[3 * j], single_y[3 * j + 1], single_y[3 * j + 2],
+                          mode="cube",
+                          color=colors[j],
+                          scale_factor=1,
+                          transparent=False)
         mlab.show()
 
 
@@ -309,11 +303,13 @@ def traverse_croped(dir):
 
 
 WORLD_SIZE = 12.0
-if __name__ == '__main__':
-    
-    train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
-    for i in range(1000):
-        box_batch, y_batch,mask_batch,name=train_batch_gen.get_batch()
-        display_batch(box_batch, y_batch, mask_batch)
 
+if __name__ == '__main__':
+    traverse_dir('F:\\ProjectData\\tmp\\Try\\Tooth_m\\Ty Test\\tooth6/')
+    
+    # train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
+    # for i in range(1000):
+    #     return_dict=train_batch_gen.get_batch()
+    #     display_batch(return_dict['box'], return_dict['y'], return_dict['mask'],return_dict['name'])
+    #
     # show_single('F:/ProjectData/tmp/Train/1213 11294836_mirror\\tooth8',6)

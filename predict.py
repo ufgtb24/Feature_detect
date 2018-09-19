@@ -50,15 +50,14 @@ if __name__ == '__main__':
 
             sess.run(tf.global_variables_initializer())
             
-            dir_load = '20180902-1136'  # where to restore the model
+            dir_load = '20180910-1919'  # where to restore the model
             load_checkpoints_dir= MODEL_PATH + dir_load
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-8')
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-100')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
-            
 
 
-            
+
             if NEED_WRITE_GRAPH:
                 gd = sess.graph.as_graph_def()
     
@@ -101,12 +100,13 @@ if __name__ == '__main__':
                 #         avg[i]=i/(i+1)*avg[i]+1/(i+1)*loss
                 
                 load_all=False
+                r_list=[]
                 while (not load_all):
-                    result = test_batch_gen.get_batch()
-                    load_all=result['epoch_restart']
-                    feed_dict = {detector.input_box: result['box'],
-                                 detector.targets: result['y'],
-                                 detector.f_mask: result['mask'],
+                    target = test_batch_gen.get_batch()
+                    load_all=target['epoch_restart']
+                    feed_dict = {detector.input_box: target['box'],
+                                 detector.targets: target['y'],
+                                 detector.f_mask: target['mask'],
                                  detector.is_training: False}
                     
                     f, edge_loss ,facc_loss ,groove_loss , output_mask = \
@@ -120,37 +120,42 @@ if __name__ == '__main__':
                     
                     # get_avg(iter,[edge_loss,facc_loss ,groove_loss ])
                     
-                    # #将target 和 result 同框显示
-                    # f=np.concatenate([result['y'],f],axis=1)
-                    # result['mask']=np.concatenate([result['mask'],result['mask']],axis=1)
+                    # print('edge_loss= ', edge_loss,'    facc_loss= ', facc_loss,'   groove_loss= ', groove_loss,
+                    #       '    name: ', target['name'][0])
+
+                    if edge_loss>300 or facc_loss>300 or groove_loss>300:
+                        # print(target['name'][0],'\n')
+                        print('edge_loss = %f,    facc_loss = %f,      groove_loss = %f              %s '
+                              %(edge_loss,facc_loss,groove_loss,target['name'][0]))
+                        if target['name'] not in r_list:
+                            r_list.append(target['name'][0])
+                            
+
+                        display_batch(target['box'], f, target['mask'])
+                        display_batch(target['box'], target['y'], target['mask'])
                     
-                    # print('edge_loss= ',edge_loss,'    facc_loss= ',facc_loss,'   groove_loss= ',groove_loss,
-                    #       '    name: ',result['name'][0])
-                    
-                    
-                    if edge_loss>1000:
-                        print(edge_loss)
-                        print(result['name'][0])
-                        display_batch(result['box'], f, result['mask'])
-                        display_batch(result['box'], result['y'], result['mask'])
-                        
 
     
                     if NEED_DISPLAY:
-                        display_batch(result['box'], f, result['mask'])
-                        
+                        display_batch(target['box'], f, target['mask'])
+                
+                with open('bad_data.txt',mode='w') as record:
+                    for line in r_list:
+                        record.write(line+'\n')
+
+                
                 # print('avg  ', avg)
             else:
                 
-                test_batch_gen = BatchGenerator(ValiDataConfig, need_target=True, need_name=True)
+                test_batch_gen = BatchGenerator(TestDataConfig, need_target=True, need_name=True)
                 while True:
-                    result = test_batch_gen.get_batch()
+                    target = test_batch_gen.get_batch()
 
                     if NEED_PB:
                         pred_end = sess.graph.get_tensor_by_name('import/detector/output_node:0')
-                        feed_dict = {'import/detector/input_box:0': result['box'], 'import/detector/is_training:0': False}
+                        feed_dict = {'import/detector/input_box:0': target['box'], 'import/detector/is_training:0': False}
                     else:
-                        feed_dict = {detector.input_box: result['box'],detector.is_training: False}
+                        feed_dict = {detector.input_box: target['box'], detector.is_training: False}
                         pred_end=detector.output
         
                     f = sess.run(pred_end, feed_dict=feed_dict)
@@ -161,8 +166,8 @@ if __name__ == '__main__':
                     print(f)
                     # result['mask'][:,6:21]=True
                     if NEED_DISPLAY:
-                        result['mask']=np.ones([result['box'].shape[0],27]).astype(bool)
-                        display_batch(result['box'], f, result['mask'])
+                        target['mask']=np.ones([target['box'].shape[0], 27]).astype(bool)
+                        display_batch(target['box'], f, target['mask'])
 
     
         

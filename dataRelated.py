@@ -35,7 +35,10 @@ class BatchGenerator(object):
         self.need_target = need_target
         self.need_name = need_name
         self.total_case_dir = data_config.total_case_dir
-        self.total_case_list = os.listdir(self.total_case_dir)
+        if data_config.par_list==[]:
+            self.total_case_list = os.listdir(self.total_case_dir)
+        else:
+            self.total_case_list = data_config.par_list
         self.total_case_num = len(self.total_case_list)
         self.load_case_once = data_config.load_case_once
         assert self.load_case_once <= self.total_case_num, \

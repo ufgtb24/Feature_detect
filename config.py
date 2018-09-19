@@ -1,6 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/low5104_3/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
@@ -23,8 +23,8 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2],
              'label_file': 'edge.txt',
              'loss_weight':1,
-             'samp_prop':1,
-             'va_samp_prop': 1  # 0.8
+             'train_samp_prop':0.7  , # 0.7
+             'validate_samp_prop': 1  # 1
     
          }
          ),
@@ -35,8 +35,8 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt',
              'loss_weight': 2,
-             'samp_prop': 0.3,  # 0.5
-             'va_samp_prop': 0.4  # 0.8
+             'train_samp_prop': 0.4,  # 0.4
+             'validate_samp_prop': 0.4  # 0.4
     
          }
          ),
@@ -47,8 +47,8 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2],
              'label_file': 'info.txt',
              'loss_weight': 2,
-             'samp_prop': 0.8,  #0.8
-             'va_samp_prop': 1  #0.8
+             'train_samp_prop': 1,  #1
+             'validate_samp_prop': 1  #1
              
          }
          )
@@ -56,13 +56,16 @@ TASK_DICT = OrderedDict(
 )
 
 LOSS_WEIGHT=[]
-SAMP_PROP={}
-VA_SAMP_PROP={}
+TRAIN_SAMP_PROP={}
+VALIDATE_SAMP_PROP={}
+ANY_SAMP_PROP={}
+
 
 for key,content in TASK_DICT.items():
     LOSS_WEIGHT.extend([content['loss_weight']]*(content['num_feature']*3))
-    SAMP_PROP[key]=content['samp_prop']
-    VA_SAMP_PROP[key]=content['va_samp_prop']
+    TRAIN_SAMP_PROP[key]=content['train_samp_prop']
+    VALIDATE_SAMP_PROP[key]=content['validate_samp_prop']
+    ANY_SAMP_PROP[key]=1
     
     
 up_back=['tooth2','tooth3']
@@ -81,10 +84,10 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 class DataConfig(object):
-    data_list = low_set
+    data_list = up_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir = 'F:/ProjectData/tmp/Try/'
+    base_case_dir = 'F:/ProjectData/tmp/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict = TASK_DICT
@@ -97,7 +100,7 @@ class TrainDataConfig(DataConfig):
     total_case_dir = DataConfig.base_case_dir + 'Train/'
     load_case_once = 4  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
-    sample_prob=SAMP_PROP
+    sample_prob=TRAIN_SAMP_PROP
     usage = '_Train'
 
 
@@ -105,7 +108,7 @@ class ValiDataConfig(DataConfig):
     batch_size = 64
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
     load_case_once = 10 # 每次读的病例数
-    sample_prob=VA_SAMP_PROP
+    sample_prob=VALIDATE_SAMP_PROP
     switch_after_shuffles = 10 ** 10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     
     usage = '_Validate'
@@ -113,9 +116,10 @@ class ValiDataConfig(DataConfig):
 
 class TestDataConfig(DataConfig):
     batch_size = 1
-    total_case_dir = DataConfig.base_case_dir + 'Validate/'
+    total_case_dir = DataConfig.base_case_dir + 'Train/'
     load_case_once = 1  # 每次读的病例数
-    sample_prob=VA_SAMP_PROP
+    sample_prob=ANY_SAMP_PROP
+    par_list=['0224 MO164Initial']
 
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
     
@@ -124,3 +128,4 @@ class TestDataConfig(DataConfig):
 
 if __name__ == '__main__':
     print(TestDataConfig.world_to_cubic)
+    
