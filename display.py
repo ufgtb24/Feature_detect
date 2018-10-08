@@ -245,7 +245,7 @@ def traverse_dir(dir):
     ex, ey, ez = edges(BOX_LEN)
 
     for i in range(num):
-        mlab.points3d(ex , ey-100, ez,
+        mlab.points3d(ex , ey, ez,
                       mode="cube",
                       color=(0, 0, 1),
                       scale_factor=1)
@@ -305,7 +305,7 @@ def traverse_croped(dir):
 WORLD_SIZE = 12.0
 
 if __name__ == '__main__':
-    traverse_dir('F:\\ProjectData\\tmp\\Try\\Tooth_m\\Ty Test\\tooth6/')
+    traverse_dir('F:\\ProjectData\\tmp\\Try\\Validate\\0828 AlbertDiaz-Conti\\tooth4\\')
     
     # train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
     # for i in range(1000):

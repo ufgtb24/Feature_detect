@@ -137,10 +137,9 @@ if __name__ == '__main__':
     TOTAL_EPHOC = 100000
     test_step = 200
     test_batch_num=20
-    # save_step=5000
+    save_step=5000
     need_early_stop = False
     EARLY_STOP_STEP = 20
-    
 
     winner_loss = 10 ** 10
     step_from_last_mininum = 0
@@ -152,15 +151,17 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
+        dir_load = '20180921-1145'  # where to restore the model
+        dir_save = None  # where to save the model
         
+        model_name='model.ckpt-245'
+    
         loader = tf.train.Saver(var_list=load_var_list)
         saver = tf.train.Saver(var_list=var_list, max_to_keep=20)
         sess.run(tf.global_variables_initializer())
         
         load_checkpoints_dir=None
         
-        dir_load = '20180904-2006'  # where to restore the model
-        dir_save = None  # where to save the model
         
         if dir_load is not None:
             load_checkpoints_dir= MODEL_PATH + dir_load
@@ -169,7 +170,7 @@ if __name__ == '__main__':
             
         if load_checkpoints_dir is not None:
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-14')
+            var_file= os.path.join(load_checkpoints_dir,model_name)
 
             loader.restore(sess, var_file)  # 从模型中恢复最新变量
 
@@ -284,12 +285,17 @@ if __name__ == '__main__':
                 
                 writer.add_summary(summary, int(iter / test_step))
                 
-                if integ_loss<30 and integ_loss < winner_loss+2:
+                
+                ###################################  SAVE  #####################
+                if integ_loss<30 and integ_loss < winner_loss+3 or iter % save_step==0:
                     if integ_loss < winner_loss:
                         winner_loss = integ_loss
                         step_from_last_mininum = 0
-                # if iter % save_step == 0:
+                    
                     save_path = saver.save(sess, save_checkpoints_dir + 'model.ckpt', int(iter / test_step))
+                #################################################################
+                
+                
 
                 print("%d  trainCost=%f   integ_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f   epoch =%d\n"
                       % (iter, train_eloss, integ_loss, winner_loss, step_from_last_mininum,

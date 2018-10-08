@@ -9,9 +9,9 @@ from level_train import DetectNet
 import os
 if __name__ == '__main__':
 
-    NEED_INFERENCE=True
+    NEED_INFERENCE=False
     NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=False
+    NEED_WRITE_GRAPH=True
     NEED_TARGET=True # no need to change
     NEED_PB=False
 
@@ -50,10 +50,10 @@ if __name__ == '__main__':
 
             sess.run(tf.global_variables_initializer())
             
-            dir_load = '20180910-1919'  # where to restore the model
+            dir_load = '20180922-0910'  # where to restore the model
             load_checkpoints_dir= MODEL_PATH + dir_load
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-100')
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-452')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
 
 
@@ -123,17 +123,17 @@ if __name__ == '__main__':
                     # print('edge_loss= ', edge_loss,'    facc_loss= ', facc_loss,'   groove_loss= ', groove_loss,
                     #       '    name: ', target['name'][0])
 
-                    if edge_loss>300 or facc_loss>300 or groove_loss>300:
+                    if edge_loss>200 or facc_loss>200 or groove_loss>200:
                         # print(target['name'][0],'\n')
-                        print('edge_loss = %f,    facc_loss = %f,      groove_loss = %f              %s '
+                        print('edge_loss = %f,    facc_loss = %f,      groove_loss = %f              %s'
                               %(edge_loss,facc_loss,groove_loss,target['name'][0]))
                         if target['name'] not in r_list:
                             r_list.append(target['name'][0])
                             
 
-                        display_batch(target['box'], f, target['mask'])
-                        display_batch(target['box'], target['y'], target['mask'])
-                    
+                        # display_batch(target['box'], f, target['mask'])
+                        # display_batch(target['box'], target['y'], target['mask'])
+                        #
 
     
                     if NEED_DISPLAY:

@@ -23,7 +23,7 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2],
              'label_file': 'edge.txt',
              'loss_weight':1,
-             'train_samp_prop':0.7  , # 0.7
+             'train_samp_prop':1  , # 0.7
              'validate_samp_prop': 1  # 1
     
          }
@@ -35,7 +35,7 @@ TASK_DICT = OrderedDict(
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt',
              'loss_weight': 2,
-             'train_samp_prop': 0.4,  # 0.4
+             'train_samp_prop': 0.5,  # 0.4
              'validate_samp_prop': 0.4  # 0.4
     
          }
@@ -84,7 +84,7 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 class DataConfig(object):
-    data_list = up_set
+    data_list = low_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
@@ -94,6 +94,7 @@ class DataConfig(object):
     num_feature_need = get_feature_num()
     feature_dim = 3 * num_feature_need
     down_rate=int(128/BOX_LEN)
+    par_list=[]
 
 class TrainDataConfig(DataConfig):
     batch_size = 16
@@ -119,7 +120,8 @@ class TestDataConfig(DataConfig):
     total_case_dir = DataConfig.base_case_dir + 'Train/'
     load_case_once = 1  # 每次读的病例数
     sample_prob=ANY_SAMP_PROP
-    par_list=['0224 MO164Initial']
+    par_list=[]
+    # par_list=['0226 HO120Initial_mirror']
 
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
     

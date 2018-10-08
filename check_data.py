@@ -247,7 +247,13 @@ def check_unique(file_path):
     print(len(res_line))
     return unique
 
-def filter_axis_rotate(tooth_dir,axis):
+def record_case(dir):
+    case_list=os.listdir(dir)
+    with open('case_list.txt','w')as f:
+        for line in case_list:
+            f.write(line+'\n')
+
+def filter_axis_rotate(tooth_dir,axis,oth_rot1,oth_rot2):
     
     facc_dir = tooth_dir + 'FaccControlPts.txt'
     groove_dir = tooth_dir + 'info.txt'
@@ -257,8 +263,8 @@ def filter_axis_rotate(tooth_dir,axis):
     pos.remove(pos[axis])
     mhd_list=[name for name in  os.listdir(tooth_dir) if os.path.splitext(name)[1] == '.mhd']
     for i,fileName in enumerate(mhd_list):
-        if int(os.path.splitext(fileName)[0][pos[0]])==2 and \
-            int(os.path.splitext(fileName)[0][pos[1]]) == 2:
+        if int(os.path.splitext(fileName)[0][pos[0]])==oth_rot1 and \
+            int(os.path.splitext(fileName)[0][pos[1]]) == oth_rot2:
             index_list.append(i)
         else:
             os.remove(os.path.join(tooth_dir,fileName))
@@ -283,8 +289,12 @@ def filter_axis_rotate(tooth_dir,axis):
 
 
 if __name__ == '__main__':
+    
+    
     # check_identical_line('F:\\ProjectData\\tmp\\Try\\Tooth_m\\')
-    check_unique('F:\\ProjectData\\tmp\\Try\\Tooth_m\\Ty Test\\tooth6\\FaccControlPts.txt')
-    # filter_axis_rotate('F:\\ProjectData\\tmp\\Try\\Tooth_m\\Ty Test\\tooth6/',1)
+    check_unique('F:\\ProjectData\\tmp\\Try\\Validate\\0828 AlbertDiaz-Conti\\tooth7\\edge.txt')
+    # filter_axis_rotate('F:\\ProjectData\\tmp\\Try\\Validate\\0828 AlbertDiaz-Conti\\tooth4\\',
+    #                    axis=1,oth_rot1=1,oth_rot2=1)
+    # record_case('F:\\ProjectData\\tmp\\Train')
     # delete('F:\\ProjectData\\tmp\\Validate\\')
     # duplicated('F:\\ProjectData\\tmp\\Validate\\','F:\\ProjectData\\tmp\\Train\\')

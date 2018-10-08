@@ -151,7 +151,7 @@ class BatchGenerator(object):
             return None
         
     def load_cases(self):
-        print('loading data from disk......')
+        print('loading data from disk......'+self.usage)
         filled=False
         while(not filled):
             case_load,epoch_restart=self.get_case_list()
