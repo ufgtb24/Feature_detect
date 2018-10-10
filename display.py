@@ -84,6 +84,7 @@ def load_y(info_file,feature_num):
     target = ((target - origin) * 128/12.).astype(int)
     return target,valide
 
+    
 
 def load_itk(filename):
     # Reads the image using SimpleITK
@@ -212,7 +213,7 @@ def display_batch(box, y, mask,name=None):
                       mode="cube",
                       color=(0, 1, 0),
                       scale_factor=1,
-                      transparent=False)
+                      transparent=True)
         colors=[(1,0,0),(0,0,1)]+[(0,0,0)]*10
         # 上牙是左蓝右红，下牙是左红右蓝
         for j in range(feature_need):
@@ -233,17 +234,46 @@ def display_batch(box, y, mask,name=None):
 
 
 
-def traverse_dir(dir):
-    # 读取世界坐标
+def traverse_dir(dir,feature_list,suffle=False):
     box = loadmhd(dir)
-    info_file = os.path.join(dir, 'FaccControlPts.txt')
-    feature_need=5
-    # feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
-    y ,_= load_y(info_file, feature_need)
+    y_list=[]
+    feature_need_all=0
+    if 'edge' in feature_list:
+        info_file = os.path.join(dir, 'edge.txt')
+        feature_need = 2
+        # feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
+        y, _ = load_y(info_file, feature_need)
+        y_list.append(y)
+        feature_need_all+=feature_need
+
+    if 'facc' in feature_list:
+        
+        info_file = os.path.join(dir, 'FaccControlPts.txt')
+        feature_need=5
+        # feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
+        y ,_= load_y(info_file, feature_need)
+        y_list.append(y)
+        feature_need_all+=feature_need
+
+    if 'groove' in feature_list:
+        
+        info_file = os.path.join(dir, 'info.txt')
+        feature_need=2
+        # feature ,_= load_y(info_file, GRID_SIZE / WORLD_SIZE)
+        y ,_= load_y(info_file, feature_need)
+        y_list.append(y)
+        feature_need_all+=feature_need
+
+    y=np.concatenate(y_list,axis=1)
     num = y.shape[0]
     
     ex, ey, ez = edges(BOX_LEN)
 
+    if suffle:
+        perm = np.arange(num)
+        np.random.shuffle(perm)  # 打乱
+        box=box[perm]
+        y=y[perm]
     for i in range(num):
         mlab.points3d(ex , ey, ez,
                       mode="cube",
@@ -260,7 +290,7 @@ def traverse_dir(dir):
                       transparent=False)
         colors = [(1, 0, 0), (0, 0, 1)] + [(0, 0, 0)] * 10
         # 上牙是左蓝右红，下牙是左红右蓝
-        for j in range(feature_need):
+        for j in range(feature_need_all):
             mlab.points3d(single_y[3 * j], single_y[3 * j + 1], single_y[3 * j + 2],
                           mode="cube",
                           color=colors[j],
@@ -305,7 +335,8 @@ def traverse_croped(dir):
 WORLD_SIZE = 12.0
 
 if __name__ == '__main__':
-    traverse_dir('F:\\ProjectData\\tmp\\Try\\Validate\\0828 AlbertDiaz-Conti\\tooth4\\')
+    traverse_dir('F:\\ProjectData\\tmp\\Train\\0224 MO170_Initial\\tooth8\\',['facc'],suffle=True)
+    # traverse_dir('F:\\ProjectData\\tmp\\Train\\0224 MO143Final\\tooth8\\',['facc'])
     
     # train_batch_gen = BatchGenerator(TestDataConfig,need_name=True)
     # for i in range(1000):

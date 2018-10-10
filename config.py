@@ -1,6 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/low5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
@@ -58,14 +58,14 @@ TASK_DICT = OrderedDict(
 LOSS_WEIGHT=[]
 TRAIN_SAMP_PROP={}
 VALIDATE_SAMP_PROP={}
-ANY_SAMP_PROP={}
+ALL_SAMP_PROP={}
 
 
 for key,content in TASK_DICT.items():
     LOSS_WEIGHT.extend([content['loss_weight']]*(content['num_feature']*3))
     TRAIN_SAMP_PROP[key]=content['train_samp_prop']
     VALIDATE_SAMP_PROP[key]=content['validate_samp_prop']
-    ANY_SAMP_PROP[key]=1
+    ALL_SAMP_PROP[key]=1
     
     
 up_back=['tooth2','tooth3']
@@ -101,7 +101,7 @@ class TrainDataConfig(DataConfig):
     total_case_dir = DataConfig.base_case_dir + 'Train/'
     load_case_once = 4  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
-    sample_prob=TRAIN_SAMP_PROP
+    sample_prob=ALL_SAMP_PROP
     usage = '_Train'
 
 
@@ -117,11 +117,11 @@ class ValiDataConfig(DataConfig):
 
 class TestDataConfig(DataConfig):
     batch_size = 1
-    total_case_dir = DataConfig.base_case_dir + 'Train/'
+    total_case_dir = DataConfig.base_case_dir + 'Tooth_0930/'
     load_case_once = 1  # 每次读的病例数
-    sample_prob=ANY_SAMP_PROP
+    sample_prob=ALL_SAMP_PROP
     par_list=[]
-    # par_list=['0226 HO120Initial_mirror']
+    # par_list=['0829 TasakiEmiri_mirror']
 
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
     

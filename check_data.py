@@ -189,7 +189,7 @@ def check_identical_line(dir):
 
 # # delete never used data
 pass
-def delete(dir):
+def delete_never_used(dir):
     Tooth_dir=os.listdir(dir)
 
     for case_name in Tooth_dir:
@@ -198,6 +198,7 @@ def delete(dir):
         for tooth in tooth_list:
             if int(tooth[5:])>8 and int(tooth[5:])<25:
                 shutil.rmtree(full_case_dir+'/'+tooth)
+                
                 
 # # two dataset has identical case
 pass
@@ -244,7 +245,8 @@ def check_unique(file_path):
             else:
                 res_line.append(line)
                 index.append(i)
-    print(len(res_line))
+    print('dup= ',dup_num)
+    print('unique= ',len(res_line))
     return unique
 
 def record_case(dir):
@@ -255,9 +257,9 @@ def record_case(dir):
 
 def filter_axis_rotate(tooth_dir,axis,oth_rot1,oth_rot2):
     
-    facc_dir = tooth_dir + 'FaccControlPts.txt'
-    groove_dir = tooth_dir + 'info.txt'
-    edge_dir = tooth_dir + 'edge.txt'
+    facc_dir = os.path.join(tooth_dir , 'FaccControlPts.txt')
+    groove_dir = os.path.join( tooth_dir ,'info.txt')
+    edge_dir = os.path.join( tooth_dir ,'edge.txt')
     index_list=[]
     pos=[-5,-3,-1]
     pos.remove(pos[axis])
@@ -287,14 +289,65 @@ def filter_axis_rotate(tooth_dir,axis,oth_rot1,oth_rot2):
     if os.path.exists(edge_dir):
         delete_lines(edge_dir,index_list)
 
+def delete_invalide_tooth(tooth_dir):
+    mhd_list=[name for name in  os.listdir(tooth_dir) if os.path.splitext(name)[1] == '.mhd']
+    if len(mhd_list)<30:
+        return
+    del_index=[4,6,8,9]
+    facc_dir = os.path.join(tooth_dir,'FaccControlPts.txt')
+    groove_dir = os.path.join(tooth_dir ,'info.txt')
+    edge_dir = os.path.join(tooth_dir ,'edge.txt')
+    index_list=[]
+    for i,fileName in enumerate(mhd_list):
+        if int(os.path.splitext(fileName)[0][-3]) not in del_index:
+            index_list.append(i)
+        else:
+            os.remove(os.path.join(tooth_dir,fileName))
+            os.remove(os.path.join(tooth_dir,os.path.splitext(fileName)[0]+'.zraw'))
+            
+    def delete_lines(file_path,need_list):
+        line_list=[]
+        with open(file_path) as f:
+            for i, line in enumerate(f.readlines()):
+                if i in need_list:
+                    line_list.append(line)
+        os.remove(file_path)
+        with open(file_path,'w')as new_f:
+            for line in line_list:
+                new_f.write(line)
 
+    if os.path.exists(facc_dir):
+        delete_lines(facc_dir,index_list)
+    if os.path.exists(groove_dir):
+        delete_lines(groove_dir,index_list)
+    if os.path.exists(edge_dir):
+        delete_lines(edge_dir,index_list)
+
+# # delete invalide
+pass
+def delete_invalide_all(dir):
+    Tooth_dir=os.listdir(dir)
+
+    for case_name in Tooth_dir:
+        full_case_dir = dir  + case_name
+        tooth_list=os.listdir(full_case_dir)
+        for tooth in tooth_list:
+            tooth_dir=os.path.join(full_case_dir,tooth)
+            delete_invalide_tooth(tooth_dir)
+            
 if __name__ == '__main__':
+    # check_availability('F:\\ProjectData\\tmp\\Tooth_0930\\')
+    check_identical_line('F:\\ProjectData\\tmp\\Validate\\')
+    # delete_invalide_all('F:\\ProjectData\\tmp\\Validate\\')
+
+    # check_unique('F:\\ProjectData\\tmp\\Train\\0208 Trimmell3_mirror\\tooth3\\info.txt')
+    # delete_invalide_tooth('F:\\ProjectData\\tmp\\Train\\0207 WI204_Initial\\tooth2\\')
     
-    
-    # check_identical_line('F:\\ProjectData\\tmp\\Try\\Tooth_m\\')
-    check_unique('F:\\ProjectData\\tmp\\Try\\Validate\\0828 AlbertDiaz-Conti\\tooth7\\edge.txt')
-    # filter_axis_rotate('F:\\ProjectData\\tmp\\Try\\Validate\\0828 AlbertDiaz-Conti\\tooth4\\',
+    # filter_axis_rotate('F:\\ProjectData\\tmp\\Train\\0224 MO143Final\\tooth8\\',
     #                    axis=1,oth_rot1=1,oth_rot2=1)
+
     # record_case('F:\\ProjectData\\tmp\\Train')
-    # delete('F:\\ProjectData\\tmp\\Validate\\')
+
+    # delete_never_used('F:\\ProjectData\\tmp\\Train\\')
+    
     # duplicated('F:\\ProjectData\\tmp\\Validate\\','F:\\ProjectData\\tmp\\Train\\')
