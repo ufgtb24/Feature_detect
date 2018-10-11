@@ -151,7 +151,7 @@ class BatchGenerator(object):
             return None
         
     def load_cases(self):
-        print('loading data from disk......'+self.usage)
+        # print('loading data from disk......'+self.usage)
         filled=False
         while(not filled):
             case_load,epoch_restart=self.get_case_list()
@@ -293,26 +293,6 @@ class BatchGenerator(object):
 
 
 if __name__ == '__main__':
-    def count_augment():
-        gen = BatchGenerator(ValiDataConfig)
-        for i in range(10 ** 5):
-            return_dict = gen.get_batch()
-            if return_dict['epoch_restart']:
-                break
-            
-            if i % 10 == 0:
-                for k, v in gen.data_count_dict.items():
-                    print(k, '  ', v)
-                print(i)
-        print(gen.data_count_dict)
-    
-    count_augment()
-    # while True:
-    #     box, class_, y = gen.get_batch()
-    #     mask = np.ones_like(y, dtype=bool)
-    #     for i, class_num in enumerate(class_.tolist()):
-    #         if class_num > 1:
-    #             mask[i, 15:] = False
-    #
-    #     pass
-
+    test_batch_gen = BatchGenerator(ValiDataConfig)
+    while True:
+        return_dict = test_batch_gen.get_batch()

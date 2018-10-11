@@ -1,6 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/low5104_3/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
@@ -22,7 +22,7 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'edge.txt',
-             'loss_weight':1,
+             'loss_weight':0.5,
              'train_samp_prop':1  , # 0.7
              'validate_samp_prop': 1  # 1
     
@@ -34,9 +34,9 @@ TASK_DICT = OrderedDict(
              'num_feature': 5,
              'feature_need': [1, 2, 3, 4, 5],
              'label_file': 'FaccControlPts.txt',
-             'loss_weight': 2,
+             'loss_weight': 1,
              'train_samp_prop': 0.5,  # 0.4
-             'validate_samp_prop': 0.4  # 0.4
+             'validate_samp_prop': 1  # 0.4
     
          }
          ),
@@ -46,7 +46,7 @@ TASK_DICT = OrderedDict(
              'num_feature': 2,
              'feature_need': [1, 2],
              'label_file': 'info.txt',
-             'loss_weight': 2,
+             'loss_weight': 1,
              'train_samp_prop': 1,  #1
              'validate_samp_prop': 1  #1
              
@@ -84,7 +84,7 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 class DataConfig(object):
-    data_list = low_set
+    data_list = up_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
@@ -99,7 +99,7 @@ class DataConfig(object):
 class TrainDataConfig(DataConfig):
     batch_size = 16
     total_case_dir = DataConfig.base_case_dir + 'Train/'
-    load_case_once = 4  # 每次读的病例数 若果=0,则只load一次，读入全部
+    load_case_once =10  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     sample_prob=ALL_SAMP_PROP
     usage = '_Train'
@@ -108,7 +108,7 @@ class TrainDataConfig(DataConfig):
 class ValiDataConfig(DataConfig):
     batch_size = 64
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
-    load_case_once = 10 # 每次读的病例数
+    load_case_once = 4 # 每次读的病例数
     sample_prob=VALIDATE_SAMP_PROP
     switch_after_shuffles = 10 ** 10  # 当前读取的数据洗牌n次读取新数据,仅当load_case_once>0时有效
     

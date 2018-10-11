@@ -7,6 +7,7 @@ from dataRelated import BatchGenerator
 import inception_resnet_v2 as icp
 from datetime import datetime
 import numpy as np
+import time
 co_path=os.path.join
 class DetectNet(object):
     def __init__(self, need_targets=True,is_training_sti=True,clip_grd=True,scope='detector'):
@@ -54,15 +55,18 @@ class DetectNet(object):
                         self.fmask=self.f_mask[:,6:21]
                         self.gmask=self.f_mask[:,21:]
                         
+                        # 物理意义：误差距离的平方
                         self.eloss=3 * tf.reduce_mean(tf.boolean_mask(self.eloss_m, self.emask))
                         self.floss=3 * tf.reduce_mean(tf.boolean_mask(self.floss_m, self.fmask))
                         self.gloss=3 * tf.reduce_mean(tf.boolean_mask(self.gloss_m, self.gmask))
                         
+                        # 物理意义：所有特征的误差距离的平方
                         self.equal_loss=3 * tf.reduce_mean(tf.boolean_mask(self.loss_matrix, self.f_mask))
 
                         self.weight_loss_matrix=self.loss_matrix * LOSS_WEIGHT
 
-           
+                        # 没有物理意义，只是一个用来最小化的标量 ，
+                        # 和式各项所统计的物理意义不同，权值也不同，每次三种统计量的比例还不同
                         self.weight_loss = 3 * tf.reduce_mean(tf.boolean_mask(self.weight_loss_matrix, self.f_mask))
                     ####################################
                         if is_training_sti:
@@ -92,7 +96,9 @@ def summary(avg_loss):
     train_summary.append(tf.summary.scalar('facc_error', avg_loss[1]))
     train_summary.append(tf.summary.scalar('groove_error', avg_loss[2]))
     train_summary.append(tf.summary.scalar('integ_error', avg_loss[3]))
-    train_summary.append(tf.summary.scalar('train_error', avg_loss[4]))
+    train_summary.append(tf.summary.scalar('train_edge_error', avg_loss[4]))
+    train_summary.append(tf.summary.scalar('train_facc_error', avg_loss[5]))
+    train_summary.append(tf.summary.scalar('train_groove_error', avg_loss[6]))
     return tf.summary.merge(train_summary)
 
 if __name__ == '__main__':
@@ -100,7 +106,7 @@ if __name__ == '__main__':
     final_error=0
 
     detector = DetectNet()
-    avg_loss_node=tf.placeholder(tf.float32,[5])
+    avg_loss_node=tf.placeholder(tf.float32,[7])
     sum_node=summary(avg_loss_node)
 
     
@@ -134,26 +140,23 @@ if __name__ == '__main__':
     
 
 
-    TOTAL_EPHOC = 100000
-    test_step = 200
-    test_batch_num=20
-    save_step=5000
+    TRAIN_EPHOC = 10
+    test_step = 5000
+    log_step=200
     need_early_stop = False
-    EARLY_STOP_STEP = 20
 
     winner_loss = 10 ** 10
     step_from_last_mininum = 0
-    start = False
     epoch_num=0
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-        dir_load = '20181009-1858'  # where to restore the model
+        dir_load = '20181010-0628'  # where to restore the model
         dir_save = None  # where to save the model
         
-        model_name='model.ckpt-119'
+        model_name='model.ckpt-79'
     
         loader = tf.train.Saver(var_list=load_var_list)
         saver = tf.train.Saver(var_list=var_list, max_to_keep=20)
@@ -184,11 +187,14 @@ if __name__ == '__main__':
         else:
             save_checkpoints_dir = MODEL_PATH + dir_save + '/'
 
-        
-
         writer = tf.summary.FileWriter(save_checkpoints_dir, sess.graph)
-
-        for iter in range(1,TOTAL_EPHOC):
+        
+        if NEED_INIT_SAVE:
+            save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', iter)
+        
+        iter=0
+        while(True):
+            
             return_dict = train_batch_gen.get_batch()
             
             # display_batch(box_batch, y_batch, mask_batch)
@@ -198,27 +204,28 @@ if __name__ == '__main__':
                          detector.is_training: True}
             
             # _, train_eloss,train_wloss = sess.run([detector.train_op, detector.equal_loss,detector.weight_loss], feed_dict=feed_dict)
-            if return_dict['epoch_restart']:
-                epoch_num+=1
-            
-            _,outputs,loss_matrix,train_eloss\
+
+            _,train_eloss,train_floss,train_gloss\
                 = sess.run([
                             detector.train_op,
-                            detector.output,
-                           detector.loss_matrix,
-                           detector.equal_loss,
+                           detector.eloss,
+                           detector.floss,
+                           detector.gloss,
                            ], feed_dict=feed_dict)
-            # print('edge_loss =%f   facc_loss=%f    gro_loss=%f'%(edge_loss,facc_loss,gro_loss))
-
-
-            if iter % test_step == 0:
-                if NEED_INIT_SAVE and start == False:
-                    save_path = saver.save(sess, MODEL_PATH+'model.ckpt',iter)
-                    start = True
-                if  need_early_stop and step_from_last_mininum>EARLY_STOP_STEP:
-                    final_error=winner_loss
+            
+            if return_dict['epoch_restart']:
+                epoch_num+=1
+                if epoch_num> TRAIN_EPHOC:
                     break
-                step_from_last_mininum += 1
+                    
+            if iter % log_step==0:
+                print("\n train ########################")
+                print(
+                    "%d   train_eloss=%-10.3f,   train_floss=%-10.3f,    train_gloss=%-10.3f,   epoch =%d\n"
+                    % (iter, train_eloss,train_floss,train_gloss,epoch_num))
+
+            if iter% test_step ==0:
+                step_from_last_mininum+=1
 
                 f_loss={'edge':0, 'facc':0, 'groove':0}
                 f_num={'edge':0, 'facc':0, 'groove':0}
@@ -230,15 +237,12 @@ if __name__ == '__main__':
                     count_dict['facc'] = np.sum(mask[:, 6:21]) / 3
                     count_dict['groove'] = np.sum(mask[:, 21:]) / 3
                     return count_dict
-
-                test_batch_iter=0
-                while(test_batch_iter<test_batch_num):
-                    test_batch_iter+=1
+                
+                time_start=time.time()
+                while(True):
                     return_dict= test_batch_gen.get_batch()
+
                     
-                    
-                    
-    
                     feed_dict = {detector.input_box: return_dict['box'],
                                  detector.targets: return_dict['y'],
                                  detector.f_mask: return_dict['mask'],
@@ -259,7 +263,15 @@ if __name__ == '__main__':
                         if data_count_batch[k]!=0:
                             f_loss[k]+= f_loss_batch[k] * data_count_batch[k]
                             f_num[k]+=data_count_batch[k]
-                        
+                    
+                    # 放在最后，可能会重复验证一些病例，但是比遗漏好
+                    if return_dict['epoch_restart']:
+                        break
+
+                time_test=time.time()-time_start
+                print(time_test,' s\n')
+                
+                
                 total=sum(f_num.values())
                 # integ_loss=0
                 for k in f_loss:
@@ -267,41 +279,43 @@ if __name__ == '__main__':
                         f_loss[k] = f_loss[k] / f_num[k]
                     else:
                         f_loss[k]=np.nan
-                        print('f_num of  %s = 0'%(k))
-                        print('f_loss is : %f '%(f_loss))
-                        with open('zero_num.txt','a') as f:
-                            f.write('f_num of  %s = 0'%(k))
+                        # print('f_num of  %s = 0'%(k))
+                        # print('f_loss is : %f '%(f_loss))
+                        # with open('zero_num.txt','a') as f:
+                        #     f.write('f_num of  %s = 0'%(k))
                         
                         
                     # integ_loss+=f_loss_epoch[k]*f_num_epoch[k]/total
                 integ_loss= (f_loss['edge']/2 + f_loss['facc'] + f_loss['groove']) / 3.
 
-                avg_loss=[v for v in f_loss.values()]+[integ_loss,train_eloss]
+                avg_loss=[v for v in f_loss.values()]+[integ_loss,train_eloss,train_floss,train_gloss]
                 feed_dict = {avg_loss_node:np.array(avg_loss)}
 
                 summary=sess.run(sum_node,feed_dict=feed_dict)
 
                 
-                writer.add_summary(summary, int(iter / test_step))
+                writer.add_summary(summary, int(iter/1000))
                 
                 
                 ###################################  SAVE  #####################
-                if integ_loss<30 and integ_loss < winner_loss+3 or iter % save_step==0:
+                if integ_loss<30:
                     if integ_loss < winner_loss:
                         winner_loss = integ_loss
                         step_from_last_mininum = 0
                     
-                    save_path = saver.save(sess, save_checkpoints_dir + 'model.ckpt', int(iter / test_step))
+                    save_path = saver.save(sess, save_checkpoints_dir + 'model.ckpt', int(iter/1000))
                 #################################################################
                 
                 
 
-                print("%d  trainCost=%f   integ_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f   epoch =%d\n"
-                      % (iter, train_eloss, integ_loss, winner_loss, step_from_last_mininum,
+                print("\n test ########################")
+                print("%d   test_loss =%f   winnerCost=%f   test_step=%d  edge_loss =%f   facc_loss=%f    gro_loss=%f   epoch =%d"
+                      % (iter, integ_loss, winner_loss, step_from_last_mininum,
                          f_loss['edge'], f_loss['facc'], f_loss['groove'],epoch_num))
                 
+                
                 prop_dict = train_batch_gen.get_data_static()
-                print('\n##################  train prop')
+                print('##################  train prop')
                 for k,v in prop_dict.items():
                     print("%s: %f  "%(k,v))
                 
@@ -310,6 +324,7 @@ if __name__ == '__main__':
                 for k, v in prop_dict.items():
                     print("%s: %f  " % (k, v))
                 print('\n')
+            iter+=1
 
 
 

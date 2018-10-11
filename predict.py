@@ -50,10 +50,10 @@ if __name__ == '__main__':
 
             sess.run(tf.global_variables_initializer())
             
-            dir_load = '20181009-1858'  # where to restore the model
+            dir_load = '20181010-0628'  # where to restore the model
             load_checkpoints_dir= MODEL_PATH + dir_load
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-119')
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-79')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
 
 

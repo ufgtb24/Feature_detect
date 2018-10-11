@@ -336,8 +336,10 @@ def delete_invalide_all(dir):
             delete_invalide_tooth(tooth_dir)
             
 if __name__ == '__main__':
+    pass
+    
     # check_availability('F:\\ProjectData\\tmp\\Tooth_0930\\')
-    check_identical_line('F:\\ProjectData\\tmp\\Validate\\')
+    # check_identical_line('F:\\ProjectData\\tmp\\Validate\\')
     # delete_invalide_all('F:\\ProjectData\\tmp\\Validate\\')
 
     # check_unique('F:\\ProjectData\\tmp\\Train\\0208 Trimmell3_mirror\\tooth3\\info.txt')
