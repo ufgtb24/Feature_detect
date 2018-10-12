@@ -60,7 +60,7 @@ class DetectNet(object):
                         self.floss=3 * tf.reduce_mean(tf.boolean_mask(self.floss_m, self.fmask))
                         self.gloss=3 * tf.reduce_mean(tf.boolean_mask(self.gloss_m, self.gmask))
                         
-                        # 物理意义：所有特征的误差距离的平方
+                        # 物理意义：所有特征的误差距离的平方,手采样比例影响，因此物理意义干扰很大，几乎没有
                         self.equal_loss=3 * tf.reduce_mean(tf.boolean_mask(self.loss_matrix, self.f_mask))
 
                         self.weight_loss_matrix=self.loss_matrix * LOSS_WEIGHT
@@ -70,13 +70,12 @@ class DetectNet(object):
                         self.weight_loss = 3 * tf.reduce_mean(tf.boolean_mask(self.weight_loss_matrix, self.f_mask))
                     ####################################
                         if is_training_sti:
-                            # train_summary = []
-                            # train_summary.append(tf.summary.scalar('feature_error', self.equal_loss))
-                            # train_summary.append(tf.summary.scalar('edge_error', self.eloss))
-                            # train_summary.append(tf.summary.scalar('facc_error', self.floss))
-                            # train_summary.append(tf.summary.scalar('groove_error', self.gloss))
-                            #
-                            # self.train_summary = tf.summary.merge(train_summary)
+                            train_summary = []
+                            train_summary.append(tf.summary.scalar('edge_error', self.eloss))
+                            train_summary.append(tf.summary.scalar('facc_error', self.floss))
+                            train_summary.append(tf.summary.scalar('groove_error', self.gloss))
+
+                            self.train_summary = tf.summary.merge(train_summary)
                             
     
                             with tf.variable_scope('optimizer'):
@@ -90,15 +89,12 @@ class DetectNet(object):
                                 else:
                                     self.train_op = optimizer.minimize(self.weight_loss)
 
-def summary(avg_loss):
+def load_test_summary(avg_loss):
     train_summary = []
     train_summary.append(tf.summary.scalar('edge_error', avg_loss[0]))
     train_summary.append(tf.summary.scalar('facc_error', avg_loss[1]))
     train_summary.append(tf.summary.scalar('groove_error', avg_loss[2]))
     train_summary.append(tf.summary.scalar('integ_error', avg_loss[3]))
-    train_summary.append(tf.summary.scalar('train_edge_error', avg_loss[4]))
-    train_summary.append(tf.summary.scalar('train_facc_error', avg_loss[5]))
-    train_summary.append(tf.summary.scalar('train_groove_error', avg_loss[6]))
     return tf.summary.merge(train_summary)
 
 if __name__ == '__main__':
@@ -106,8 +102,8 @@ if __name__ == '__main__':
     final_error=0
 
     detector = DetectNet()
-    avg_loss_node=tf.placeholder(tf.float32,[7])
-    sum_node=summary(avg_loss_node)
+    avg_loss_node=tf.placeholder(tf.float32,[4])
+    sum_node=load_test_summary(avg_loss_node)
 
     
     train_batch_gen = BatchGenerator(TrainDataConfig)
@@ -153,10 +149,10 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-        dir_load = '20181010-0628'  # where to restore the model
+        dir_load = '20181011-2106'  # where to restore the model
         dir_save = None  # where to save the model
         
-        model_name='model.ckpt-79'
+        model_name='model.ckpt-10'
     
         loader = tf.train.Saver(var_list=load_var_list)
         saver = tf.train.Saver(var_list=var_list, max_to_keep=20)
@@ -203,14 +199,14 @@ if __name__ == '__main__':
                          detector.f_mask:return_dict['mask'],
                          detector.is_training: True}
             
-            # _, train_eloss,train_wloss = sess.run([detector.train_op, detector.equal_loss,detector.weight_loss], feed_dict=feed_dict)
 
-            _,train_eloss,train_floss,train_gloss\
+            _,train_eloss,train_floss,train_gloss,train_sum\
                 = sess.run([
                             detector.train_op,
                            detector.eloss,
                            detector.floss,
                            detector.gloss,
+                            detector.train_summary
                            ], feed_dict=feed_dict)
             
             if return_dict['epoch_restart']:
@@ -223,8 +219,10 @@ if __name__ == '__main__':
                 print(
                     "%d   train_eloss=%-10.3f,   train_floss=%-10.3f,    train_gloss=%-10.3f,   epoch =%d\n"
                     % (iter, train_eloss,train_floss,train_gloss,epoch_num))
+                writer.add_summary(train_sum, int(iter/100))
 
             if iter% test_step ==0:
+                print('start validation')
                 step_from_last_mininum+=1
 
                 f_loss={'edge':0, 'facc':0, 'groove':0}
@@ -269,7 +267,7 @@ if __name__ == '__main__':
                         break
 
                 time_test=time.time()-time_start
-                print(time_test,' s\n')
+                print('val_once_spend = %d s'%(time_test))
                 
                 
                 total=sum(f_num.values())
@@ -287,14 +285,14 @@ if __name__ == '__main__':
                         
                     # integ_loss+=f_loss_epoch[k]*f_num_epoch[k]/total
                 integ_loss= (f_loss['edge']/2 + f_loss['facc'] + f_loss['groove']) / 3.
-
-                avg_loss=[v for v in f_loss.values()]+[integ_loss,train_eloss,train_floss,train_gloss]
+                # f_loss的值不受采样频率的影响，所以 integ_loss有物理意义
+                avg_loss=[v for v in f_loss.values()]+[integ_loss]
                 feed_dict = {avg_loss_node:np.array(avg_loss)}
 
-                summary=sess.run(sum_node,feed_dict=feed_dict)
+                test_sum=sess.run(sum_node, feed_dict=feed_dict)
 
                 
-                writer.add_summary(summary, int(iter/1000))
+                writer.add_summary(test_sum, int(iter / 1000))
                 
                 
                 ###################################  SAVE  #####################
