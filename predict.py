@@ -9,10 +9,10 @@ from level_train import DetectNet
 import os
 if __name__ == '__main__':
 
-    NEED_INFERENCE=True
+    NEED_INFERENCE=False
     NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=False
-    NEED_TARGET=True # no need to change
+    NEED_WRITE_GRAPH=True
+    NEED_TARGET=False # no need to change
     NEED_PB=False
 
     if not NEED_PB:
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         if NEED_PB:
-            g=load_graph(sess,"E://TensorFlowCplusplus//feature_detect//x64//Release//up_graph.pb")
+            g=load_graph(sess,"F:\\ProjectData\\tmp\\model\\low5104_3\\20181013-1036\\low_graph.pb")
             node_list=[n.name for n in tf.get_default_graph().as_graph_def().node]
             pass
 
@@ -50,10 +50,10 @@ if __name__ == '__main__':
 
             sess.run(tf.global_variables_initializer())
             
-            dir_load = '20181010-0628'  # where to restore the model
+            dir_load = '20181017-1833'  # where to restore the model
             load_checkpoints_dir= MODEL_PATH + dir_load
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-79')
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-20')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
 
 
@@ -132,8 +132,8 @@ if __name__ == '__main__':
                             
                         print(f)
                         print(target['y'],'\n')
-                        display_batch(target['box'], f, target['mask'])
-                        display_batch(target['box'], target['y'], target['mask'])
+                        # display_batch(target['box'], f, target['mask'])
+                        # display_batch(target['box'], target['y'], target['mask'])
 
     
                     if NEED_DISPLAY:
@@ -148,8 +148,11 @@ if __name__ == '__main__':
             else:
                 
                 test_batch_gen = BatchGenerator(TestDataConfig, need_target=True, need_name=True)
-                while True:
+                load_all=False
+
+                while (not load_all):
                     target = test_batch_gen.get_batch()
+                    load_all=target['epoch_restart']
 
                     if NEED_PB:
                         pred_end = sess.graph.get_tensor_by_name('import/detector/output_node:0')

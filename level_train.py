@@ -149,10 +149,10 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-        dir_load = '20181011-2106'  # where to restore the model
+        dir_load = '20181015-1837'  # where to restore the model
         dir_save = None  # where to save the model
         
-        model_name='model.ckpt-10'
+        model_name='model.ckpt-35'
     
         loader = tf.train.Saver(var_list=load_var_list)
         saver = tf.train.Saver(var_list=var_list, max_to_keep=20)

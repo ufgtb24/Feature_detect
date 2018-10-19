@@ -117,11 +117,11 @@ class ValiDataConfig(DataConfig):
 
 class TestDataConfig(DataConfig):
     batch_size = 1
-    total_case_dir = DataConfig.base_case_dir + 'Tooth_0930/'
+    total_case_dir = DataConfig.base_case_dir + 'Validate/'
     load_case_once = 1  # 每次读的病例数
     sample_prob=ALL_SAMP_PROP
-    par_list=[]
-    # par_list=['0829 TasakiEmiri_mirror']
+    # par_list=[]
+    par_list=['MicMalkel Case8_mirror']
 
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
     
