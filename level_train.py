@@ -4,7 +4,7 @@ from tensorflow.contrib import slim
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOSS_WEIGHT
 from dataRelated import BatchGenerator
 # import inception_v3 as icp
-import inception_resnet_v2 as icp
+import little_inception as icp
 from datetime import datetime
 import numpy as np
 import time
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     var_list = tf.trainable_variables()+bn_moving_vars
     load_var_list=var_list
 
-    NEED_INIT_SAVE = False
+    NEED_INIT_SAVE = True
     
 
 
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-        dir_load = '20181015-1837'  # where to restore the model
+        dir_load = None  # where to restore the model
         dir_save = None  # where to save the model
         
         model_name='model.ckpt-35'
@@ -186,7 +186,7 @@ if __name__ == '__main__':
         writer = tf.summary.FileWriter(save_checkpoints_dir, sess.graph)
         
         if NEED_INIT_SAVE:
-            save_path = saver.save(sess, MODEL_PATH + 'model.ckpt', iter)
+            save_path = saver.save(sess, save_checkpoints_dir + 'model_init.ckpt')
         
         iter=0
         while(True):
@@ -296,7 +296,7 @@ if __name__ == '__main__':
                 
                 
                 ###################################  SAVE  #####################
-                if integ_loss<30:
+                if integ_loss<50:
                     if integ_loss < winner_loss:
                         winner_loss = integ_loss
                         step_from_last_mininum = 0

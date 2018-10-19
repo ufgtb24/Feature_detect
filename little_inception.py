@@ -29,7 +29,9 @@ import tensorflow.contrib.slim as slim
 
 from my_batch_norm import bn_layer_top
 from myFunc import space_to_depth
-
+k1=[3,1,1]
+k2=[1,3,1]
+k3=[1,1,3]
 
 def passthrough_layer(lowRes, highRes, kernel, depth, size, name):
     with tf.variable_scope(name):
@@ -48,13 +50,21 @@ def block16(net, scale=1.0, activation_fn=tf.nn.relu, scope=None, reuse=None):
         with tf.variable_scope('Branch_0'):
             tower_conv = slim.conv3d(net, 16, 1, scope='Conv2d_1x1')
         with tf.variable_scope('Branch_1'):
-            tower_conv1_0 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
-            tower_conv1_1 = slim.conv3d(tower_conv1_0, 16, 3, scope='Conv2d_0b_3x3')
+            tower_conv1 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
+            tower_conv1 = slim.conv3d(tower_conv1, 16, k1, scope='Conv2d_0b_1')
+            tower_conv1 = slim.conv3d(tower_conv1, 16, k2, scope='Conv2d_0b_2')
+            tower_conv1 = slim.conv3d(tower_conv1, 16, k3, scope='Conv2d_0b_3')
         with tf.variable_scope('Branch_2'):
-            tower_conv2_0 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
-            tower_conv2_1 = slim.conv3d(tower_conv2_0, 24, 3, scope='Conv2d_0b_3x3')
-            tower_conv2_2 = slim.conv3d(tower_conv2_1, 32, 3, scope='Conv2d_0c_3x3')
-        mixed = tf.concat(axis=4, values=[tower_conv, tower_conv1_1, tower_conv2_2])
+            tower_conv2 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
+            tower_conv2 = slim.conv3d(tower_conv2, 24, k1, scope='Conv2d_0b_1')
+            tower_conv2 = slim.conv3d(tower_conv2, 24, k2, scope='Conv2d_0b_2')
+            tower_conv2 = slim.conv3d(tower_conv2, 24, k3, scope='Conv2d_0b_3')
+            
+            tower_conv2 = slim.conv3d(tower_conv2, 32, k1, scope='Conv2d_0c_1')
+            tower_conv2 = slim.conv3d(tower_conv2, 32, k2, scope='Conv2d_0c_2')
+            tower_conv2 = slim.conv3d(tower_conv2, 32, k3, scope='Conv2d_0c_3')
+            
+        mixed = tf.concat(axis=4, values=[tower_conv, tower_conv1, tower_conv2])
         up = slim.conv3d(mixed, net.get_shape()[4], 1, normalizer_fn=None,
                          activation_fn=None, scope='Conv2d_1x1')
         scaled_up = up * scale
@@ -177,60 +187,57 @@ def inception_resnet_v2_base(inputs,
             # 32 32
             passthrough_32 = slim.max_pool3d(net, 3, stride=2, padding=padding,
                                              scope='MaxPool_3a_3x3')
-            # 32 40
-            net = slim.conv3d(passthrough_32, 40, 1, padding=padding,
+            # 32 64
+            net = slim.conv3d(passthrough_32, 64, 1, padding=padding,
                               scope='Conv2d_3b_1x1')
             
-            # 32 96
-            net = slim.conv3d(net, 96, 3, padding=padding,
-                              scope='Conv2d_4a_3x3')
-            # 16 96
+            # 16 64
             net = slim.max_pool3d(net, 3, stride=2, padding=padding,
                                   scope='MaxPool_5a_3x3')
             
-            # 16 160
+            # 16 112
             with tf.variable_scope('Mixed_5b'):
                 with tf.variable_scope('Branch_0'):
-                    tower_conv = slim.conv3d(net, 48, 1, scope='Conv2d_1x1')
+                    tower_conv = slim.conv3d(net, 32, 1, scope='Conv2d_1x1')
                 with tf.variable_scope('Branch_1'):
                     tower_conv1_0 = slim.conv3d(net, 24, 1, scope='Conv2d_0a_1x1')
-                    tower_conv1_1 = slim.conv3d(tower_conv1_0, 32, 5,
+                    tower_conv1_1 = slim.conv3d(tower_conv1_0, 24, 5,
                                                 scope='Conv2d_0b_5x5')
                 with tf.variable_scope('Branch_2'):
-                    tower_conv2_0 = slim.conv3d(net, 32, 1, scope='Conv2d_0a_1x1')
-                    tower_conv2_1 = slim.conv3d(tower_conv2_0, 48, 3,
+                    tower_conv2_0 = slim.conv3d(net, 24, 1, scope='Conv2d_0a_1x1')
+                    tower_conv2_1 = slim.conv3d(tower_conv2_0, 32, 3,
                                                 scope='Conv2d_0b_3x3')
-                    tower_conv2_2 = slim.conv3d(tower_conv2_1, 48, 3,
+                    tower_conv2_2 = slim.conv3d(tower_conv2_1, 32, 3,
                                                 scope='Conv2d_0c_3x3')
                 with tf.variable_scope('Branch_3'):
                     tower_pool = slim.avg_pool3d(net, 3, stride=1, padding='SAME',
                                                  scope='AvgPool_0a_3x3')
-                    tower_pool_1 = slim.conv3d(tower_pool, 32, 1,
+                    tower_pool_1 = slim.conv3d(tower_pool, 24, 1,
                                                scope='Conv2d_0b_1x1')
                 net = tf.concat(
                     [tower_conv, tower_conv1_1, tower_conv2_2, tower_pool_1], 4)
             
-            # 16 160     repeat 5
-            net = slim.repeat(net, 5, block16, scale=0.17,
+            # 16 112     repeat 3
+            net = slim.repeat(net, 3, block16, scale=0.17,
                               activation_fn=activation_fn)
             
-            # 16 160+16*8=288
+            # 16 112+16*8=240
             net = passthrough_layer(net, passthrough_32, 3, 16, 2, 'passThrough_32_16')
             
-            # 16 160
-            passthrough_16 = slim.conv3d(net, 160, 1)
+            # 16 112
+            passthrough_16 = slim.conv3d(net, 112, 1)
             
-            # 8 544
+            # 8 400
             with tf.variable_scope('Mixed_6a'):
                 with tf.variable_scope('Branch_0'):
-                    tower_conv = slim.conv3d(net, 192, 3, stride=2,
+                    tower_conv = slim.conv3d(net, 144, 3, stride=2,
                                              padding=padding,
                                              scope='Conv2d_1a_3x3')
                 with tf.variable_scope('Branch_1'):
-                    tower_conv1_0 = slim.conv3d(net, 128, 1, scope='Conv2d_0a_1x1')
-                    tower_conv1_1 = slim.conv3d(tower_conv1_0, 128, 3,
+                    tower_conv1_0 = slim.conv3d(net, 96, 1, scope='Conv2d_0a_1x1')
+                    tower_conv1_1 = slim.conv3d(tower_conv1_0, 96, 3,
                                                 scope='Conv2d_0b_3x3')
-                    tower_conv1_2 = slim.conv3d(tower_conv1_1, 192, 3,
+                    tower_conv1_2 = slim.conv3d(tower_conv1_1, 144, 3,
                                                 stride=2,
                                                 padding=padding,
                                                 scope='Conv2d_1a_3x3')
@@ -238,37 +245,32 @@ def inception_resnet_v2_base(inputs,
                     tower_pool = slim.max_pool3d(net, 3, stride=2,
                                                  padding=padding,
                                                  scope='MaxPool_1a_3x3')
-                # 8 544
+                # 8 400
                 net = tf.concat([tower_conv, tower_conv1_2, tower_pool], 4)
             
             with slim.arg_scope([slim.conv3d], rate=1):
-                # 8 544     repeat 10
-                net = slim.repeat(net, 10, block8, scale=0.10,
+                # 8 400     repeat 10
+                net = slim.repeat(net, 6, block8, scale=0.10,
                                   activation_fn=activation_fn)
             
-            # 8 544+32*8=800
-            net = passthrough_layer(net, passthrough_16, 3, 32, 2, 'passThrough_16_8')
+            # 8 400+24*8=592
+            net = passthrough_layer(net, passthrough_16, 3, 24, 2, 'passThrough_16_8')
             
-            # 8 544
-            passthrough_8 = slim.conv3d(net, 544, 1)
+            # 8 400
+            passthrough_8 = slim.conv3d(net, 400, 1)
             
-            # 4 1040
+            # 4 864
             with tf.variable_scope('Mixed_7a'):
-                with tf.variable_scope('Branch_0'):
-                    tower_conv = slim.conv3d(net, 128, 1, scope='Conv2d_0a_1x1')
-                    tower_conv_1 = slim.conv3d(tower_conv, 192, 3, stride=2,
-                                               padding=padding,
-                                               scope='Conv2d_1a_3x3')
                 with tf.variable_scope('Branch_1'):
-                    tower_conv1 = slim.conv3d(net, 128, 1, scope='Conv2d_0a_1x1')
-                    tower_conv1_1 = slim.conv3d(tower_conv1, 144, 3, stride=2,
+                    tower_conv1 = slim.conv3d(net, 96, 1, scope='Conv2d_0a_1x1')
+                    tower_conv1_1 = slim.conv3d(tower_conv1, 128, 3, stride=2,
                                                 padding=padding,
                                                 scope='Conv2d_1a_3x3')
                 with tf.variable_scope('Branch_2'):
-                    tower_conv2 = slim.conv3d(net, 128, 1, scope='Conv2d_0a_1x1')
-                    tower_conv2_1 = slim.conv3d(tower_conv2, 144, 3,
+                    tower_conv2 = slim.conv3d(net, 96, 1, scope='Conv2d_0a_1x1')
+                    tower_conv2_1 = slim.conv3d(tower_conv2, 128, 3,
                                                 scope='Conv2d_0b_3x3')
-                    tower_conv2_2 = slim.conv3d(tower_conv2_1, 160, 3, stride=2,
+                    tower_conv2_2 = slim.conv3d(tower_conv2_1, 144, 3, stride=2,
                                                 padding=padding,
                                                 scope='Conv2d_1a_3x3')
                 with tf.variable_scope('Branch_3'):
@@ -276,17 +278,17 @@ def inception_resnet_v2_base(inputs,
                                                  padding=padding,
                                                  scope='MaxPool_1a_3x3')
                 net = tf.concat(
-                    [tower_conv_1, tower_conv1_1, tower_conv2_2, tower_pool], 4)
+                    [tower_conv1_1, tower_conv2_2, tower_pool], 4)
             
-            # 4 1040     repeat 4
-            net = slim.repeat(net, 4, block4, scale=0.20, activation_fn=activation_fn)
+            # 4 864     repeat 4
+            net = slim.repeat(net, 3, block4, scale=0.20, activation_fn=activation_fn)
             net = block4(net, activation_fn=None)
             
-            # 4 1040+64*8=1552
+            # 4 864+48*8=1248
             net = passthrough_layer(net, passthrough_8, 3, 48, 2, 'passThrough_8_4')
             
             # 4 768  1040
-            net = slim.conv3d(net, 1040, 1, scope='Conv2d_7b_1x1')
+            net = slim.conv3d(net, 768, 1, scope='Conv2d_7b_1x1')
             return net
 
 
