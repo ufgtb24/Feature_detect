@@ -4,7 +4,7 @@ from tensorflow.contrib import slim
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOSS_WEIGHT
 from dataRelated import BatchGenerator
 # import inception_v3 as icp
-import little_inception as icp
+import inception_resnet_v2 as icp
 from datetime import datetime
 import numpy as np
 import time
@@ -120,17 +120,25 @@ if __name__ == '__main__':
     ################# important  !!!!!!!!!!!!!!!  dont delete
     # # if some structure changed compared to the saved model, need to load different vars
     # # 不能让 Saver retore .data 中不存在的 变量， 所以要缩减任务
-    # load_list = [t for t in tf.trainable_variables() if not
-    #              t.name.startswith('detector/Logits')]
-    #              # and not t.name.endswith('pred_output/weights:0')]
+    # load_list = [t for t in tf.trainable_variables() if
+    #              not t.name.startswith('detector/InceptionRes2/Mixed_6a/Branch_0')
+    #              and not t.name.startswith('detector/InceptionRes2/Mixed_7a/Branch_0')
+    #              and not t.name.startswith('detector/InceptionRes2/Repeat/block16')
     #
-    # var_list=load_list+bn_moving_vars
-    # loader = tf.train.Saver(var_list=var_list, max_to_keep=1)
-
+    #              # and not t.name.endswith('pred_output/weights:0')]
+    #              ]
+    # load_bn_moving_vars=[t for t in bn_moving_vars if
+    #                      not t.name.startswith('detector/InceptionRes2/Repeat/block16')]
+    # for i in load_list:
+    #     print(i.name)
+    # load_var_list=load_list+load_bn_moving_vars
     ##################
-    
+
     var_list = tf.trainable_variables()+bn_moving_vars
-    load_var_list=var_list
+    # invalid_list=[t for t in load_var_list if t.name.startswith('detector/InceptionResnetV2/Mixed_6a/')]
+    
+    loader = tf.train.Saver(var_list=var_list)
+    saver = tf.train.Saver(var_list=var_list, max_to_keep=20)
 
     NEED_INIT_SAVE = True
     
@@ -149,13 +157,11 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-        dir_load = None  # where to restore the model
+        dir_load = '20181020-2322'  # where to restore the model
         dir_save = None  # where to save the model
         
-        model_name='model.ckpt-35'
+        model_name='model_init.ckpt'
     
-        loader = tf.train.Saver(var_list=load_var_list)
-        saver = tf.train.Saver(var_list=var_list, max_to_keep=20)
         sess.run(tf.global_variables_initializer())
         
         load_checkpoints_dir=None
@@ -296,7 +302,7 @@ if __name__ == '__main__':
                 
                 
                 ###################################  SAVE  #####################
-                if integ_loss<50:
+                if integ_loss<2000:
                     if integ_loss < winner_loss:
                         winner_loss = integ_loss
                         step_from_last_mininum = 0

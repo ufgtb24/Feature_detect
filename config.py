@@ -97,7 +97,7 @@ class DataConfig(object):
     par_list=[]
 
 class TrainDataConfig(DataConfig):
-    batch_size = 16
+    batch_size = 12
     total_case_dir = DataConfig.base_case_dir + 'Train/'
     load_case_once =10  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
@@ -106,7 +106,7 @@ class TrainDataConfig(DataConfig):
 
 
 class ValiDataConfig(DataConfig):
-    batch_size = 64
+    batch_size = 48
     total_case_dir = DataConfig.base_case_dir + 'Validate/'
     load_case_once = 4 # 每次读的病例数
     sample_prob=VALIDATE_SAMP_PROP

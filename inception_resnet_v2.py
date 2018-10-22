@@ -30,6 +30,9 @@ import tensorflow.contrib.slim as slim
 from my_batch_norm import bn_layer_top
 from myFunc import space_to_depth
 
+k1=[3,1,1]
+k2=[1,3,1]
+k3=[1,1,3]
 
 def passthrough_layer(lowRes, highRes, kernel, depth, size, name):
     with tf.variable_scope(name):
@@ -44,17 +47,24 @@ def passthrough_layer(lowRes, highRes, kernel, depth, size, name):
 
 def block16(net, scale=1.0, activation_fn=tf.nn.relu, scope=None, reuse=None):
     """Builds the 16x16 resnet block."""
-    with tf.variable_scope(scope, 'Block35', [net], reuse=reuse):
+    with tf.variable_scope(scope, 'Block16', [net], reuse=reuse):
         with tf.variable_scope('Branch_0'):
             tower_conv = slim.conv3d(net, 16, 1, scope='Conv2d_1x1')
         with tf.variable_scope('Branch_1'):
-            tower_conv1_0 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
-            tower_conv1_1 = slim.conv3d(tower_conv1_0, 16, 3, scope='Conv2d_0b_3x3')
+            tower_conv1 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
+            tower_conv1 = slim.conv3d(tower_conv1, 16, k1, scope='Conv2d_0b_1')
+            tower_conv1 = slim.conv3d(tower_conv1, 16, k2, scope='Conv2d_0b_2')
+            tower_conv1 = slim.conv3d(tower_conv1, 16, k3, scope='Conv2d_0b_3')
         with tf.variable_scope('Branch_2'):
-            tower_conv2_0 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
-            tower_conv2_1 = slim.conv3d(tower_conv2_0, 24, 3, scope='Conv2d_0b_3x3')
-            tower_conv2_2 = slim.conv3d(tower_conv2_1, 32, 3, scope='Conv2d_0c_3x3')
-        mixed = tf.concat(axis=4, values=[tower_conv, tower_conv1_1, tower_conv2_2])
+            tower_conv2 = slim.conv3d(net, 16, 1, scope='Conv2d_0a_1x1')
+            tower_conv2 = slim.conv3d(tower_conv2, 24, k1, scope='Conv2d_0b_1')
+            tower_conv2 = slim.conv3d(tower_conv2, 24, k2, scope='Conv2d_0b_2')
+            tower_conv2 = slim.conv3d(tower_conv2, 24, k3, scope='Conv2d_0b_3')
+
+            tower_conv2 = slim.conv3d(tower_conv2, 32, k1, scope='Conv2d_0c_1')
+            tower_conv2 = slim.conv3d(tower_conv2, 32, k2, scope='Conv2d_0c_2')
+            tower_conv2 = slim.conv3d(tower_conv2, 32, k3, scope='Conv2d_0c_3')
+        mixed = tf.concat(axis=4, values=[tower_conv, tower_conv1, tower_conv2])
         up = slim.conv3d(mixed, net.get_shape()[4], 1, normalizer_fn=None,
                          activation_fn=None, scope='Conv2d_1x1')
         scaled_up = up * scale
