@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.contrib import slim
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOSS_WEIGHT
 from dataRelated import BatchGenerator
-import inception_resnet_v2_ncwhd as icp
+import inception_resnet_v2 as icp
 from datetime import datetime
 import numpy as np
 import time
