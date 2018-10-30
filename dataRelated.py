@@ -263,7 +263,7 @@ class BatchGenerator(object):
                 epoch_restart=self.load_cases()
             self.suffle()
         return_dict['epoch_restart']=epoch_restart
-        box_batch = np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(), 4)
+        box_batch = np.expand_dims(self.box[self.index:   self.index + self.batch_size].copy(), 1)
         return_dict['box'] = box_batch
         
         if self.need_target:

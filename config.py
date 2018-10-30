@@ -1,7 +1,7 @@
 from collections import OrderedDict
 BOX_LEN=128
 MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
-SHAPE_BOX = [BOX_LEN]*3+[ 1]
+SHAPE_BOX = [1]+[BOX_LEN]*3
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
 def get_feature_num():
