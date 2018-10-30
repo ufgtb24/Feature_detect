@@ -1,6 +1,8 @@
 import tensorflow as tf
 import numpy as np
 # from crop_data import crop_batch
+import time
+
 from combine import PB_PATH, gen_frozen_graph, load_graph
 from config import MODEL_PATH, TestDataConfig, ValiDataConfig
 from dataRelated import BatchGenerator
@@ -9,10 +11,10 @@ from level_train import DetectNet
 import os
 if __name__ == '__main__':
 
-    NEED_INFERENCE=False
+    NEED_INFERENCE=True
     NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=True
-    NEED_TARGET=False # no need to change
+    NEED_WRITE_GRAPH=False
+    NEED_TARGET=True # no need to change
     NEED_PB=False
 
     if not NEED_PB:
@@ -33,12 +35,29 @@ if __name__ == '__main__':
     
         #############
         saver = tf.train.Saver(var_list)
-        
-        
-        
-        
+    NUM_PARALLEL_EXEC_UNITS=8
+
+    os.environ["OMP_NUM_THREADS"] = "8"
+
+    os.environ["KMP_BLOCKTIME"] = "0"
+
+    os.environ["KMP_SETTINGS"] = "1"
+
+    os.environ["KMP_AFFINITY"] = "granularity=fine,verbose,compact,1,0"
+    
+    config = tf.ConfigProto(device_count={"CPU":NUM_PARALLEL_EXEC_UNITS},
+                            intra_op_parallelism_threads=NUM_PARALLEL_EXEC_UNITS,
+                            inter_op_parallelism_threads=NUM_PARALLEL_EXEC_UNITS,
+                            allow_soft_placement=True,
+                            )
+    
+    
     config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
+    # config.gpu_options.allow_growth = True
+    
+    
+    
+    # config.inter_op_parallelism_threads=44
     with tf.Session(config=config) as sess:
         # writer = tf.summary.FileWriter('log/', sess.graph)
         if NEED_PB:
@@ -50,10 +69,10 @@ if __name__ == '__main__':
 
             sess.run(tf.global_variables_initializer())
             
-            dir_load = '20181017-1833'  # where to restore the model
+            dir_load = '20181020-2329'  # where to restore the model
             load_checkpoints_dir= MODEL_PATH + dir_load
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-20')
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-100')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
 
 
@@ -108,7 +127,8 @@ if __name__ == '__main__':
                                  detector.targets: target['y'],
                                  detector.f_mask: target['mask'],
                                  detector.is_training: False}
-                    
+                    time_start = time.time()
+
                     f, edge_loss ,facc_loss ,groove_loss , output_mask = \
                         sess.run([detector.output,
                                          detector.eloss,
@@ -117,23 +137,25 @@ if __name__ == '__main__':
                                          detector.f_mask,
                                          
                                          ], feed_dict=feed_dict)
-                    
+                    cost_time=time.time()-time_start
+                    print(cost_time)
                     # get_avg(iter,[edge_loss,facc_loss ,groove_loss ])
                     
                     # print('edge_loss= ', edge_loss,'    facc_loss= ', facc_loss,'   groove_loss= ', groove_loss,
                     #       '    name: ', target['name'][0])
 
-                    if edge_loss>300 or facc_loss>300 or groove_loss>300:
-                        # print(target['name'][0],'\n')
-                        print('edge_loss = %-10.2f,facc_loss = %-10.2f,groove_loss = %-10.2f,   %s'
-                              %(edge_loss,facc_loss,groove_loss,target['name'][0]))
-                        if target['name'] not in r_list:
-                            r_list.append(target['name'][0])
-                            
-                        print(f)
-                        print(target['y'],'\n')
-                        # display_batch(target['box'], f, target['mask'])
-                        # display_batch(target['box'], target['y'], target['mask'])
+
+                    # if edge_loss>300 or facc_loss>300 or groove_loss>300:
+                    #     # print(target['name'][0],'\n')
+                    #     print('edge_loss = %-10.2f,facc_loss = %-10.2f,groove_loss = %-10.2f,   %s'
+                    #           %(edge_loss,facc_loss,groove_loss,target['name'][0]))
+                    #     if target['name'] not in r_list:
+                    #         r_list.append(target['name'][0])
+                    #
+                    #     print(f)
+                    #     print(target['y'],'\n')
+                    #     # display_batch(target['box'], f, target['mask'])
+                    #     # display_batch(target['box'], target['y'], target['mask'])
 
     
                     if NEED_DISPLAY:

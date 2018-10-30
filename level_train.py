@@ -3,8 +3,7 @@ import tensorflow as tf
 from tensorflow.contrib import slim
 from config import MODEL_PATH, SHAPE_BOX, TrainDataConfig, ValiDataConfig, DataConfig, LOSS_WEIGHT
 from dataRelated import BatchGenerator
-# import inception_v3 as icp
-import inception_resnet_v2 as icp
+import inception_resnet_v2_ncwhd as icp
 from datetime import datetime
 import numpy as np
 import time
@@ -157,10 +156,11 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
 
     with tf.Session(config=config) as sess:
-        dir_load = '20181020-2322'  # where to restore the model
+        dir_load = None  # where to restore the model
+        # dir_load = '20181020-2329'  # where to restore the model
         dir_save = None  # where to save the model
         
-        model_name='model_init.ckpt'
+        model_name='model.ckpt-100'
     
         sess.run(tf.global_variables_initializer())
         
