@@ -1,6 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
+MODEL_PATH = 'F:/ProjectData/tmp/model/low5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
@@ -84,7 +84,7 @@ up_set = ['tooth2', 'tooth3', 'tooth4', 'tooth5', 'tooth6', 'tooth7', 'tooth8']
 low_set = ['tooth30', 'tooth31', 'tooth28', 'tooth29', 'tooth27', 'tooth25', 'tooth26']
 
 class DataConfig(object):
-    data_list = up_set
+    data_list = low_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
     base_case_dir = 'F:/ProjectData/tmp/'
@@ -99,7 +99,7 @@ class DataConfig(object):
 class TrainDataConfig(DataConfig):
     batch_size = 12
     total_case_dir = DataConfig.base_case_dir + 'Train/'
-    load_case_once =10  # 每次读的病例数 若果=0,则只load一次，读入全部
+    load_case_once =5  # 每次读的病例数 若果=0,则只load一次，读入全部
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据,仅当load_case_once>0时有效
     sample_prob=ALL_SAMP_PROP
     usage = '_Train'
@@ -116,12 +116,12 @@ class ValiDataConfig(DataConfig):
 
 
 class TestDataConfig(DataConfig):
-    batch_size = 16
-    total_case_dir = DataConfig.base_case_dir + 'Validate/'
+    batch_size = 1
+    total_case_dir = DataConfig.base_case_dir + 'linshi/'
     load_case_once = 1  # 每次读的病例数
     sample_prob=ALL_SAMP_PROP
-    # par_list=[]
-    par_list=['MicMalkel Case8_mirror']
+    par_list=[]
+    # par_list=['MicMalkel Case8_mirror']
 
     switch_after_shuffles = 1  # 当前数据洗牌n次读取新数据
     

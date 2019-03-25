@@ -11,10 +11,10 @@ from level_train import DetectNet
 import os
 if __name__ == '__main__':
 
-    NEED_INFERENCE=True
+    NEED_INFERENCE=False
     NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=False
-    NEED_TARGET=True # no need to change
+    NEED_WRITE_GRAPH=True
+    NEED_TARGET=False # no need to change
     NEED_PB=False
 
     if not NEED_PB:
@@ -22,7 +22,7 @@ if __name__ == '__main__':
             NEED_TARGET=False
         detector = DetectNet(need_targets=NEED_TARGET,is_training_sti=False)
         # pred_end = tf.to_int32(tf.identity(detector.pred,name="output_node"))
-        
+        ss = tf.contrib.stat_summarizer.NewStatSummarizer(tf.get_default_graph().as_graph_def().SerializeToString())
         #############
         var_list = tf.trainable_variables()
         g_list = tf.global_variables()
@@ -35,24 +35,26 @@ if __name__ == '__main__':
     
         #############
         saver = tf.train.Saver(var_list)
-    NUM_PARALLEL_EXEC_UNITS=8
+        
 
-    os.environ["OMP_NUM_THREADS"] = "8"
+    os.environ["OMP_NUM_THREADS"] = "4"
 
     os.environ["KMP_BLOCKTIME"] = "0"
 
     os.environ["KMP_SETTINGS"] = "1"
 
     os.environ["KMP_AFFINITY"] = "granularity=fine,verbose,compact,1,0"
+    # os.environ["MKLDNN_VERBOSE"] = "2"
     
-    config = tf.ConfigProto(device_count={"CPU":NUM_PARALLEL_EXEC_UNITS},
-                            intra_op_parallelism_threads=NUM_PARALLEL_EXEC_UNITS,
-                            inter_op_parallelism_threads=NUM_PARALLEL_EXEC_UNITS,
+    config = tf.ConfigProto(
+                            intra_op_parallelism_threads=4,
+                            inter_op_parallelism_threads=1,
                             allow_soft_placement=True,
+                            # device_count={"CPU": 4},
                             )
     
     
-    config = tf.ConfigProto()
+    # config = tf.ConfigProto()
     # config.gpu_options.allow_growth = True
     
     
@@ -120,7 +122,7 @@ if __name__ == '__main__':
                 
                 load_all=False
                 r_list=[]
-                while (not load_all):
+                if (not load_all):
                     target = test_batch_gen.get_batch()
                     load_all=target['epoch_restart']
                     feed_dict = {detector.input_box: target['box'],
@@ -128,7 +130,10 @@ if __name__ == '__main__':
                                  detector.f_mask: target['mask'],
                                  detector.is_training: False}
                     time_start = time.time()
-
+                    
+                    run_metadata = tf.RunMetadata()
+                    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                    
                     f, edge_loss ,facc_loss ,groove_loss , output_mask = \
                         sess.run([detector.output,
                                          detector.eloss,
@@ -136,9 +141,11 @@ if __name__ == '__main__':
                                          detector.gloss,
                                          detector.f_mask,
                                          
-                                         ], feed_dict=feed_dict)
+                                         ], feed_dict=feed_dict,options=run_options, run_metadata=run_metadata)
+                    ss.ProcessStepStatsStr(run_metadata.step_stats.SerializeToString())
                     cost_time=time.time()-time_start
                     print(cost_time)
+                    print(ss.GetOutputString())
                     # get_avg(iter,[edge_loss,facc_loss ,groove_loss ])
                     
                     # print('edge_loss= ', edge_loss,'    facc_loss= ', facc_loss,'   groove_loss= ', groove_loss,

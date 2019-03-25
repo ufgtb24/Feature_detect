@@ -1,10 +1,11 @@
 import logging
+import traceback
 
 import numpy as np
 import SimpleITK as sitk
 import os
-
-from config import DataConfig, ValiDataConfig, TrainDataConfig
+import sys
+from config import DataConfig, ValiDataConfig, TrainDataConfig, TestDataConfig
 from collections import OrderedDict
 
 
@@ -155,7 +156,12 @@ class BatchGenerator(object):
         filled=False
         while(not filled):
             case_load,epoch_restart=self.get_case_list()
+            # try:
             filled=self.try_load_cases(case_load)
+            # except:
+            #     traceback.print_exc()
+            #     print(case_load)
+            #     sys.exit()
             if filled:
                 self.already_find = True
                 return epoch_restart
@@ -293,6 +299,6 @@ class BatchGenerator(object):
 
 
 if __name__ == '__main__':
-    test_batch_gen = BatchGenerator(ValiDataConfig)
+    test_batch_gen = BatchGenerator(TestDataConfig)
     while True:
         return_dict = test_batch_gen.get_batch()

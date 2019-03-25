@@ -338,7 +338,7 @@ def delete_invalide_all(dir):
 if __name__ == '__main__':
     pass
     
-    # check_availability('F:\\ProjectData\\tmp\\Tooth_0930\\')
+    check_availability('F:\\ProjectData\\tmp\\Train\\')
     # check_identical_line('F:\\ProjectData\\tmp\\Validate\\')
     # delete_invalide_all('F:\\ProjectData\\tmp\\Validate\\')
 
