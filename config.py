@@ -1,6 +1,6 @@
 from collections import OrderedDict
 BOX_LEN=128
-MODEL_PATH = 'F:/ProjectData/tmp/model/up5104_3/'
+MODEL_PATH = 'F:/ProjectData/feature_detect/model/low5104_3/'
 SHAPE_BOX = [BOX_LEN]*3+[ 1]
 # up_front=['tooth6', 'tooth7', 'tooth8']
 
@@ -87,7 +87,7 @@ class DataConfig(object):
     data_list = up_set
     world_to_cubic = BOX_LEN / 12.
     # base_case_dir='F:/ProjectData/Feature2/DataSet/'
-    base_case_dir = 'F:/ProjectData/tmp/'
+    base_case_dir = 'F:/ProjectData/feature_detect/'
     # output_dim=3*len(feature_need)
     # label_file_name='info.txt'
     task_dict = TASK_DICT

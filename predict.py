@@ -9,9 +9,9 @@ from level_train import DetectNet
 import os
 if __name__ == '__main__':
 
-    NEED_INFERENCE=False
-    NEED_DISPLAY=False
-    NEED_WRITE_GRAPH=True
+    NEED_INFERENCE=True
+    NEED_DISPLAY=True
+    NEED_WRITE_GRAPH=False
     NEED_TARGET=False # no need to change
     NEED_PB=False
 
@@ -50,10 +50,10 @@ if __name__ == '__main__':
 
             sess.run(tf.global_variables_initializer())
             
-            dir_load = '20181017-1833'  # where to restore the model
+            dir_load = '20181105-1810'  # where to restore the model
             load_checkpoints_dir= MODEL_PATH + dir_load
             # var_file = tf.train.latest_checkpoint(load_checkpoints_dir)
-            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-20')
+            var_file= os.path.join(load_checkpoints_dir,'model.ckpt-50')
             saver.restore(sess, var_file)  # 从模型中恢复最新变量
 
 
